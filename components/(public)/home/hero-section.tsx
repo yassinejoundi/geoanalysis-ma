@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Locale } from "@/lib/i18n";
 import type { HomeContent } from "./content";
+import { HeroRocks } from "./hero-rocks";
 
 export function HeroSection({
   locale,
@@ -28,12 +29,7 @@ export function HeroSection({
             </Link>
           </div>
         </div>
-        <div className="home-terrain" aria-hidden="true">
-          <div className="terrain-rings" />
-          <div className="terrain-mountain terrain-back" />
-          <div className="terrain-mountain terrain-front" />
-          <div className="terrain-mountain terrain-peak" />
-        </div>
+        <HeroRocks />
         <dl className="home-stats">
           {content.stats.map(([value, label]) => (
             <div key={label}>
