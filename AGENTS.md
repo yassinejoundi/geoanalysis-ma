@@ -7,3 +7,9 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Product design
+
+- Follow [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) for the Geoanalysis palette, typography, layout, and interaction rules.
+- Use the shared CSS variables in `app/globals.css`; keep the administration interface French-first and use IBM Plex Sans/Mono.
+- Preserve accessible names, visible keyboard focus, readable contrast, reduced-motion support, and narrow-screen layouts when adding controls or pages.
