@@ -1,9 +1,5 @@
-import { adminTeam } from "@/lib/content/admin";
+import { TeamManager } from "@/components/(admin)/equipe/team-manager";
+
 export default function AdminTeamPage() {
-  return (
-    <main>
-      <h1>Équipe</h1>
-      <p>{adminTeam.length}</p>
-    </main>
-  );
+  return <TeamManager />;
 }

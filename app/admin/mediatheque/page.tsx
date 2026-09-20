@@ -1,9 +1,5 @@
-import { adminMedia } from "@/lib/content/admin";
+import { MediaManager } from "@/components/(admin)/mediatheque/media-manager";
+
 export default function AdminMediaPage() {
-  return (
-    <main>
-      <h1>Médiathèque</h1>
-      <p>{adminMedia.length}</p>
-    </main>
-  );
+  return <MediaManager />;
 }

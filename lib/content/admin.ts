@@ -81,10 +81,10 @@ export const adminMessages = [
 ].map(([id, status, name, company, date, type, file]) => ({ id, status: status as MessageStatus, name, company, date, type: type as LocalizedText, file }));
 
 export const adminTeam = [
-  { id: "t1", order: 1, name: "Dr. S. Benali", role: { fr: "Directeur · Géologue", en: "Director · Geologist" } },
-  { id: "t2", order: 2, name: "I. Ouazzani", role: { fr: "Responsable géophysique", en: "Head of geophysics" } },
-  { id: "t3", order: 3, name: "M. El Amrani", role: { fr: "Hydrogéologue senior", en: "Senior hydrogeologist" } },
-  { id: "t4", order: 4, name: "L. Tazi", role: { fr: "Ingénieure environnement", en: "Environmental engineer" } },
+  { id: "t1", order: 1, name: "Dr. S. Benali", role: { fr: "Directeur · Géologue", en: "Director · Geologist" }, bio: { fr: "Vingt ans d’expérience en exploration minière et cartographie structurale au Maroc.", en: "Twenty years in mineral exploration and structural mapping in Morocco." } },
+  { id: "t2", order: 2, name: "I. Ouazzani", role: { fr: "Responsable géophysique", en: "Head of geophysics" }, bio: { fr: "Spécialiste des levés magnétiques et de l’inversion multi-méthodes.", en: "Specialist in magnetic surveys and multi-method inversion." } },
+  { id: "t3", order: 3, name: "M. El Amrani", role: { fr: "Hydrogéologue senior", en: "Senior hydrogeologist" }, bio: { fr: "Prospection ERT, essais de pompage et modélisation d’aquifères.", en: "ERT prospecting, pumping tests and aquifer modelling." } },
+  { id: "t4", order: 4, name: "L. Tazi", role: { fr: "Ingénieure environnement", en: "Environmental engineer" }, bio: { fr: "Études d’impact, états initiaux et plans de gestion environnementale.", en: "Impact studies, baselines and environmental management plans." } },
 ];
 
 export const adminPartners = [
