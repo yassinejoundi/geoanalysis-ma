@@ -902,39 +902,46 @@ button:focus-visible {
 
 .site-conversion {
   position: relative;
+  isolation: isolate;
   overflow: hidden;
-  border-top: 1px solid var(--border);
-  padding-block: clamp(48px, 7vw, 88px);
-  background: var(--background);
+  background-color: var(--brand-hover);
   color: var(--surface);
 }
 
-.site-conversion::before {
+.site-conversion::before,
+.site-conversion::after {
   position: absolute;
-  inset: auto 0 0;
-  height: 45%;
-  background: linear-gradient(180deg, transparent, var(--surface-green));
+  z-index: -1;
+  inset: 0;
   content: "";
+  pointer-events: none;
+}
+
+.site-conversion::before {
+  background: url("/cta-geology-sketch.png") center bottom / cover no-repeat;
+  opacity: 0.2;
+}
+
+.site-conversion::after {
+  background: linear-gradient(
+    125deg,
+    color-mix(in srgb, var(--brand-hover) 34%, transparent),
+    color-mix(in srgb, var(--brand) 24%, transparent)
+  );
 }
 
 .site-conversion-inner {
   position: relative;
   display: grid;
-  width: min(calc(100% - 40px), 1264px);
   grid-template-columns: minmax(0, 1.45fr) minmax(240px, 0.55fr);
   align-items: end;
   gap: clamp(32px, 6vw, 96px);
-  overflow: hidden;
-  padding-inline: clamp(28px, 5vw, 72px);
   padding-block: clamp(40px, 6vw, 72px);
-  border-radius: 3px;
-  background:
-    repeating-radial-gradient(circle at 103% 118%, transparent 0 38px, color-mix(in srgb, var(--brand-bright) 24%, transparent) 39px 40px),
-    linear-gradient(125deg, var(--brand-hover), color-mix(in srgb, var(--brand) 72%, var(--foreground)));
-  box-shadow: 0 26px 70px color-mix(in srgb, var(--foreground) 12%, transparent);
 }
 
 .site-conversion-copy {
+  position: relative;
+  z-index: 1;
   max-width: 760px;
 }
 
@@ -997,6 +1004,8 @@ button:focus-visible {
 }
 
 .site-conversion-actions {
+  position: relative;
+  z-index: 1;
   display: grid;
   gap: 12px;
 }
@@ -1842,7 +1851,6 @@ button:focus-visible {
   }
 
   .site-conversion-inner {
-    width: min(calc(100% - 28px), 1264px);
     padding-inline: 22px;
   }
 
