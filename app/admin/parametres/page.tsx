@@ -1,9 +1,5 @@
-import { adminSettings } from "@/lib/content/admin";
+import { SettingsForm } from "@/components/(admin)/parametres/settings-form";
+
 export default function AdminSettingsPage() {
-  return (
-    <main>
-      <h1>Paramètres</h1>
-      <p>{adminSettings.email}</p>
-    </main>
-  );
+  return <SettingsForm />;
 }

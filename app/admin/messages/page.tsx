@@ -1,9 +1,5 @@
-import { adminMessages } from "@/lib/content/admin";
+import { MessagesManager } from "@/components/(admin)/messages/messages-manager";
+
 export default function AdminMessagesPage() {
-  return (
-    <main>
-      <h1>Messages & demandes</h1>
-      <p>{adminMessages.length}</p>
-    </main>
-  );
+  return <MessagesManager />;
 }

@@ -5,6 +5,16 @@ export const cmsDataNotice = "Demo data resets when the page refreshes.";
 
 export type PublicationState = "published" | "draft";
 export type MessageStatus = "new" | "contacted" | "talking" | "quoted" | "won" | "lost";
+export type AdminMessage = {
+  id: string;
+  status: MessageStatus;
+  name: string;
+  company: string;
+  date: string;
+  type: LocalizedText;
+  file: string;
+  message: string;
+};
 
 export type AdminSubService = {
   id: string;
@@ -65,12 +75,15 @@ export const adminNews = [
 ];
 
 export const messageStatuses: { id: MessageStatus; label: LocalizedText }[] = [
-  { id: "new", label: { fr: "Nouveau", en: "New" } }, { id: "contacted", label: { fr: "Contacté", en: "Contacted" } },
-  { id: "talking", label: { fr: "En discussion", en: "In discussion" } }, { id: "quoted", label: { fr: "Devis envoyé", en: "Quote sent" } },
+  { id: "new", label: { fr: "Nouveau", en: "New" } }, { id: "contacted", label: { fr: "Qualifié", en: "Qualified" } },
+  { id: "quoted", label: { fr: "Devis envoyé", en: "Quote sent" } }, { id: "talking", label: { fr: "En cours", en: "In progress" } },
   { id: "won", label: { fr: "Gagné", en: "Won" } }, { id: "lost", label: { fr: "Perdu", en: "Lost" } },
 ];
 
-export const adminMessages = [
+const demoMessageText = "Bonjour, nous souhaitons un cadrage méthodologique et budgétaire pour une campagne de reconnaissance sur notre permis.";
+type AdminMessageRow = [string, MessageStatus, string, string, string, LocalizedText, string];
+
+export const adminMessages: AdminMessage[] = ([
   ["m1", "new", "Karim Alaoui", "Managem Exploration", "27.07.2026", { fr: "Exploration minière", en: "Mineral exploration" }, "permis-tata.pdf"],
   ["m2", "new", "Sophie Rey", "Voltalia Maroc", "26.07.2026", { fr: "Étude d’impact", en: "Impact study" }, ""],
   ["m3", "contacted", "Commune de Tahannaout", "Collectivité", "24.07.2026", { fr: "Ressources en eau", en: "Water resources" }, "cahier-charges.pdf"],
@@ -78,7 +91,16 @@ export const adminMessages = [
   ["m5", "quoted", "Aya Cherkaoui", "OCP Innovation", "18.07.2026", { fr: "Étude d’impact", en: "Impact study" }, "plan-site.dwg"],
   ["m6", "won", "Hicham Idrissi", "Sahara Metals", "10.07.2026", { fr: "Exploration minière", en: "Mineral exploration" }, ""],
   ["m7", "lost", "Nadia Fassi", "Groupe Atlas BTP", "02.07.2026", { fr: "Autre", en: "Other" }, ""],
-].map(([id, status, name, company, date, type, file]) => ({ id, status: status as MessageStatus, name, company, date, type: type as LocalizedText, file }));
+ ] satisfies AdminMessageRow[]).map(([id, status, name, company, date, type, file]) => ({
+  id,
+  status: status as MessageStatus,
+  name,
+  company,
+  date,
+  type: type as LocalizedText,
+  file,
+  message: demoMessageText,
+}));
 
 export const adminTeam = [
   { id: "t1", order: 1, name: "Dr. S. Benali", role: { fr: "Directeur · Géologue", en: "Director · Geologist" }, bio: { fr: "Vingt ans d’expérience en exploration minière et cartographie structurale au Maroc.", en: "Twenty years in mineral exploration and structural mapping in Morocco." } },
@@ -100,7 +122,7 @@ export const adminMedia = [
   ["schema-methodologie.svg", "SVG", "240 KB"], ["logo-geoanalysis.png", "PNG", "180 KB"], ["donnees-piezo-2026.csv", "CSV", "96 KB"],
 ].map(([name, kind, size]) => ({ name, kind, size }));
 
-export const adminSettings = { phone: "+212 5 24 00 00 00", email: "contact@geoanalysis.ma", address: "Quartier Industriel Sidi Ghanem, Marrakech", hours: "Lun – Ven · 8h30 – 18h00", linkedin: "linkedin.com/company/geoanalysis", seoTitle: "GEOANALYSIS — Géologie, géophysique & environnement", seoDescription: "Bureau d’études basé à Marrakech.", languages: "FR, EN" };
+export const adminSettings = { siteName: "GEOANALYSIS", languages: "FR, EN", phone: "+212 5 24 00 00 00", email: "contact@geoanalysis.ma", address: "Quartier Industriel Sidi Ghanem, Marrakech", hours: "Lun – Ven · 8h30 – 18h00", linkedin: "linkedin.com/company/geoanalysis", seoTitle: "GEOANALYSIS — Géologie, géophysique & environnement", seoDescription: "Bureau d’études basé à Marrakech." };
 
 const publishedProjects = adminProjects.filter(({ state }) => state === "published").length;
 const draftProjects = adminProjects.length - publishedProjects;

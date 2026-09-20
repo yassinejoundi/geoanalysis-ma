@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
+import { useAdminMessages } from "@/components/(admin)/shared/admin-messages-provider";
 import type { AdminDashboardPipelineStage } from "@/lib/content/admin";
 
 export function PipelinePanel({ stages }: { stages: AdminDashboardPipelineStage[] }) {
+  const { messages } = useAdminMessages();
+
   return (
     <section className="panel pipeline-panel" aria-labelledby="dashboard-pipeline-title">
       <div className="panel-heading">
@@ -14,7 +19,7 @@ export function PipelinePanel({ stages }: { stages: AdminDashboardPipelineStage[
         {stages.map((stage) => (
           <li className={`pipeline-stage pipeline-${stage.tone}`} key={stage.id}>
             <span className="pipeline-label">{stage.label}</span>
-            <span className="pipeline-value">{stage.count}</span>
+            <span className="pipeline-value">{messages.filter((message) => message.status === stage.id).length}</span>
           </li>
         ))}
       </ul>
