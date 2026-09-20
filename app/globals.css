@@ -3933,6 +3933,35 @@ a.partner-card-link:hover {
   outline-color: var(--brand);
 }
 
+.admin-password-control {
+  position: relative;
+}
+
+.admin-sign-in-form .admin-password-control input {
+  padding-right: 54px;
+}
+
+.admin-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  display: grid;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  transform: translateY(-50%);
+  place-items: center;
+  border: 0;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.admin-password-toggle:hover {
+  color: var(--brand);
+}
+
 .admin-sign-in-form .admin-action {
   min-height: 52px;
   justify-content: center;
