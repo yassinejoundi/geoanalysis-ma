@@ -45,21 +45,36 @@ export function SiteFooter({ locale }: { locale: Locale }) {
 
   return (
     <>
-      <aside
+      <section
         className="site-conversion"
         aria-labelledby="site-conversion-title">
         <div className="site-conversion-inner">
-          <div>
-            <h2 id="site-conversion-title">
-              {isFrench
-                ? "Un projet, une problématique de terrain ?"
-                : "A project or a field problem to solve?"}
-            </h2>
-            <p>
-              {isFrench
-                ? "Décrivez votre contexte : nous revenons vers vous avec une proposition méthodologique et un cadrage budgétaire sous 5 jours ouvrés."
-                : "Describe your context: we come back within 5 working days with a methodological proposal and a budget outline."}
+          <div className="site-conversion-copy">
+            <p className="site-conversion-eyebrow">
+              {isFrench ? "Démarrer une mission" : "Start a project"}
             </p>
+            <h2 id="site-conversion-title">
+              {isFrench ? (
+                <>
+                  Un projet, une problématique
+                  <span> de terrain ?</span>
+                </>
+              ) : (
+                <>
+                  A project or a problem
+                  <span> in the field?</span>
+                </>
+              )}
+            </h2>
+            <p className="site-conversion-description">
+              {isFrench
+                ? "Partagez-nous votre contexte. Sous 5 jours ouvrés, nous vous proposons une première lecture technique, une méthode et un cadrage budgétaire."
+                : "Share your context. Within 5 working days, we will provide an initial technical assessment, a method and a budget outline."}
+            </p>
+            <ul className="site-conversion-promises" aria-label={isFrench ? "Notre engagement" : "Our commitment"}>
+              <li>{isFrench ? "Échange confidentiel" : "Confidential discussion"}</li>
+              <li>{isFrench ? "Réponse sous 5 jours" : "Reply within 5 days"}</li>
+            </ul>
           </div>
           <div className="site-conversion-actions">
             <Link href={`/${locale}/contact`}>
@@ -70,13 +85,18 @@ export function SiteFooter({ locale }: { locale: Locale }) {
             </Link>
           </div>
         </div>
-      </aside>
+      </section>
       <footer className="site-footer">
         <div className="site-footer-inner">
           <div className="site-footer-grid">
-            <div>
+            <div className="site-footer-brand">
               <BrandLogo locale={locale} compact />
-              <p>
+              <p className="site-footer-statement">
+                {isFrench
+                  ? "Lire le terrain. Éclairer la décision."
+                  : "Read the terrain. Inform the decision."}
+              </p>
+              <p className="site-footer-description">
                 {isFrench
                   ? "Bureau d’études en géologie, géophysique et environnement. Marrakech, Maroc."
                   : "Consulting firm in geology, geophysics and environment. Marrakech, Morocco."}
@@ -97,7 +117,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
           </div>
           <div className="site-footer-bottom">
             <span>© 2026 GEOANALYSIS · Marrakech, Maroc</span>
-            <Link href={`/${locale}/design-system`}>Design System ↗</Link>
+            <Link href={`/${locale}/design-system`}>Design System</Link>
           </div>
         </div>
       </footer>
