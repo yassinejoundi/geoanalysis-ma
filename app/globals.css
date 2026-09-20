@@ -1025,6 +1025,36 @@ button:focus-visible {
   color: var(--surface);
 }
 
+@media (hover: hover) {
+  .site-conversion-actions a:hover {
+    background: var(--brand-pale);
+    border-color: var(--brand-pale);
+  }
+
+  .site-conversion-actions a + a:hover {
+    border-color: color-mix(in srgb, var(--surface) 76%, transparent);
+    background: color-mix(in srgb, var(--surface) 12%, transparent);
+    color: var(--surface);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .site-conversion-actions a {
+    transition:
+      transform 160ms ease-out,
+      box-shadow 160ms ease-out,
+      background-color 160ms ease-out,
+      border-color 160ms ease-out;
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .site-conversion-actions a:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(28, 38, 34, 0.16);
+  }
+}
+
 .site-conversion a:focus-visible {
   outline-color: var(--background);
 }
