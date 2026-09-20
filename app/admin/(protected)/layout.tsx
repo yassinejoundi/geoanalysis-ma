@@ -7,11 +7,11 @@ import { getAdminAccess } from "@/lib/server/auth";
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   await connection();
   const access = await getAdminAccess();
-  if ("response" in access && access.response.status === 401) redirect("/sign-in");
+  if ("response" in access && access.response.status === 401) redirect("/admin");
   if ("response" in access) {
     return (
-      <main className="admin-sign-in-page">
-        <section className="admin-sign-in-card" aria-labelledby="admin-denied-title">
+      <main className="admin-sign-in-page admin-access-denied-page">
+        <section className="admin-access-denied-card" aria-labelledby="admin-denied-title">
           <p className="admin-eyebrow">GEOANALYSIS · ADMINISTRATION</p>
           <h1 id="admin-denied-title">Accès refusé</h1>
           <p>Ce compte n’est pas autorisé à accéder à l’administration.</p>

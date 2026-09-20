@@ -6,7 +6,7 @@ import { AdminSignOutButton } from "@/components/(admin)/sign-in/admin-sign-out-
 export function AdminSidebar({ adminEmail }: { adminEmail: string }) {
   return (
     <aside className="sidebar" aria-label="Espace d’administration">
-      <Link className="brand" href="/admin" aria-label="GEOANALYSIS — Tableau de bord">
+      <Link className="brand" href="/admin/dashboard" aria-label="GEOANALYSIS — Tableau de bord">
         <Image className="brand-logo" src="/geoanalysis-logo.png" width={40} height={40} alt="" priority />
         <div>
           <div className="brand-name">GEO<span>ANALYSIS</span></div>

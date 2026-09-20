@@ -41,7 +41,7 @@ export function AdminRouteHeading() {
   return (
     <div className="page-heading">
       <div className="breadcrumb">Administration <span aria-hidden="true">/</span> {label}</div>
-      {href === "/admin" ? <h1>{label}</h1> : <div className="page-title">{label}</div>}
+      {href === "/admin/dashboard" ? <h1>{label}</h1> : <div className="page-title">{label}</div>}
     </div>
   );
 }

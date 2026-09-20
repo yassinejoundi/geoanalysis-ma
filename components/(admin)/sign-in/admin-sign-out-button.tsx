@@ -14,7 +14,7 @@ export function AdminSignOutButton() {
     if (busy) return;
     setBusy(true);
     await authClient.signOut();
-    router.replace("/sign-in");
+    router.replace("/admin");
     router.refresh();
   }
 

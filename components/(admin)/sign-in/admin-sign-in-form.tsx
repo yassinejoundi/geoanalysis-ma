@@ -28,7 +28,7 @@ export function AdminSignInForm() {
       return;
     }
 
-    router.replace("/admin");
+    router.replace("/admin/dashboard");
     router.refresh();
   }
 
@@ -42,10 +42,10 @@ export function AdminSignInForm() {
         <span>Mot de passe</span>
         <input id="admin-sign-in-password" name="password" type="password" autoComplete="current-password" maxLength={128} required />
       </label>
+      <p className="admin-sign-in-error" role="status" aria-live="polite">{error}</p>
       <button className="admin-action admin-action-primary" type="submit" disabled={busy}>
         {busy ? "Connexion…" : "Se connecter"}
       </button>
-      <p className="admin-sign-in-error" role="status" aria-live="polite">{error}</p>
     </form>
   );
 }

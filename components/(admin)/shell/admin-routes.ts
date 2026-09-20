@@ -1,5 +1,5 @@
 export const adminRoutes = [
-  { href: "/admin", label: "Tableau de bord" },
+  { href: "/admin/dashboard", label: "Tableau de bord" },
   { href: "/admin/expertises", label: "Expertises" },
   { href: "/admin/realisations", label: "Réalisations" },
   { href: "/admin/articles", label: "Articles" },
@@ -12,9 +12,5 @@ export const adminRoutes = [
 ] as const;
 
 export function getAdminRoute(pathname: string) {
-  return adminRoutes.find(({ href }) =>
-    href === "/admin"
-      ? pathname === href
-      : pathname === href || pathname.startsWith(`${href}/`),
-  ) ?? adminRoutes[0];
+  return adminRoutes.find(({ href }) => pathname === href || pathname.startsWith(`${href}/`)) ?? adminRoutes[0];
 }

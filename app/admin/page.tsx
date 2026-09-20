@@ -1,41 +1,45 @@
-import { DashboardContent } from "@/components/(admin)/dashboard/dashboard-content";
-import { messageStatuses, type AdminDashboardPipelineStage, type AdminDashboardSection, type AdminMessage, type AdminExpertise, type PublicationState } from "@/lib/content/admin";
-import { requireAdminRecords } from "@/lib/server/data/admin";
-import type { ProjectDraft } from "@/components/(admin)/realisations/project-editor-fields";
-import type { EditorialDraft } from "@/components/(admin)/editorial/editorial-editor-fields";
+import Image from "next/image";
+import Link from "next/link";
+import { AdminSignInForm } from "@/components/(admin)/sign-in/admin-sign-in-form";
 
-export default async function AdminPage() {
-  const [projects, expertises, articles, news, messages] = await Promise.all([
-    requireAdminRecords<ProjectDraft>("projects"),
-    requireAdminRecords<AdminExpertise>("expertises"),
-    requireAdminRecords<EditorialDraft>("articles"),
-    requireAdminRecords<EditorialDraft>("news"),
-    requireAdminRecords<AdminMessage>("messages"),
-  ]);
-  const editorial = [...articles, ...news];
-  const publishedProjects = projects.filter((item) => item.state === "published").length;
-  const publishedEditorial = editorial.filter((item) => item.state === "published").length;
-  const newMessages = messages.filter((item) => item.status === "new").length;
-  const stats = [
-    { label: "Projets", value: projects.length, detail: `${publishedProjects} publiés · ${projects.length - publishedProjects} brouillon${projects.length - publishedProjects === 1 ? "" : "s"}` },
-    { label: "Expertises", value: expertises.length, detail: `${expertises.reduce((total, item) => total + item.subServices.length, 0)} sous-services` },
-    { label: "Publications", value: editorial.length, detail: `${publishedEditorial} publiées · ${editorial.length - publishedEditorial} brouillon${editorial.length - publishedEditorial === 1 ? "" : "s"}` },
-    { label: "Messages", value: messages.length, detail: `${newMessages} nouveau${newMessages === 1 ? "" : "x"}` },
-  ];
-  const section = <T extends { id: string; state: PublicationState; title: { fr: string }; date: string }>(items: T[], id: string, title: string, href: string, allLabel: string): AdminDashboardSection => ({
-    id, title, href, allLabel,
-    items: items.slice(0, 4).map((item) => ({ id: item.id, title: item.title.fr, meta: item.date, state: item.state })),
-  });
-  const sections = [
-    section(projects, "projects", "Réalisations récentes", "/admin/realisations", "Voir toutes les réalisations"),
-    section(articles, "articles", "Articles récents", "/admin/articles", "Voir tous les articles"),
-    section(news, "news", "Actualités récentes", "/admin/actualites", "Voir toutes les actualités"),
-  ];
-  const pipeline: AdminDashboardPipelineStage[] = messageStatuses.map(({ id, label }) => ({
-    id,
-    label: label.fr,
-    count: messages.filter((item) => item.status === id).length,
-    tone: ({ new: "new", contacted: "qualified", talking: "progress", quoted: "sent", won: "won", lost: "lost" } as const)[id],
-  }));
-  return <DashboardContent stats={stats} sections={sections} pipeline={pipeline} messages={messages} />;
+export const metadata = {
+  title: "Connexion · GEOANALYSIS",
+  robots: { index: false, follow: false },
+};
+
+export default function SignInPage() {
+  return (
+    <main className="admin-sign-in-page">
+      <section className="admin-sign-in-panel" aria-labelledby="admin-sign-in-title">
+        <div className="admin-sign-in-card">
+          <p className="admin-eyebrow">Espace d’administration</p>
+          <h1 id="admin-sign-in-title">Connexion</h1>
+          <p className="admin-sign-in-intro">Accédez à votre espace de travail Geoanalysis.</p>
+          <AdminSignInForm />
+          <p className="admin-sign-in-note">Accès réservé aux comptes administrateurs autorisés.</p>
+        </div>
+        <Link className="admin-sign-in-back-link" href="/fr">
+          Retour au site <span aria-hidden="true">↗</span>
+        </Link>
+      </section>
+      <aside className="admin-sign-in-visual" aria-label="GEOANALYSIS, géomatique et territoires">
+        <Link className="admin-sign-in-brand" href="/fr" aria-label="GEOANALYSIS — Accueil du site">
+          <Image src="/geoanalysis-logo.png" width={48} height={48} alt="" priority />
+          <span>
+            <span className="admin-sign-in-brand-name">GEO<span>ANALYSIS</span></span>
+            <span className="admin-sign-in-brand-caption">Bureau d’études géomatiques</span>
+          </span>
+        </Link>
+        <div className="admin-sign-in-story">
+          <p className="admin-sign-in-kicker">Géomatique · Cartographie · Territoires</p>
+          <p className="admin-sign-in-statement">Lire le territoire.<br />Éclairer l’action.</p>
+          <p className="admin-sign-in-description">Pilotez les réalisations, expertises et publications de Geoanalysis depuis un espace unique.</p>
+        </div>
+        <div className="admin-sign-in-footer" aria-hidden="true">
+          <span>Administration</span>
+          <span>Maroc · FR</span>
+        </div>
+      </aside>
+    </main>
+  );
 }
