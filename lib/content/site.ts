@@ -29,6 +29,13 @@ export interface EditorialEntry {
   teaser: LocalizedText;
 }
 
+export interface MethodGroup {
+  id: string;
+  title: LocalizedText;
+  items: string[];
+  itemDescriptions: Record<string, LocalizedText>;
+}
+
 export const expertises: Expertise[] = [
   {
     id: "mining", slug: "exploration-miniere", number: "01",
@@ -92,8 +99,38 @@ export const articles: EditorialEntry[] = [
   { id: "a6", slug: "reglementation-miniere-environnementale-maroc", category: { fr: "Réglementation", en: "Regulation" }, date: "26.03.2026", readingTime: "9 min", title: { fr: "Cadre réglementaire minier et environnemental au Maroc", en: "Mining and environmental regulation in Morocco" }, teaser: { fr: "Panorama des textes applicables et des procédures d’instruction.", en: "Overview of applicable texts and review procedures." } },
 ];
 
-export const methodGroups = [
-  { id: "01", title: { fr: "Acquisition géophysique", en: "Geophysical acquisition" }, items: ["Magnétométrie", "Gravimétrie", "IP / résistivité", "Sismique légère"] },
-  { id: "02", title: { fr: "Géospatial & télédétection", en: "Geospatial & remote sensing" }, items: ["Sentinel-2 / ASTER", "Photogrammétrie drone", "SIG", "GNSS différentiel"] },
-  { id: "03", title: { fr: "Traitement, modélisation & laboratoire", en: "Processing, modelling & laboratory" }, items: ["Inversion 2D/3D", "Modélisation géologique", "Hydrodynamique", "Analyses"] },
+export const methodGroups: MethodGroup[] = [
+  {
+    id: "01",
+    title: { fr: "Acquisition géophysique", en: "Geophysical acquisition" },
+    items: ["Magnétométrie", "Gravimétrie", "IP / résistivité", "Sismique légère"],
+    itemDescriptions: {
+      Magnétométrie: { fr: "GSM-19 au sol et levés drone, maille 20–50 m.", en: "GSM-19 ground and drone surveys, 20–50 m grid." },
+      Gravimétrie: { fr: "Scintrex CG-6, corrections topographiques complètes.", en: "Scintrex CG-6, full terrain corrections." },
+      "IP / résistivité": { fr: "Dispositifs multi-électrodes 48 à 72 voies.", en: "Multi-electrode arrays, 48 to 72 channels." },
+      "Sismique légère": { fr: "Réfraction et MASW pour le proche surface.", en: "Refraction and MASW for near-surface." },
+    },
+  },
+  {
+    id: "02",
+    title: { fr: "Géospatial & télédétection", en: "Geospatial & remote sensing" },
+    items: ["Sentinel-2 / ASTER", "Photogrammétrie drone", "SIG", "GNSS différentiel"],
+    itemDescriptions: {
+      "Sentinel-2 / ASTER": { fr: "Compositions colorées et indices d’altération.", en: "Colour composites and alteration indices." },
+      "Photogrammétrie drone": { fr: "MNT et orthophotos centimétriques.", en: "DTM and centimetric orthophotos." },
+      SIG: { fr: "QGIS, bases PostGIS, atlas cartographiques.", en: "QGIS, PostGIS databases, map atlases." },
+      "GNSS différentiel": { fr: "Géoréférencement centimétrique des levés.", en: "Centimetric georeferencing of surveys." },
+    },
+  },
+  {
+    id: "03",
+    title: { fr: "Traitement, modélisation & laboratoire", en: "Processing, modelling & laboratory" },
+    items: ["Inversion 2D/3D", "Modélisation géologique", "Hydrodynamique", "Analyses"],
+    itemDescriptions: {
+      "Inversion 2D/3D": { fr: "Oasis montaj, Res2DInv, chaînes internes.", en: "Oasis montaj, Res2DInv, in-house chains." },
+      "Modélisation géologique": { fr: "Leapfrog Geo, modélisation implicite.", en: "Leapfrog Geo, implicit modelling." },
+      Hydrodynamique: { fr: "MODFLOW, bilans et scénarios d’exploitation.", en: "MODFLOW, balances and abstraction scenarios." },
+      Analyses: { fr: "Géochimie roches/sols, physico-chimie des eaux.", en: "Rock/soil geochemistry, water physico-chemistry." },
+    },
+  },
 ];
