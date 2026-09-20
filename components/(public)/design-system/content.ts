@@ -1,0 +1,36 @@
+import type { Locale } from "@/lib/i18n";
+
+export const designSystemCopy = {
+  fr: {
+    kicker: "Design System",
+    title: "Design System GEOANALYSIS",
+    description: "Fondations utilisées sur l’ensemble du site : couleurs, typographie, composants, espacement et comportement responsive.",
+    colors: "01 — Couleurs",
+    typography: "02 — Typographie",
+    buttons: "03 — Boutons & états",
+    spacing: "04 — Espacement & grille",
+    colorNames: ["Vert GEOANALYSIS", "Vert profond", "Anthracite minéral", "Gris pierre", "Blanc cassé", "Sable minéral", "Blanc pur", "Vert tendre"],
+    colorUses: ["Accent, appels à l’action, liens", "Survol, états actifs", "Texte, fond sombre", "Texte secondaire", "Fond principal", "Fond alterné", "Cartes", "Badges, sélections"],
+    typeLabels: ["Display / 300 · clamp(36–76px)", "H2 / 300 · 44px", "H3 / 500 · 21px", "Body / 300 · 16px · 1.7", "Label / Mono 500 · 11px · .18em"],
+    typeSamples: ["Géologie & géophysique", "De la donnée terrain à la décision", "Exploration minière", "Nos campagnes de terrain associent levés géophysiques, cartographie structurale et analyses géochimiques pour produire des livrables décisionnels.", "NOS EXPERTISES"],
+    buttonLabels: ["Primaire", "Primaire · survol", "Secondaire", "Secondaire · survol", "Lien texte", "Désactivé"],
+    spacingLabels: ["4 · xs", "8 · sm", "16 · md", "24 · lg", "48 · xl", "96 · 2xl"],
+    gridDescription: "Conteneur 1360 px · marges clamp(20–48 px) · 12 colonnes desktop / 8 tablette / 4 mobile · points de rupture 1024 / 768 / 480 px",
+  },
+  en: {
+    kicker: "Design System",
+    title: "GEOANALYSIS Design System",
+    description: "Foundations used across the site: colour, typography, components, spacing and responsive behaviour.",
+    colors: "01 — Colours",
+    typography: "02 — Typography",
+    buttons: "03 — Buttons & states",
+    spacing: "04 — Spacing & grid",
+    colorNames: ["GEOANALYSIS green", "Deep green", "Mineral charcoal", "Stone grey", "Warm white", "Mineral sand", "Pure white", "Soft green"],
+    colorUses: ["Accent, calls to action, links", "Hover, active states", "Text, dark surface", "Secondary text", "Main background", "Alternate background", "Cards", "Badges, selections"],
+    typeLabels: ["Display / 300 · clamp(36–76px)", "H2 / 300 · 44px", "H3 / 500 · 21px", "Body / 300 · 16px · 1.7", "Label / Mono 500 · 11px · .18em"],
+    typeSamples: ["Geology & geophysics", "From field data to decisions", "Mineral exploration", "Our field campaigns combine geophysical surveys, structural mapping and geochemical analysis to produce decision-ready deliverables.", "OUR EXPERTISE"],
+    buttonLabels: ["Primary", "Primary · hover", "Secondary", "Secondary · hover", "Text link", "Disabled"],
+    spacingLabels: ["4 · xs", "8 · sm", "16 · md", "24 · lg", "48 · xl", "96 · 2xl"],
+    gridDescription: "1360 px container · clamp(20–48 px) gutters · 12 desktop / 8 tablet / 4 mobile columns · 1024 / 768 / 480 px breakpoints",
+  },
+} satisfies Record<Locale, object>;
