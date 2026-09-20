@@ -1,9 +1,5 @@
-import { adminNews } from "@/lib/content/admin";
+import { EditorialManager } from "@/components/(admin)/editorial/editorial-manager";
+
 export default function AdminNewsPage() {
-  return (
-    <main>
-      <h1>Actualités</h1>
-      <p>{adminNews.length}</p>
-    </main>
-  );
+  return <EditorialManager key="actualites" kind="news" />;
 }

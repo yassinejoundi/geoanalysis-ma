@@ -1,9 +1,5 @@
-import { adminArticles } from "@/lib/content/admin";
+import { EditorialManager } from "@/components/(admin)/editorial/editorial-manager";
+
 export default function AdminArticlesPage() {
-  return (
-    <main>
-      <h1>Articles</h1>
-      <p>{adminArticles.length}</p>
-    </main>
-  );
+  return <EditorialManager key="articles" kind="article" />;
 }

@@ -40,13 +40,15 @@ export const adminExpertises: AdminExpertise[] = [
   ] },
 ];
 
-export const adminProjects = [
+type AdminProjectRow = [string, string, string, string, string, number, LocalizedText, PublicationState];
+
+export const adminProjects = ([
   ["p1", "s1", "s1b", "Anti-Atlas, Tata", "12.06.2026", 5, { fr: "Levé magnétique et IP sur permis cuprifère", en: "Magnetic and IP survey on a copper permit" }, "published"],
   ["p2", "s2", "s2b", "Essaouira", "28.05.2026", 8, { fr: "EIE d’un parc solaire de 120 MW", en: "EIA for a 120 MW solar plant" }, "published"],
   ["p3", "s3", "s3b", "Haouz, Marrakech", "14.05.2026", 6, { fr: "Implantation de 14 forages agricoles", en: "Siting of 14 agricultural boreholes" }, "published"],
   ["p4", "s1", "s1a", "Bou Azzer", "02.04.2026", 3, { fr: "Modélisation 3D d’un corps cobaltifère", en: "3D modelling of a cobalt-bearing body" }, "draft"],
   ["p5", "s2", "s2c", "Khouribga", "19.03.2026", 4, { fr: "Audit de conformité d’un site industriel", en: "Compliance audit of an industrial site" }, "published"],
-].map(([id, expertiseId, subServiceId, location, date, imageCount, title, state]) => ({ id, expertiseId, subServiceId, location, date, imageCount, title: title as LocalizedText, state: state as PublicationState }));
+] satisfies AdminProjectRow[]).map(([id, expertiseId, subServiceId, location, date, imageCount, title, state]) => ({ id, expertiseId, subServiceId, location, date, imageCount, title, state }));
 
 export const adminArticles = [
   { id: "a1", state: "published" as PublicationState, category: { fr: "Géophysique", en: "Geophysics" }, tags: ["méthodes", "ciblage"], date: "20.06.2026", readingTime: "8 min", title: { fr: "Choisir sa méthode géophysique selon le contexte", en: "Choosing a geophysical method for your setting" } },

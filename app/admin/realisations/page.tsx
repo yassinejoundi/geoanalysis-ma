@@ -1,9 +1,5 @@
-import { adminProjects } from "@/lib/content/admin";
+import { ProjectManager } from "@/components/(admin)/realisations/project-manager";
+
 export default function AdminProjectsPage() {
-  return (
-    <main>
-      <h1>Réalisations</h1>
-      <p>{adminProjects.length}</p>
-    </main>
-  );
+  return <ProjectManager />;
 }
