@@ -3962,6 +3962,11 @@ a.partner-card-link:hover {
   color: var(--brand);
 }
 
+.admin-password-toggle svg {
+  width: 16px;
+  height: 16px;
+}
+
 .admin-sign-in-form .admin-action {
   min-height: 52px;
   justify-content: center;
