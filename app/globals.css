@@ -90,6 +90,11 @@ button:focus-visible {
   transform: none;
 }
 
+.site-header a:focus-visible,
+.site-header button:focus-visible {
+  outline-color: var(--foreground);
+}
+
 .site-header {
   position: sticky;
   z-index: 60;
@@ -167,7 +172,7 @@ button:focus-visible {
   min-height: 44px;
   align-items: center;
   color: var(--muted);
-  font-size: clamp(11px, 0.84vw, 13px);
+  font-size: clamp(12px, 0.92vw, 13px);
   font-weight: 500;
   white-space: nowrap;
 }
@@ -236,11 +241,12 @@ button:focus-visible {
 .desktop-contact-action {
   padding-inline: 16px;
   white-space: nowrap;
+  background: var(--brand-hover);
 }
 
 .desktop-contact-action:hover,
 .mobile-contact-action:hover {
-  background: var(--brand-hover);
+  background: var(--foreground);
   color: white;
 }
 
@@ -256,6 +262,11 @@ button:focus-visible {
   cursor: pointer;
 }
 
+.menu-trigger[aria-expanded="true"] {
+  border-color: var(--brand);
+  background: var(--surface-green);
+}
+
 .menu-trigger span {
   display: block;
   width: 18px;
@@ -264,10 +275,37 @@ button:focus-visible {
   background: currentColor;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .menu-trigger span {
+    transition: transform 180ms ease, opacity 180ms ease;
+  }
+
+  .menu-trigger[aria-expanded="true"] span:nth-child(1) {
+    transform: translateY(6px) rotate(45deg);
+  }
+
+  .menu-trigger[aria-expanded="true"] span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .menu-trigger[aria-expanded="true"] span:nth-child(3) {
+    transform: translateY(-6px) rotate(-45deg);
+  }
+}
+
 .mobile-navigation {
+  max-height: calc(100vh - 78px);
+  max-height: calc(100dvh - 78px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 10px clamp(20px, 4vw, 48px) 26px;
+  padding-bottom: max(26px, env(safe-area-inset-bottom));
   border-top: 1px solid var(--border);
   background: var(--surface-soft);
+}
+
+.mobile-navigation[hidden] {
+  display: none;
 }
 
 .mobile-navigation li + li {
@@ -285,12 +323,14 @@ button:focus-visible {
 
 .mobile-navigation li a[aria-current="page"] {
   color: var(--foreground);
+  font-weight: 600;
 }
 
 .mobile-contact-action {
   width: 100%;
   min-height: 48px;
   margin-top: 18px;
+  background: var(--brand-hover);
   font-size: 14px;
 }
 
@@ -1635,6 +1675,11 @@ button:focus-visible {
     display: none;
   }
 
+  .language-switcher a {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
   .site-header-actions {
     margin-left: auto;
   }
@@ -1669,13 +1714,7 @@ button:focus-visible {
     gap: 8px;
   }
 
-  .language-switcher a {
-    min-width: 34px;
-  }
-
   .mobile-navigation {
-    max-height: calc(100vh - 78px);
-    overflow-y: auto;
     padding-inline: 20px;
   }
 

@@ -4,9 +4,9 @@ import { BrandLogo } from "@/components/shared/brand-logo";
 import { LanguageSwitcher } from "@/components/shared/language-switcher";
 import {
   MobileNavigation,
-  isActive,
+  NavigationLinks,
   type NavigationItem,
-} from "@/components/site/mobile-navigation";
+} from "@/components/site/site-navigation";
 import type { Locale } from "@/lib/i18n";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -47,8 +47,31 @@ const paths = [
 
 export function SiteHeader({ locale }: { locale: Locale }) {
   const pathname = usePathname();
-  const [openPath, setOpenPath] = useState<string | null>(null);
-  const open = openPath === pathname;
+  const previousPathname = useRef(pathname);
+
+  useEffect(() => {
+    if (previousPathname.current === pathname) return;
+    previousPathname.current = pathname;
+    document.getElementById("contenu-principal")?.focus();
+  }, [pathname]);
+
+  return (
+    <SiteHeaderContent
+      key={pathname}
+      locale={locale}
+      pathname={pathname}
+    />
+  );
+}
+
+function SiteHeaderContent({
+  locale,
+  pathname,
+}: {
+  locale: Locale;
+  pathname: string;
+}) {
+  const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const items: NavigationItem[] = paths.map((path, index) => ({
     href: `/${locale}${path}`,
@@ -59,7 +82,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
     if (!open) return;
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setOpenPath(null);
+        setOpen(false);
         triggerRef.current?.focus();
       }
     };
@@ -69,10 +92,10 @@ export function SiteHeader({ locale }: { locale: Locale }) {
 
   function toggleMenu() {
     if (open) {
-      setOpenPath(null);
+      setOpen(false);
       triggerRef.current?.focus();
     } else {
-      setOpenPath(pathname);
+      setOpen(true);
     }
   }
 
@@ -85,19 +108,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
           aria-label={
             locale === "fr" ? "Navigation principale" : "Main navigation"
           }>
-          <ul>
-            {items.map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  aria-current={
-                    isActive(pathname, item.href) ? "page" : undefined
-                  }>
-                  {item.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <NavigationLinks items={items} pathname={pathname} />
         </nav>
         <div className="site-header-actions">
           <LanguageSwitcher locale={locale} />
@@ -127,7 +138,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
         items={items}
         open={open}
         pathname={pathname}
-        onNavigate={() => setOpenPath(null)}
+        onNavigate={() => setOpen(false)}
       />
     </header>
   );
