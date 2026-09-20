@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { OverviewSection } from "@/components/(public)/bureau/overview-section";
+import { ValuesSection } from "@/components/(public)/bureau/values-section";
 import { PageHero } from "@/components/site/page-hero";
-import { firmContentBlocks, firmValues } from "@/lib/content/firm";
-import { isLocale, localize } from "@/lib/i18n";
+import { isLocale } from "@/lib/i18n";
 import { notFound } from "next/navigation";
 
 const pageCopy = {
@@ -32,13 +33,8 @@ export default async function FirmPage({ params }: { params: Promise<{ lang: str
   return (
     <main className="firm-page">
       <PageHero kicker={copy.title} title={copy.title} lead={copy.lead}/>
-      <section className="firm-overview" aria-label={lang === "fr" ? "Présentation du bureau" : "About the firm"}>
-        <div className="firm-image-placeholder" aria-hidden="true">{copy.imageLabel}</div>
-        <div className="firm-content-blocks">{firmContentBlocks.map((block) => <article className="firm-content-block" key={block.title.fr}><h2>{localize(block.title, lang)}</h2><p>{localize(block.description, lang)}</p></article>)}</div>
-      </section>
-      <section className="firm-values" aria-labelledby="firm-values-title">
-        <div className="firm-values-inner"><h2 id="firm-values-title">{copy.valuesTitle}</h2><ul>{firmValues.map((value) => <li key={value.number}><span className="firm-value-number">{value.number}</span><h3>{localize(value.title, lang)}</h3><p>{localize(value.description, lang)}</p></li>)}</ul></div>
-      </section>
+      <OverviewSection locale={lang} imageLabel={copy.imageLabel}/>
+      <ValuesSection locale={lang} title={copy.valuesTitle}/>
     </main>
   );
 }
