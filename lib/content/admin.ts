@@ -83,3 +83,87 @@ export const adminMedia = [
 ].map(([name, kind, size]) => ({ name, kind, size }));
 
 export const adminSettings = { phone: "+212 5 24 00 00 00", email: "contact@geoanalysis.ma", address: "Quartier Industriel Sidi Ghanem, Marrakech", hours: "Lun – Ven · 8h30 – 18h00", linkedin: "linkedin.com/company/geoanalysis", seoTitle: "GEOANALYSIS — Géologie, géophysique & environnement", seoDescription: "Bureau d’études basé à Marrakech.", languages: "FR, EN" };
+
+const publishedProjects = adminProjects.filter(({ state }) => state === "published").length;
+const draftProjects = adminProjects.length - publishedProjects;
+const editorialContent = [...adminArticles, ...adminNews];
+const publishedEditorialContent = editorialContent.filter(({ state }) => state === "published").length;
+const draftEditorialContent = editorialContent.length - publishedEditorialContent;
+const newMessageCount = adminMessages.filter(({ status }) => status === "new").length;
+
+export const adminDashboardStats = [
+  { label: "Projets", value: adminProjects.length, detail: `${publishedProjects} publiés · ${draftProjects} brouillon${draftProjects === 1 ? "" : "s"}` },
+  { label: "Expertises", value: adminExpertises.length, detail: `${adminExpertises.reduce((total, expertise) => total + expertise.subServices.length, 0)} sous-services` },
+  { label: "Publications", value: editorialContent.length, detail: `${publishedEditorialContent} publiées · ${draftEditorialContent} brouillon${draftEditorialContent === 1 ? "" : "s"}` },
+  { label: "Messages", value: adminMessages.length, detail: `${newMessageCount} nouveau${newMessageCount === 1 ? "" : "x"}` },
+];
+
+export type AdminDashboardSection = {
+  id: string;
+  title: string;
+  href: string;
+  allLabel: string;
+  items: { id: string; title: string; meta: string; state: PublicationState }[];
+};
+
+export const adminDashboardSections: AdminDashboardSection[] = [
+  {
+    id: "projects",
+    title: "Réalisations récentes",
+    href: "/admin/realisations",
+    allLabel: "Voir toutes les réalisations",
+    items: adminProjects.slice(0, 4).map((project) => ({
+      id: String(project.id),
+      title: project.title.fr,
+      meta: `${project.location} · ${project.date}`,
+      state: project.state,
+    })),
+  },
+  {
+    id: "articles",
+    title: "Articles récents",
+    href: "/admin/articles",
+    allLabel: "Voir tous les articles",
+    items: adminArticles.slice(0, 4).map((article) => ({
+      id: article.id,
+      title: article.title.fr,
+      meta: `${article.category.fr} · ${article.date}`,
+      state: article.state,
+    })),
+  },
+  {
+    id: "news",
+    title: "Actualités récentes",
+    href: "/admin/actualites",
+    allLabel: "Voir toutes les actualités",
+    items: adminNews.slice(0, 4).map((newsItem) => ({
+      id: newsItem.id,
+      title: newsItem.title.fr,
+      meta: `${newsItem.category.fr} · ${newsItem.date}`,
+      state: newsItem.state,
+    })),
+  },
+];
+
+const pipelineTones: Record<MessageStatus, "new" | "qualified" | "progress" | "sent" | "won" | "lost"> = {
+  new: "new",
+  contacted: "qualified",
+  talking: "progress",
+  quoted: "sent",
+  won: "won",
+  lost: "lost",
+};
+
+export type AdminDashboardPipelineStage = {
+  id: MessageStatus;
+  label: string;
+  count: number;
+  tone: (typeof pipelineTones)[MessageStatus];
+};
+
+export const adminDashboardPipeline: AdminDashboardPipelineStage[] = messageStatuses.map(({ id, label }) => ({
+  id,
+  label: label.fr,
+  count: adminMessages.filter((message) => message.status === id).length,
+  tone: pipelineTones[id],
+}));

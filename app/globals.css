@@ -1167,6 +1167,10 @@ button:focus-visible {
 }
 
 .site-link {
+  display: flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
   margin-top: 14px;
   padding: 10px;
   border: 1px solid rgba(251, 250, 247, 0.32);
@@ -1217,11 +1221,16 @@ button:focus-visible {
   color: var(--brand);
 }
 
-.page-heading h1 {
+.page-heading h1,
+.page-heading .page-title {
   margin: 7px 0 0;
   font-size: 18px;
   font-weight: 500;
   line-height: 1.15;
+}
+
+.page-heading .page-title {
+  display: block;
 }
 
 .topbar-actions {
@@ -1254,6 +1263,13 @@ button:focus-visible {
   stroke: currentColor;
   stroke-linecap: round;
   stroke-width: 1.5;
+}
+
+.search-preview span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .language-preview {
@@ -1380,6 +1396,9 @@ button:focus-visible {
 }
 
 .panel-link {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
   flex: none;
   color: var(--brand);
   font-family: var(--font-data);
