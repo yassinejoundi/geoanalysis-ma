@@ -1,7 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { contentSecurityPolicy } from "../lib/server/content-security-policy.ts";
 import { errorResponse, isSameOrigin, jsonResponse, readJsonBody, tooManyRequestsResponse } from "../lib/server/http.ts";
 import { parseContactSubmission, parseExpertiseFields, validateMediaFile } from "../lib/server/validation.ts";
+
+test("static CSP permits Next.js hydration without weakening production eval", () => {
+  const production = contentSecurityPolicy(false);
+  assert.match(production, /script-src 'self' 'unsafe-inline'/);
+  assert.doesNotMatch(production, /nonce-|strict-dynamic|'unsafe-eval'/);
+  assert.match(contentSecurityPolicy(true), /'unsafe-eval'/);
+});
 
 test("JSON boundary rejects malformed, oversized, and non-JSON requests", async () => {
   const malformed = await readJsonBody(new Request("https://site.test/api", {
