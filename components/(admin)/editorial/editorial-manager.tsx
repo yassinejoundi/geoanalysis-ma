@@ -11,24 +11,12 @@ import {
   type EditorialKind,
 } from "@/components/(admin)/editorial/editorial-editor-fields";
 import { useAdminSearch } from "@/components/(admin)/shell/admin-search";
-import { adminArticles, adminNews, type PublicationState } from "@/lib/content/admin";
+import type { PublicationState } from "@/lib/content/admin";
 import type { LocalizedText } from "@/lib/i18n";
+import { sendApiMutation } from "@/lib/api-client";
 
 type ToastMessage = { id: number; message: string };
 type EditorialFilter = "all" | "published" | "draft";
-
-function initialItems(kind: EditorialKind): EditorialDraft[] {
-  const items = kind === "article" ? adminArticles : adminNews;
-  return items.map((item) => ({
-    ...item,
-    category: { ...item.category },
-    tags: [...item.tags],
-    title: { ...item.title },
-    content: { fr: "", en: "" },
-    seoTitle: { ...item.title },
-    seoDescription: { fr: "", en: "" },
-  }));
-}
 
 function emptyItem(kind: EditorialKind, categories: LocalizedText[]): EditorialDraft {
   const category = categories[0] ?? { fr: "", en: "" };
@@ -58,8 +46,8 @@ function localizedSearchText(value: LocalizedText) {
   return `${value.fr} ${value.en}`;
 }
 
-export function EditorialManager({ kind }: { kind: EditorialKind }) {
-  const [items, setItems] = useState<EditorialDraft[]>(() => initialItems(kind));
+export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; initialItems: EditorialDraft[] }) {
+  const [items, setItems] = useState<EditorialDraft[]>(initialItems);
   const [publicationFilter, setPublicationFilter] = useState<EditorialFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [editor, setEditor] = useState<{ mode: "create" | "edit" } | null>(null);
@@ -78,8 +66,7 @@ export function EditorialManager({ kind }: { kind: EditorialKind }) {
   const pageTitle = isArticle ? "Articles" : "Actualités";
   const newItemLabel = isArticle ? "Nouvel article" : "Nouvelle actualité";
 
-  const categoryFixtures = isArticle ? adminArticles : adminNews;
-  const categories = categoryFixtures.reduce<LocalizedText[]>((result, item) => {
+  const categories = items.reduce<LocalizedText[]>((result, item) => {
     if (!result.some((category) => category.fr === item.category.fr)) result.push(item.category);
     return result;
   }, []);
@@ -99,36 +86,46 @@ export function EditorialManager({ kind }: { kind: EditorialKind }) {
     setEditor({ mode: item ? "edit" : "create" });
   }
 
-  function saveEditor() {
+  async function saveEditor() {
     if (!editor) return;
-    const nextItem = {
+    const draft = {
       ...editorValues,
-      id: editorValues.id || `${kind}-${globalThis.crypto.randomUUID()}`,
       date: editorValues.date || new Date().toLocaleDateString("fr-FR"),
       ...(isArticle && !editorValues.readingTime ? { readingTime: "5 min" } : {}),
     };
-    if (editor.mode === "create") setItems((current) => [...current, nextItem]);
-    else setItems((current) => current.map((item) => item.id === nextItem.id ? nextItem : item));
-    notify(
-      `${entityTitle} ${editor.mode === "create" ? (isArticle ? "ajouté." : "ajoutée.") : (isArticle ? "mis à jour." : "mise à jour.")}`,
-    );
-    setEditor(null);
+    const { id, ...fields } = draft;
+    const endpoint = isArticle ? "/api/admin/articles" : "/api/admin/actualites";
+    try {
+      const saved = editor.mode === "create"
+        ? await sendApiMutation<EditorialDraft>(endpoint, "POST", fields)
+        : await sendApiMutation<EditorialDraft>(`${endpoint}/${id}`, "PATCH", fields);
+      if (editor.mode === "create") setItems((current) => [...current, saved]);
+      else setItems((current) => current.map((item) => item.id === saved.id ? saved : item));
+      notify(`${entityTitle} ${editor.mode === "create" ? (isArticle ? "ajouté." : "ajoutée.") : (isArticle ? "mis à jour." : "mise à jour.")}`);
+      setEditor(null);
+    } catch (error) { notify(error instanceof Error ? error.message : "Enregistrement impossible."); }
   }
 
-  function togglePublication(item: EditorialDraft) {
+  async function togglePublication(item: EditorialDraft) {
     const state = nextPublicationState(item.state);
-    setItems((current) => current.map((entry) => entry.id === item.id ? { ...entry, state } : entry));
-    const statusLabel = isArticle
-      ? state === "published" ? "publié." : "dépublié."
-      : state === "published" ? "publiée." : "dépubliée.";
-    notify(`${entityTitle} « ${item.title.fr} » ${statusLabel}`);
+    const endpoint = isArticle ? "/api/admin/articles" : "/api/admin/actualites";
+    try {
+      const updated = await sendApiMutation<EditorialDraft>(`${endpoint}/${item.id}`, "PATCH", { state });
+      setItems((current) => current.map((entry) => entry.id === updated.id ? updated : entry));
+      const statusLabel = isArticle ? state === "published" ? "publié." : "dépublié." : state === "published" ? "publiée." : "dépubliée.";
+      notify(`${entityTitle} « ${item.title.fr} » ${statusLabel}`);
+    } catch (error) { notify(error instanceof Error ? error.message : "Mise à jour impossible."); }
   }
 
-  function confirmDelete() {
+  async function confirmDelete() {
     if (!pendingDelete) return;
-    setItems((current) => current.filter((item) => item.id !== pendingDelete.id));
-    notify(`${entityTitle} « ${pendingDelete.title.fr} » ${isArticle ? "supprimé." : "supprimée."}`);
-    setPendingDelete(null);
+    const endpoint = isArticle ? "/api/admin/articles" : "/api/admin/actualites";
+    try {
+      await sendApiMutation<void>(`${endpoint}/${pendingDelete.id}`, "DELETE");
+      setItems((current) => current.filter((item) => item.id !== pendingDelete.id));
+      notify(`${entityTitle} « ${pendingDelete.title.fr} » ${isArticle ? "supprimé." : "supprimée."}`);
+      setPendingDelete(null);
+    } catch (error) { notify(error instanceof Error ? error.message : "Suppression impossible."); }
   }
 
   const filteredItems = items.filter((item) => {
@@ -162,10 +159,6 @@ export function EditorialManager({ kind }: { kind: EditorialKind }) {
           {newItemLabel}
         </button>
       </header>
-
-      <p className="expertise-demo-notice">
-        Mode démo : les modifications sont réinitialisées au rechargement de la page.
-      </p>
 
       <section className="admin-filter-panel editorial-filter-panel" aria-label={`Filtres des ${pluralLabel}`}>
         <div className="admin-filter-heading">
@@ -254,7 +247,7 @@ export function EditorialManager({ kind }: { kind: EditorialKind }) {
       <ConfirmDialog
         open={pendingDelete !== null}
         itemName={pendingDelete?.title.fr ?? ""}
-        description={`Ce contenu sera retiré de la liste de démonstration des ${pluralLabel}.`}
+        description={`Ce contenu sera supprimé des ${pluralLabel}.`}
         actionLabel={`Supprimer ${entityLabel} « ${pendingDelete?.title.fr ?? ""} »`}
         onCancel={() => setPendingDelete(null)}
         onConfirm={confirmDelete}

@@ -11,15 +11,19 @@ export function ContactForm({ locale }: { locale: Locale }) {
   const copy = contactPageCopy[locale];
   const [errors, setErrors] = useState<ContactErrors>({});
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   function clearError(field: ErrorField) {
     setErrors((current) => ({ ...current, [field]: undefined }));
     setSubmitted(false);
+    setSubmitError("");
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
+    if (submitting) return;
     const data = new FormData(form);
     const emailInput = form.elements.namedItem("email") as HTMLInputElement;
     const nextErrors: ContactErrors = {};
@@ -44,11 +48,34 @@ export function ContactForm({ locale }: { locale: Locale }) {
       return;
     }
 
-    setSubmitted(true);
+    setSubmitting(true);
+    setSubmitError("");
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(Object.fromEntries(data.entries())),
+      });
+      if (!response.ok) {
+        setSubmitError(response.status === 429 ? copy.rateLimitError : copy.sendError);
+        return;
+      }
+      setSubmitted(true);
+      form.reset();
+    } catch {
+      setSubmitError(copy.sendError);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
     <form className="contact-form" noValidate onSubmit={handleSubmit}>
+      <label className="contact-honeypot" aria-hidden="true">
+        <span>Website</span>
+        <input name="website" type="text" tabIndex={-1} autoComplete="off" />
+      </label>
       <div className="contact-fields-grid">
         <label className="contact-field" htmlFor="contact-name">
           <span>
@@ -180,10 +207,11 @@ export function ContactForm({ locale }: { locale: Locale }) {
         ) : null}
       </label>
 
-      <button className="contact-submit" type="submit">
-        {copy.send}
+      <button className="contact-submit" type="submit" disabled={submitting}>
+        {submitting ? (locale === "fr" ? "Envoi…" : "Sending…") : copy.send}
       </button>
       <p className="contact-demo-note">{copy.demoNote}</p>
+      {submitError ? <p className="contact-field-error" role="alert">{submitError}</p> : null}
       {submitted ? (
         <p className="contact-success" role="status" aria-live="polite">
           {copy.success}

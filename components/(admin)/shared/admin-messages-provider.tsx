@@ -9,7 +9,7 @@ import {
   type ReactNode,
   type SetStateAction,
 } from "react";
-import { adminMessages, type AdminMessage } from "@/lib/content/admin";
+import type { AdminMessage } from "@/lib/content/admin";
 
 type AdminMessagesValue = {
   messages: AdminMessage[];
@@ -18,11 +18,7 @@ type AdminMessagesValue = {
 
 const AdminMessagesContext = createContext<AdminMessagesValue | null>(null);
 
-function initialMessages() {
-  return adminMessages.map((message) => ({ ...message, type: { ...message.type } }));
-}
-
-export function AdminMessagesProvider({ children }: { children: ReactNode }) {
+export function AdminMessagesProvider({ children, initialMessages }: { children: ReactNode; initialMessages: AdminMessage[] }) {
   const [messages, setMessages] = useState<AdminMessage[]>(initialMessages);
   const value = useMemo(() => ({ messages, setMessages }), [messages]);
 

@@ -5,7 +5,7 @@ import { ConfirmDialog } from "@/components/(admin)/shared/confirm-dialog";
 import { EditorDrawer } from "@/components/(admin)/shared/editor-drawer";
 import { Toast } from "@/components/(admin)/shared/toast";
 import { PartnerEditorFields, type PartnerDraft } from "@/components/(admin)/partenaires/partner-editor-fields";
-import { adminPartners } from "@/lib/content/admin";
+import { sendApiMutation } from "@/lib/api-client";
 
 type ToastMessage = { id: number; message: string };
 
@@ -30,8 +30,8 @@ function displayPartnerUrl(value: string) {
   return `${parsed.host}${parsed.pathname === "/" ? "" : parsed.pathname}${parsed.search}${parsed.hash}`;
 }
 
-export function PartnersManager() {
-  const [partners, setPartners] = useState<PartnerDraft[]>(() => adminPartners.map((partner) => ({ ...partner })));
+export function PartnersManager({ initialPartners }: { initialPartners: PartnerDraft[] }) {
+  const [partners, setPartners] = useState<PartnerDraft[]>(initialPartners);
   const [editorValues, setEditorValues] = useState<PartnerDraft | null>(null);
   const [pendingDelete, setPendingDelete] = useState<PartnerDraft | null>(null);
   const [urlError, setUrlError] = useState("");
@@ -51,7 +51,7 @@ export function PartnersManager() {
     });
   }
 
-  function saveEditor() {
+  async function saveEditor() {
     if (!editorValues) return;
     const url = normalizePartnerUrl(editorValues.url);
     if (!url) {
@@ -59,16 +59,23 @@ export function PartnersManager() {
       return;
     }
     const updatedPartner = { ...editorValues, name: editorValues.name.trim(), url };
-    setPartners((current) => current.map((partner) => partner.id === updatedPartner.id ? updatedPartner : partner));
-    notify(`${updatedPartner.name} mis à jour.`);
-    setEditorValues(null);
+    try {
+      const { id, ...fields } = updatedPartner;
+      await sendApiMutation(`/api/admin/partenaires/${id}`, "PATCH", fields);
+      setPartners((current) => current.map((partner) => partner.id === id ? updatedPartner : partner));
+      notify(`${updatedPartner.name} mis à jour.`);
+      setEditorValues(null);
+    } catch (error) { notify(error instanceof Error ? error.message : "Enregistrement impossible."); }
   }
 
-  function confirmDelete() {
+  async function confirmDelete() {
     if (!pendingDelete) return;
-    setPartners((current) => current.filter((partner) => partner.id !== pendingDelete.id));
-    notify(`${pendingDelete.name} supprimé.`);
-    setPendingDelete(null);
+    try {
+      await sendApiMutation<void>(`/api/admin/partenaires/${pendingDelete.id}`, "DELETE");
+      setPartners((current) => current.filter((partner) => partner.id !== pendingDelete.id));
+      notify(`${pendingDelete.name} supprimé.`);
+      setPendingDelete(null);
+    } catch (error) { notify(error instanceof Error ? error.message : "Suppression impossible."); }
   }
 
   return (
@@ -81,14 +88,10 @@ export function PartnersManager() {
         </div>
       </header>
 
-      <p className="expertise-demo-notice">
-        Mode démo : les modifications sont réinitialisées au rechargement de la page.
-      </p>
-
       {partners.length === 0 ? (
         <section className="admin-empty-state" aria-live="polite">
           <h2>Aucun partenaire</h2>
-          <p>Les partenaires supprimés ne sont pas conservés après le rechargement.</p>
+          <p>Aucun partenaire n’est enregistré.</p>
         </section>
       ) : (
         <ul className="partner-card-grid">
@@ -141,7 +144,7 @@ export function PartnersManager() {
       <ConfirmDialog
         open={pendingDelete !== null}
         itemName={pendingDelete?.name ?? ""}
-        description="Ce partenaire sera retiré de la liste de démonstration. Cette action ne peut pas être annulée."
+        description="Ce partenaire sera supprimé. Cette action ne peut pas être annulée."
         actionLabel={pendingDelete ? `Supprimer « ${pendingDelete.name} »` : "Supprimer le partenaire"}
         onCancel={() => setPendingDelete(null)}
         onConfirm={confirmDelete}

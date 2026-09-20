@@ -2,9 +2,10 @@
 
 import { useRef, useState, type FormEvent } from "react";
 import { Toast } from "@/components/(admin)/shared/toast";
-import { adminSettings } from "@/lib/content/admin";
+import type { adminSettings } from "@/lib/content/admin";
+import { sendApiMutation } from "@/lib/api-client";
 
-type SettingsValues = typeof adminSettings;
+export type SettingsValues = typeof adminSettings;
 type SettingKey = keyof SettingsValues;
 type SettingField = {
   key: SettingKey;
@@ -51,17 +52,11 @@ const settingsGroups: SettingsGroup[] = [
   },
 ];
 
-function initialSettings(): SettingsValues {
-  return {
-    ...adminSettings,
-    linkedin: /^https?:\/\//i.test(adminSettings.linkedin)
-      ? adminSettings.linkedin
-      : `https://${adminSettings.linkedin}`,
-  };
-}
-
-export function SettingsForm() {
-  const [values, setValues] = useState<SettingsValues>(initialSettings);
+export function SettingsForm({ initialSettings: storedSettings }: { initialSettings: SettingsValues }) {
+  const [values, setValues] = useState<SettingsValues>(() => ({
+    ...storedSettings,
+    linkedin: /^https?:\/\//i.test(storedSettings.linkedin) ? storedSettings.linkedin : `https://${storedSettings.linkedin}`,
+  }));
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastSequence = useRef(0);
 
@@ -69,13 +64,16 @@ export function SettingsForm() {
     setValues((current) => ({ ...current, [key]: value }));
   }
 
-  function saveSettings(event: FormEvent<HTMLFormElement>) {
+  async function saveSettings(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     toastSequence.current += 1;
-    setToast({
-      id: toastSequence.current,
-      message: "Paramètres enregistrés en mode démo. Rien n’a été sauvegardé de façon permanente.",
-    });
+    const settings = Object.fromEntries(settingsGroups.flatMap((group) => group.fields.map(({ key }) => [key, values[key]])));
+    try {
+      await sendApiMutation("/api/admin/parametres", "PATCH", settings);
+      setToast({ id: toastSequence.current, message: "Paramètres enregistrés." });
+    } catch (error) {
+      setToast({ id: toastSequence.current, message: error instanceof Error ? error.message : "Enregistrement impossible." });
+    }
   }
 
   return (
@@ -88,11 +86,7 @@ export function SettingsForm() {
         </div>
       </header>
 
-      <p className="expertise-demo-notice" id="settings-demo-notice">
-        Mode démo : les paramètres restent en mémoire sur cette page et sont réinitialisés au rechargement. Aucune donnée n’est enregistrée.
-      </p>
-
-      <form className="settings-form" aria-describedby="settings-demo-notice" onSubmit={saveSettings}>
+      <form className="settings-form" onSubmit={saveSettings}>
         <div className="settings-grid">
           {settingsGroups.map((group) => (
             <section className="settings-panel" key={group.id} aria-labelledby={`settings-${group.id}-title`}>

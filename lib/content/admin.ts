@@ -10,6 +10,8 @@ export type AdminMessage = {
   status: MessageStatus;
   name: string;
   company: string;
+  email?: string;
+  phone?: string;
   date: string;
   type: LocalizedText;
   file: string;

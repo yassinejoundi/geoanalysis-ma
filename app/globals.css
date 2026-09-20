@@ -1168,6 +1168,8 @@ button:focus-visible {
 }
 
 .profile-name {
+  max-width: 158px;
+  overflow-wrap: anywhere;
   font-size: 12px;
   font-weight: 500;
   line-height: 1.2;
@@ -1199,6 +1201,28 @@ button:focus-visible {
 .site-link span {
   margin-left: 4px;
   color: var(--brand-bright);
+}
+
+.admin-sign-out-button {
+  width: 100%;
+  min-height: 40px;
+  margin-top: 12px;
+  padding: 9px 10px;
+  border: 1px solid rgba(251, 250, 247, 0.32);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--background);
+  cursor: pointer;
+  font: 500 10px/1 var(--font-data);
+}
+
+.admin-sign-out-button:hover {
+  background: rgba(251, 250, 247, 0.08);
+}
+
+.admin-sign-out-button:focus-visible {
+  outline: 3px solid var(--brand-bright);
+  outline-offset: 3px;
 }
 
 .workspace {
@@ -1997,6 +2021,11 @@ button:focus-visible {
   background: var(--brand-hover);
 }
 
+.contact-submit:disabled {
+  cursor: wait;
+  opacity: 0.75;
+}
+
 .contact-submit:focus-visible {
   outline: 3px solid var(--brand-bright);
   outline-offset: 3px;
@@ -2009,6 +2038,15 @@ button:focus-visible {
   font-family: var(--font-data);
   font-size: 11px;
   line-height: 1.6;
+}
+
+.contact-honeypot {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
 }
 
 .contact-success {
@@ -3819,5 +3857,62 @@ a.partner-card-link:hover {
   .team-card article,
   .partner-card article {
     padding: 14px;
+  }
+}
+
+.admin-sign-in-page {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: clamp(20px, 5vw, 56px);
+}
+
+.admin-sign-in-card {
+  width: min(100%, 440px);
+  padding: clamp(24px, 5vw, 40px);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--surface);
+  box-shadow: 0 20px 60px rgba(28, 38, 34, 0.08);
+}
+
+.admin-sign-in-card h1 {
+  margin: 10px 0;
+  font-size: clamp(28px, 5vw, 36px);
+  letter-spacing: -0.035em;
+}
+
+.admin-sign-in-card > p:not(.admin-eyebrow) {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.admin-sign-in-form {
+  display: grid;
+  gap: 18px;
+  margin-top: 28px;
+}
+
+.admin-sign-in-form .admin-action {
+  min-height: 44px;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.admin-sign-in-form button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.admin-sign-in-error {
+  min-height: 1.5em;
+  margin: 0;
+  color: var(--danger);
+}
+
+@media (max-width: 420px) {
+  .admin-sign-in-page {
+    padding: 16px;
   }
 }

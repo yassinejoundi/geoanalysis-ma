@@ -1,8 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { AdminSidebarNavigation } from "./admin-navigation";
+import { AdminSignOutButton } from "@/components/(admin)/sign-in/admin-sign-out-button";
 
-export function AdminSidebar() {
+export function AdminSidebar({ adminEmail }: { adminEmail: string }) {
   return (
     <aside className="sidebar" aria-label="Espace d’administration">
       <Link className="brand" href="/admin" aria-label="GEOANALYSIS — Tableau de bord">
@@ -20,12 +21,13 @@ export function AdminSidebar() {
 
       <div className="sidebar-footer">
         <div className="profile">
-          <span className="avatar" aria-hidden="true">SB</span>
+          <span className="avatar" aria-hidden="true">{adminEmail.slice(0, 1).toLocaleUpperCase("fr")}</span>
           <div>
-            <div className="profile-name">S. Benali</div>
+            <div className="profile-name">{adminEmail}</div>
             <div className="profile-role">Administrateur</div>
           </div>
         </div>
+        <AdminSignOutButton />
         <Link className="site-link" href="/fr">Voir le site <span aria-hidden="true">↗</span></Link>
       </div>
     </aside>

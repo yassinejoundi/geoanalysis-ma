@@ -2,7 +2,7 @@
 
 import type { Dispatch, SetStateAction } from "react";
 import type { LocalizedText } from "@/lib/i18n";
-import { adminExpertises, type PublicationState } from "@/lib/content/admin";
+import type { AdminExpertise, PublicationState } from "@/lib/content/admin";
 
 export type ProjectImage = {
   id: string;
@@ -29,15 +29,17 @@ export type ProjectDraft = {
 export function ProjectEditorFields({
   values,
   onChange,
+  expertises,
   language,
   onLanguageChange,
 }: {
   values: ProjectDraft;
   onChange: Dispatch<SetStateAction<ProjectDraft>>;
+  expertises: AdminExpertise[];
   language: "fr" | "en";
   onLanguageChange: (language: "fr" | "en") => void;
 }) {
-  const selectedExpertise = adminExpertises.find(
+  const selectedExpertise = expertises.find(
     (expertise) => expertise.id === values.expertiseId,
   );
   const languageName = language === "fr" ? "Français" : "English";
@@ -129,7 +131,7 @@ export function ProjectEditorFields({
           }
         >
           <option value="">Choisir une expertise</option>
-          {adminExpertises.map((expertise) => (
+          {expertises.map((expertise) => (
             <option key={expertise.id} value={expertise.id}>
               {expertise.name.fr}
             </option>
@@ -205,7 +207,7 @@ export function ProjectEditorFields({
       <section className="project-gallery-editor" aria-labelledby="project-gallery-title">
         <div className="project-gallery-heading">
           <h3 id="project-gallery-title">Galerie du projet</h3>
-          <p>Les images restent des espaces réservés en mode démo.</p>
+          <p>Les éléments de galerie référencent les fichiers de la médiathèque.</p>
         </div>
         {values.gallery.length === 0 ? (
           <p className="project-gallery-empty">Aucune image dans la galerie.</p>

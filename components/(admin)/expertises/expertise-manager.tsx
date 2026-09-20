@@ -14,7 +14,7 @@ import type {
   AdminSubService,
   PublicationState,
 } from "@/lib/content/admin";
-import { adminExpertises } from "@/lib/content/admin";
+import { sendApiMutation } from "@/lib/api-client";
 
 type EditorTarget = {
   kind: "expertise" | "subService";
@@ -75,11 +75,10 @@ function nextPublicationState(state: PublicationState): PublicationState {
   return state === "published" ? "draft" : "published";
 }
 
-export function ExpertiseManager() {
-  const [expertises, setExpertises] =
-    useState<AdminExpertise[]>(adminExpertises);
+export function ExpertiseManager({ initialExpertises }: { initialExpertises: AdminExpertise[] }) {
+  const [expertises, setExpertises] = useState<AdminExpertise[]>(initialExpertises);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(
-    () => new Set(adminExpertises.map((expertise) => expertise.id)),
+    () => new Set(initialExpertises.map((expertise) => expertise.id)),
   );
   const [editor, setEditor] = useState<EditorTarget | null>(null);
   const [editorLanguage, setEditorLanguage] = useState<"fr" | "en">("fr");
@@ -124,71 +123,39 @@ export function ExpertiseManager() {
     });
   }
 
-  function saveEditor() {
+  async function saveEditor() {
     if (!editor) return;
-
-    if (editor.kind === "expertise") {
-      const nextExpertise: AdminExpertise = {
-        id: editor.expertiseId ?? "expertise-" + globalThis.crypto.randomUUID(),
-        state: editorValues.state,
-        slug: editorValues.slug.trim(),
-        name: { ...editorValues.name },
-        short: { ...editorValues.short },
-        subServices: [],
-      };
-
-      if (editor.mode === "create") {
-        setExpertises((current) => [...current, nextExpertise]);
-        setExpandedIds((current) => new Set(current).add(nextExpertise.id));
+    const values = {
+      state: editorValues.state,
+      name: editorValues.name,
+      short: editorValues.short,
+      ...(editor.kind === "expertise" ? { slug: editorValues.slug.trim() } : {}),
+    };
+    try {
+      let updated: AdminExpertise;
+      if (editor.kind === "expertise") {
+        const result = editor.mode === "create"
+          ? await sendApiMutation<AdminExpertise>("/api/admin/expertises", "POST", values)
+          : await sendApiMutation<AdminExpertise>(`/api/admin/expertises/${editor.expertiseId}`, "PATCH", values);
+        if (editor.mode === "create") {
+          setExpertises((current) => [...current, result]);
+          setExpandedIds((current) => new Set(current).add(result.id));
+          updated = result;
+        } else {
+          updated = result;
+          setExpertises((current) => current.map((item) => item.id === result.id ? result : item));
+        }
       } else {
-        setExpertises((current) =>
-          current.map((expertise) =>
-            expertise.id === editor.expertiseId
-              ? {
-                  ...expertise,
-                  state: nextExpertise.state,
-                  slug: nextExpertise.slug,
-                  name: nextExpertise.name,
-                  short: nextExpertise.short,
-                }
-              : expertise,
-          ),
-        );
+        updated = editor.mode === "create"
+          ? await sendApiMutation<AdminExpertise>("/api/admin/expertises", "POST", { kind: "subService", expertiseId: editor.expertiseId, ...values })
+          : await sendApiMutation<AdminExpertise>(`/api/admin/expertises/${editor.itemId}`, "PATCH", values);
+        setExpertises((current) => current.map((item) => item.id === updated.id ? updated : item));
       }
-    } else {
-      const nextSubService: AdminSubService = {
-        id: editor.itemId ?? "sub-service-" + globalThis.crypto.randomUUID(),
-        state: editorValues.state,
-        name: { ...editorValues.name },
-        short: { ...editorValues.short },
-      };
-
-      setExpertises((current) =>
-        current.map((expertise) => {
-          if (expertise.id !== editor.expertiseId) return expertise;
-          if (editor.mode === "create") {
-            return {
-              ...expertise,
-              subServices: [...expertise.subServices, nextSubService],
-            };
-          }
-          return {
-            ...expertise,
-            subServices: expertise.subServices.map((subService) =>
-              subService.id === editor.itemId ? nextSubService : subService,
-            ),
-          };
-        }),
-      );
+      notify(`${editorValues.name.fr.trim() || "Élément"} ${editor.mode === "create" ? "ajouté." : "mis à jour."}`);
+      setEditor(null);
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Enregistrement impossible.");
     }
-
-    const itemName = editorValues.name.fr.trim() || "Élément";
-    notify(
-      editor.mode === "create"
-        ? itemName + " ajouté."
-        : itemName + " mis à jour.",
-    );
-    setEditor(null);
   }
 
   function requestExpertiseDelete(expertise: AdminExpertise) {
@@ -201,8 +168,8 @@ export function ExpertiseManager() {
         childCount > 0
           ? "Cette expertise et ses " +
             childCount +
-            " sous-services seront retirés de la liste de démonstration."
-          : "Cette expertise sera retirée de la liste de démonstration.",
+            " sous-services seront supprimés."
+          : "Cette expertise sera supprimée.",
       actionLabel: "Supprimer l’expertise « " + expertise.name.fr + " »",
     });
   }
@@ -219,15 +186,16 @@ export function ExpertiseManager() {
       description:
         "Ce sous-service de « " +
         expertise.name.fr +
-        " » sera retiré de la liste de démonstration.",
+        " » sera supprimé.",
       actionLabel: "Supprimer le sous-service « " + subService.name.fr + " »",
     });
   }
 
-  function confirmDelete() {
+  async function confirmDelete() {
     if (!pendingDelete) return;
-
-    if (pendingDelete.kind === "expertise") {
+    try {
+      await sendApiMutation<void>(`/api/admin/expertises/${pendingDelete.kind === "expertise" ? pendingDelete.expertiseId : pendingDelete.itemId}`, "DELETE");
+      if (pendingDelete.kind === "expertise") {
       setExpertises((current) =>
         current.filter(
           (expertise) => expertise.id !== pendingDelete.expertiseId,
@@ -238,7 +206,7 @@ export function ExpertiseManager() {
         next.delete(pendingDelete.expertiseId);
         return next;
       });
-    } else {
+      } else {
       setExpertises((current) =>
         current.map((expertise) =>
           expertise.id === pendingDelete.expertiseId
@@ -251,69 +219,53 @@ export function ExpertiseManager() {
             : expertise,
         ),
       );
-    }
-
-    notify(pendingDelete.itemName + " supprimé.");
-    setPendingDelete(null);
+      }
+      notify(pendingDelete.itemName + " supprimé.");
+      setPendingDelete(null);
+    } catch (error) { notify(error instanceof Error ? error.message : "Suppression impossible."); }
   }
 
-  function toggleExpertisePublication(expertise: AdminExpertise) {
+  async function toggleExpertisePublication(expertise: AdminExpertise) {
     const state = nextPublicationState(expertise.state);
-    setExpertises((current) =>
-      current.map((item) =>
-        item.id === expertise.id ? { ...item, state } : item,
-      ),
-    );
-    notify(
-      expertise.name.fr + (state === "published" ? " publié." : " dépublié."),
-    );
+    try {
+      const updated = await sendApiMutation<AdminExpertise>(`/api/admin/expertises/${expertise.id}`, "PATCH", { state });
+      setExpertises((current) => current.map((item) => item.id === updated.id ? updated : item));
+      notify(expertise.name.fr + (state === "published" ? " publié." : " dépublié."));
+    } catch (error) { notify(error instanceof Error ? error.message : "Mise à jour impossible."); }
   }
 
-  function toggleSubServicePublication(
+  async function toggleSubServicePublication(
     expertiseId: string,
     subService: AdminSubService,
   ) {
     const state = nextPublicationState(subService.state);
-    setExpertises((current) =>
-      current.map((expertise) =>
-        expertise.id === expertiseId
-          ? {
-              ...expertise,
-              subServices: expertise.subServices.map((item) =>
-                item.id === subService.id ? { ...item, state } : item,
-              ),
-            }
-          : expertise,
-      ),
-    );
-    notify(
-      subService.name.fr + (state === "published" ? " publié." : " dépublié."),
-    );
+    try {
+      const updated = await sendApiMutation<AdminExpertise>(`/api/admin/expertises/${subService.id}`, "PATCH", { state });
+      setExpertises((current) => current.map((item) => item.id === updated.id ? updated : item));
+      notify(subService.name.fr + (state === "published" ? " publié." : " dépublié."));
+    } catch (error) { notify(error instanceof Error ? error.message : "Mise à jour impossible."); }
   }
 
-  function moveExpertise(expertiseId: string, direction: "up" | "down") {
-    setExpertises((current) => moveItem(current, expertiseId, direction));
+  async function moveExpertise(expertiseId: string, direction: "up" | "down") {
+    const reordered = moveItem(expertises, expertiseId, direction);
+    try {
+      await sendApiMutation("/api/admin/expertises", "PATCH", { order: reordered.map((item) => item.id) });
+      setExpertises(reordered);
+    } catch (error) { notify(error instanceof Error ? error.message : "Réorganisation impossible."); }
   }
 
-  function moveSubService(
+  async function moveSubService(
     expertiseId: string,
     subServiceId: string,
     direction: "up" | "down",
   ) {
-    setExpertises((current) =>
-      current.map((expertise) =>
-        expertise.id === expertiseId
-          ? {
-              ...expertise,
-              subServices: moveItem(
-                expertise.subServices,
-                subServiceId,
-                direction,
-              ),
-            }
-          : expertise,
-      ),
-    );
+    const parent = expertises.find((item) => item.id === expertiseId);
+    if (!parent) return;
+    const subServices = moveItem(parent.subServices, subServiceId, direction);
+    try {
+      const updated = await sendApiMutation<AdminExpertise>(`/api/admin/expertises/${expertiseId}`, "PATCH", { subServiceOrder: subServices.map((item) => item.id) });
+      setExpertises((current) => current.map((item) => item.id === updated.id ? updated : item));
+    } catch (error) { notify(error instanceof Error ? error.message : "Réorganisation impossible."); }
   }
 
   function toggleExpanded(expertiseId: string) {
@@ -351,11 +303,6 @@ export function ExpertiseManager() {
           Ajouter une expertise
         </button>
       </header>
-
-      <p className="expertise-demo-notice">
-        Mode démo : les modifications sont réinitialisées au rechargement de la
-        page.
-      </p>
 
       {expertises.length === 0 ? (
         <div className="expertise-empty-state">

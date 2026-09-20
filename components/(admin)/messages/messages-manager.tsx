@@ -6,6 +6,7 @@ import { EditorDrawer } from "@/components/(admin)/shared/editor-drawer";
 import { Toast } from "@/components/(admin)/shared/toast";
 import { useAdminMessages } from "@/components/(admin)/shared/admin-messages-provider";
 import { messageStatuses, type AdminMessage, type MessageStatus } from "@/lib/content/admin";
+import { sendApiMutation } from "@/lib/api-client";
 
 type ToastMessage = { id: number; message: string };
 
@@ -24,20 +25,24 @@ export function MessagesManager() {
     setEditorValues({ ...message, type: { ...message.type } });
   }
 
-  function changeStatus(message: AdminMessage, status: MessageStatus) {
+  async function changeStatus(message: AdminMessage, status: MessageStatus) {
     if (message.status === status) return;
-    setMessages((current) => current.map((item) => item.id === message.id ? { ...item, status } : item));
-    const label = messageStatuses.find((item) => item.id === status)?.label.fr.toLocaleLowerCase("fr");
-    notify(`${message.name} déplacé vers « ${label} » en mode démo.`);
+    try {
+      await sendApiMutation(`/api/admin/messages/${message.id}`, "PATCH", { status });
+      setMessages((current) => current.map((item) => item.id === message.id ? { ...item, status } : item));
+      const label = messageStatuses.find((item) => item.id === status)?.label.fr.toLocaleLowerCase("fr");
+      notify(`${message.name} déplacé vers « ${label} ».`);
+    } catch (error) { notify(error instanceof Error ? error.message : "Mise à jour impossible."); }
   }
 
-  function saveEditor() {
+  async function saveEditor() {
     if (!editorValues) return;
-    setMessages((current) => current.map((message) => message.id === editorValues.id
-      ? { ...message, status: editorValues.status }
-      : message));
-    notify(`Statut de ${editorValues.name} mis à jour en mode démo.`);
-    setEditorValues(null);
+    try {
+      await sendApiMutation(`/api/admin/messages/${editorValues.id}`, "PATCH", { status: editorValues.status });
+      setMessages((current) => current.map((message) => message.id === editorValues.id ? { ...message, status: editorValues.status } : message));
+      notify(`Statut de ${editorValues.name} mis à jour.`);
+      setEditorValues(null);
+    } catch (error) { notify(error instanceof Error ? error.message : "Mise à jour impossible."); }
   }
 
   return (
@@ -49,10 +54,6 @@ export function MessagesManager() {
           <p>Suivez les demandes entrantes et mettez à jour leur statut.</p>
         </div>
       </header>
-
-      <p className="expertise-demo-notice">
-        Mode démo : les statuts restent partagés dans l’administration jusqu’au rechargement. Aucun changement n’est enregistré de façon permanente.
-      </p>
 
       <p className="message-board-hint" id="message-board-hint">
         Choisissez un statut dans une carte pour déplacer la demande. Les colonnes peuvent défiler horizontalement.
@@ -121,7 +122,7 @@ export function MessagesManager() {
       <EditorDrawer
         open={editorValues !== null}
         heading="Détails du message"
-        description="Consultez les informations reçues et mettez à jour le statut en mode démo."
+        description="Consultez les informations reçues et mettez à jour leur statut."
         onClose={() => setEditorValues(null)}
         onSave={saveEditor}
       >

@@ -113,7 +113,7 @@ export function EditorialEditorFields({
       <div className="admin-field">
         <span>Image principale</span>
         <p className="admin-disabled-field">
-          Médiathèque indisponible en mode démo.
+          Les fichiers peuvent être ajoutés depuis la médiathèque.
         </p>
       </div>
 
@@ -126,7 +126,7 @@ export function EditorialEditorFields({
           aria-describedby="editorial-content-help"
         />
         <span className="admin-field-help" id="editorial-content-help">
-          Le contenu texte est disponible. L’éditeur riche n’est pas inclus en mode démo.
+          Le contenu est enregistré comme texte brut.
         </span>
       </label>
 

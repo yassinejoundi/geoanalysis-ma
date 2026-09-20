@@ -66,7 +66,7 @@ export function MessageEditorFields({
         ) : (
           <p>Aucun fichier joint à cette demande.</p>
         )}
-        <p className="admin-field-help">Métadonnées de démonstration uniquement ; le téléchargement n’est pas disponible.</p>
+        <p className="admin-field-help">Le nom du fichier joint est fourni avec le message.</p>
       </section>
     </>
   );

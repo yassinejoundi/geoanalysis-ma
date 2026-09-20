@@ -5,16 +5,12 @@ import { ConfirmDialog } from "@/components/(admin)/shared/confirm-dialog";
 import { EditorDrawer } from "@/components/(admin)/shared/editor-drawer";
 import { Toast } from "@/components/(admin)/shared/toast";
 import { TeamEditorFields, type TeamDraft } from "@/components/(admin)/equipe/team-editor-fields";
-import { adminTeam } from "@/lib/content/admin";
+import { sendApiMutation } from "@/lib/api-client";
 
 type ToastMessage = { id: number; message: string };
 
-export function TeamManager() {
-  const [members, setMembers] = useState<TeamDraft[]>(() => adminTeam.map((member) => ({
-    ...member,
-    role: { ...member.role },
-    bio: { ...member.bio },
-  })));
+export function TeamManager({ initialMembers }: { initialMembers: TeamDraft[] }) {
+  const [members, setMembers] = useState<TeamDraft[]>(initialMembers);
   const [editorValues, setEditorValues] = useState<TeamDraft | null>(null);
   const [editorLanguage, setEditorLanguage] = useState<"fr" | "en">("fr");
   const [pendingDelete, setPendingDelete] = useState<TeamDraft | null>(null);
@@ -32,7 +28,7 @@ export function TeamManager() {
     setEditorValues({ ...member, role: { ...member.role }, bio: { ...member.bio } });
   }
 
-  function saveEditor() {
+  async function saveEditor() {
     if (!editorValues) return;
     const updatedMember = {
       ...editorValues,
@@ -40,37 +36,51 @@ export function TeamManager() {
       role: { ...editorValues.role },
       bio: { ...editorValues.bio },
     };
-    setMembers((current) => {
+    const nextMembers = (() => {
+      const current = members;
       const reordered = current.filter((member) => member.id !== updatedMember.id)
         .sort((left, right) => left.order - right.order);
       const targetIndex = Math.min(reordered.length, Math.max(0, Math.round(updatedMember.order) - 1));
       reordered.splice(targetIndex, 0, updatedMember);
       return reordered.map((member, index) => ({ ...member, order: index + 1 }));
-    });
-    notify(`${updatedMember.name} mis à jour.`);
-    setEditorValues(null);
+    })();
+    try {
+      const { id, ...fields } = updatedMember;
+      await sendApiMutation(`/api/admin/equipe/${id}`, "PATCH", fields);
+      await sendApiMutation("/api/admin/equipe", "PATCH", { order: nextMembers.map((member) => member.id) });
+      setMembers(nextMembers);
+      notify(`${updatedMember.name} mis à jour.`);
+      setEditorValues(null);
+    } catch (error) { notify(error instanceof Error ? error.message : "Enregistrement impossible."); }
   }
 
-  function moveMember(member: TeamDraft, direction: -1 | 1) {
+  async function moveMember(member: TeamDraft, direction: -1 | 1) {
     const targetPosition = member.order + direction;
-    setMembers((current) => {
-      const reordered = [...current].sort((left, right) => left.order - right.order);
-      const currentIndex = reordered.findIndex((entry) => entry.id === member.id);
-      const targetIndex = currentIndex + direction;
-      if (currentIndex < 0 || targetIndex < 0 || targetIndex >= reordered.length) return current;
-      [reordered[currentIndex], reordered[targetIndex]] = [reordered[targetIndex], reordered[currentIndex]];
-      return reordered.map((entry, index) => ({ ...entry, order: index + 1 }));
-    });
-    notify(`${member.name} déplacé à la position ${targetPosition}.`);
+    const reordered = [...members].sort((left, right) => left.order - right.order);
+    const currentIndex = reordered.findIndex((entry) => entry.id === member.id);
+    const targetIndex = currentIndex + direction;
+    if (currentIndex < 0 || targetIndex < 0 || targetIndex >= reordered.length) return;
+    [reordered[currentIndex], reordered[targetIndex]] = [reordered[targetIndex], reordered[currentIndex]];
+    const next = reordered.map((entry, index) => ({ ...entry, order: index + 1 }));
+    try {
+      await sendApiMutation("/api/admin/equipe", "PATCH", { order: next.map((entry) => entry.id) });
+      setMembers(next);
+      notify(`${member.name} déplacé à la position ${targetPosition}.`);
+    } catch (error) { notify(error instanceof Error ? error.message : "Réorganisation impossible."); }
   }
 
-  function confirmDelete() {
+  async function confirmDelete() {
     if (!pendingDelete) return;
-    setMembers((current) => current.filter((member) => member.id !== pendingDelete.id)
+    const next = members.filter((member) => member.id !== pendingDelete.id)
       .sort((left, right) => left.order - right.order)
-      .map((member, index) => ({ ...member, order: index + 1 })));
-    notify(`${pendingDelete.name} supprimé.`);
-    setPendingDelete(null);
+      .map((member, index) => ({ ...member, order: index + 1 }));
+    try {
+      await sendApiMutation<void>(`/api/admin/equipe/${pendingDelete.id}`, "DELETE");
+      if (next.length) await sendApiMutation("/api/admin/equipe", "PATCH", { order: next.map((member) => member.id) });
+      setMembers(next);
+      notify(`${pendingDelete.name} supprimé.`);
+      setPendingDelete(null);
+    } catch (error) { notify(error instanceof Error ? error.message : "Suppression impossible."); }
   }
 
   return (
@@ -83,14 +93,10 @@ export function TeamManager() {
         </div>
       </header>
 
-      <p className="expertise-demo-notice">
-        Mode démo : les modifications sont réinitialisées au rechargement de la page.
-      </p>
-
       {sortedMembers.length === 0 ? (
         <section className="admin-empty-state" aria-live="polite">
           <h2>Aucun membre dans l’équipe</h2>
-          <p>Les membres supprimés ne sont pas conservés après le rechargement.</p>
+          <p>Aucun membre n’est enregistré.</p>
         </section>
       ) : (
         <ul className="team-card-grid">
@@ -151,7 +157,7 @@ export function TeamManager() {
       <ConfirmDialog
         open={pendingDelete !== null}
         itemName={pendingDelete?.name ?? ""}
-        description="Ce membre sera retiré de la liste de démonstration. Cette action ne peut pas être annulée."
+        description="Ce membre sera supprimé. Cette action ne peut pas être annulée."
         actionLabel={pendingDelete ? `Supprimer « ${pendingDelete.name} »` : "Supprimer le membre"}
         onCancel={() => setPendingDelete(null)}
         onConfirm={confirmDelete}
