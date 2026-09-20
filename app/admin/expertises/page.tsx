@@ -1,9 +1,5 @@
-import { adminExpertises } from "@/lib/content/admin";
+import { ExpertiseManager } from "@/components/(admin)/expertises/expertise-manager";
+
 export default function AdminExpertisePage() {
-  return (
-    <main>
-      <h1>Expertises & services</h1>
-      <p>{adminExpertises.length}</p>
-    </main>
-  );
+  return <ExpertiseManager />;
 }

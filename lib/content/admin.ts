@@ -6,21 +6,37 @@ export const cmsDataNotice = "Demo data resets when the page refreshes.";
 export type PublicationState = "published" | "draft";
 export type MessageStatus = "new" | "contacted" | "talking" | "quoted" | "won" | "lost";
 
-export const adminExpertises = [
-  { id: "s1", state: "published" as PublicationState, slug: "exploration-miniere", name: { fr: "Exploration minière", en: "Mineral exploration" }, subServices: [
-    { id: "s1a", state: "published" as PublicationState, name: { fr: "Exploration géologique", en: "Geological exploration" } },
-    { id: "s1b", state: "published" as PublicationState, name: { fr: "Exploration géophysique", en: "Geophysical exploration" } },
-    { id: "s1c", state: "draft" as PublicationState, name: { fr: "Télédétection & SIG", en: "Remote sensing & GIS" } },
+export type AdminSubService = {
+  id: string;
+  state: PublicationState;
+  name: LocalizedText;
+  short: LocalizedText;
+};
+
+export type AdminExpertise = {
+  id: string;
+  state: PublicationState;
+  slug: string;
+  name: LocalizedText;
+  short: LocalizedText;
+  subServices: AdminSubService[];
+};
+
+export const adminExpertises: AdminExpertise[] = [
+  { id: "s1", state: "published", slug: "exploration-miniere", name: { fr: "Exploration minière", en: "Mineral exploration" }, short: { fr: "Levés géophysiques, cartographie structurale et géochimie pour cibler et sécuriser les projets miniers.", en: "Geophysical surveys, structural mapping and geochemistry to target and de-risk mining projects." }, subServices: [
+    { id: "s1a", state: "published", name: { fr: "Exploration géologique", en: "Geological exploration" }, short: { fr: "Cartographie de terrain et analyse structurale.", en: "Field mapping and structural analysis." } },
+    { id: "s1b", state: "published", name: { fr: "Exploration géophysique", en: "Geophysical exploration" }, short: { fr: "Magnétisme, gravimétrie, IP et résistivité.", en: "Magnetics, gravity, IP and resistivity." } },
+    { id: "s1c", state: "draft", name: { fr: "Télédétection & SIG", en: "Remote sensing & GIS" }, short: { fr: "Traitement satellite et bases géospatiales.", en: "Satellite processing and geospatial databases." } },
   ] },
-  { id: "s2", state: "published" as PublicationState, slug: "etudes-impact", name: { fr: "Études d’impact environnemental", en: "Environmental impact studies" }, subServices: [
-    { id: "s2a", state: "published" as PublicationState, name: { fr: "État initial", en: "Baseline study" } },
-    { id: "s2b", state: "published" as PublicationState, name: { fr: "EIE réglementaire", en: "Regulatory EIA" } },
-    { id: "s2c", state: "published" as PublicationState, name: { fr: "PGES & suivi", en: "ESMP & monitoring" } },
+  { id: "s2", state: "published", slug: "etudes-impact", name: { fr: "Études d’impact environnemental", en: "Environmental impact studies" }, short: { fr: "EIE réglementaires, états initiaux et plans de gestion conformes au cadre marocain.", en: "Regulatory EIA, baseline studies and management plans compliant with Moroccan law." }, subServices: [
+    { id: "s2a", state: "published", name: { fr: "État initial", en: "Baseline study" }, short: { fr: "Milieux physique, biologique et humain.", en: "Physical, biological and human settings." } },
+    { id: "s2b", state: "published", name: { fr: "EIE réglementaire", en: "Regulatory EIA" }, short: { fr: "Dossier complet loi 12-03.", en: "Full Law 12-03 dossier." } },
+    { id: "s2c", state: "published", name: { fr: "PGES & suivi", en: "ESMP & monitoring" }, short: { fr: "Mesures chiffrées et indicateurs.", en: "Costed measures and indicators." } },
   ] },
-  { id: "s3", state: "published" as PublicationState, slug: "ressources-en-eau", name: { fr: "Ressources en eau", en: "Water resources" }, subServices: [
-    { id: "s3a", state: "published" as PublicationState, name: { fr: "Prospection hydrogéologique", en: "Hydrogeological prospecting" } },
-    { id: "s3b", state: "published" as PublicationState, name: { fr: "Implantation de forages", en: "Borehole siting" } },
-    { id: "s3c", state: "draft" as PublicationState, name: { fr: "Modélisation d’aquifère", en: "Aquifer modelling" } },
+  { id: "s3", state: "published", slug: "ressources-en-eau", name: { fr: "Ressources en eau", en: "Water resources" }, short: { fr: "Prospection hydrogéologique, implantation de forages et gestion durable des aquifères.", en: "Hydrogeological prospecting, borehole siting and sustainable aquifer management." }, subServices: [
+    { id: "s3a", state: "published", name: { fr: "Prospection hydrogéologique", en: "Hydrogeological prospecting" }, short: { fr: "ERT et sondages électriques.", en: "ERT and electrical soundings." } },
+    { id: "s3b", state: "published", name: { fr: "Implantation de forages", en: "Borehole siting" }, short: { fr: "Ciblage et supervision de forage.", en: "Targeting and drilling supervision." } },
+    { id: "s3c", state: "draft", name: { fr: "Modélisation d’aquifère", en: "Aquifer modelling" }, short: { fr: "Bilans et scénarios d’exploitation.", en: "Balances and abstraction scenarios." } },
   ] },
 ];
 
