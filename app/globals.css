@@ -3991,8 +3991,11 @@ a.partner-card-link:hover {
   padding: clamp(28px, 5vw, 68px);
   background-color: var(--sidebar);
   background-image:
-    repeating-radial-gradient(ellipse at 78% 52%, transparent 0 25px, color-mix(in srgb, var(--brand-bright) 20%, transparent) 26px 27px, transparent 28px 48px),
-    radial-gradient(ellipse at 78% 52%, color-mix(in srgb, var(--brand) 32%, transparent), transparent 58%);
+    linear-gradient(145deg, color-mix(in srgb, var(--sidebar) 68%, transparent), color-mix(in srgb, var(--brand-hover) 62%, transparent)),
+    url("/admin-sign-in-terrain.webp");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
   color: var(--surface);
 }
 
