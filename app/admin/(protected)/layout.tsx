@@ -2,7 +2,10 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import type { ReactNode } from "react";
 import { AdminShell } from "@/components/(admin)/shell/admin-shell";
+import { AdminMessagesProvider } from "@/components/(admin)/shared/admin-messages-provider";
+import type { AdminMessage } from "@/lib/content/admin";
 import { getAdminAccess } from "@/lib/server/auth";
+import { requireAdminRecords } from "@/lib/server/data/admin";
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   await connection();
@@ -20,5 +23,11 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     );
   }
 
-  return <AdminShell adminEmail={access.actor.email}>{children}</AdminShell>;
+  const messages = await requireAdminRecords<AdminMessage>("messages");
+
+  return (
+    <AdminMessagesProvider initialMessages={messages}>
+      <AdminShell adminEmail={access.actor.email}>{children}</AdminShell>
+    </AdminMessagesProvider>
+  );
 }
