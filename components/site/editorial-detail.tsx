@@ -31,22 +31,36 @@ export function EditorialDetail({
             <span aria-hidden="true">←</span> {copy.back}
           </Link>
           <div className="editorial-detail-meta">
-            <span className="editorial-detail-category">{localize(entry.category, locale)}</span>
+            <span className="editorial-detail-category">
+              {localize(entry.category, locale)}
+            </span>
             <span>{entry.date}</span>
-            {entry.readingTime ? <span>{entry.readingTime} {copy.read}</span> : null}
+            {entry.readingTime ? (
+              <span>
+                {entry.readingTime} {copy.read}
+              </span>
+            ) : null}
           </div>
           <h1>{localize(entry.title, locale)}</h1>
-          <p className="editorial-detail-teaser">{localize(entry.teaser, locale)}</p>
+          <p className="editorial-detail-teaser">
+            {localize(entry.teaser, locale)}
+          </p>
         </div>
       </section>
 
       <article className="editorial-detail-body">
-        <div className="editorial-detail-image" aria-hidden="true">{entry.imageLabel}</div>
+        <div className="editorial-detail-image" aria-hidden="true">
+          {entry.imageLabel}
+        </div>
         <div className="editorial-detail-copy">
-          {entry.body[locale].map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+          {entry.body[locale].map((paragraph) => (
+            <p key={paragraph}>{paragraph}</p>
+          ))}
         </div>
         {copy.contact ? (
-          <Link className="editorial-contact-link" href={`/${locale}/contact`}>{copy.contact}</Link>
+          <Link className="editorial-contact-link" href={`/${locale}/contact`}>
+            {copy.contact}
+          </Link>
         ) : null}
       </article>
 
@@ -55,7 +69,14 @@ export function EditorialDetail({
           <h2>{copy.related}</h2>
           <div className="editorial-related-grid">
             {relatedEntries.map((related) => (
-              <EditorialCard key={related.id} entry={related} locale={locale} kind={kind} readLabel={copy.read} headingLevel={3} />
+              <EditorialCard
+                key={related.id}
+                entry={related}
+                locale={locale}
+                kind={kind}
+                readLabel={copy.read}
+                headingLevel={3}
+              />
             ))}
           </div>
         </div>

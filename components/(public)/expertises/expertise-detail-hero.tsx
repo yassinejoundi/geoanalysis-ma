@@ -29,7 +29,12 @@ export function ExpertiseDetailHero({
         title={localize(expertise.name, locale)}
         lead={localize(detail.intro, locale)}
       />
-      <ul className="expertise-detail-services" aria-label={localize({ fr: "Sous-services", en: "Sub-services" }, locale)}>
+      <ul
+        className="expertise-detail-services"
+        aria-label={localize(
+          { fr: "Sous-services", en: "Sub-services" },
+          locale,
+        )}>
         {expertise.subServices.map((service) => (
           <li key={service.name.fr}>{localize(service.name, locale)}</li>
         ))}

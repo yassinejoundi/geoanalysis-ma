@@ -23,7 +23,11 @@ export function ExpertiseRelatedProjectsSection({
         <ul className="expertise-project-grid">
           {projects.map((project) => (
             <li key={project.id}>
-              <ProjectCard project={project} locale={locale} imageLabel={imageLabel} />
+              <ProjectCard
+                project={project}
+                locale={locale}
+                imageLabel={imageLabel}
+              />
             </li>
           ))}
         </ul>

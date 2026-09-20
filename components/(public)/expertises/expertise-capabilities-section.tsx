@@ -22,7 +22,9 @@ export function ExpertiseCapabilitiesSection({
         <div key={group.title}>
           <h2>{group.title}</h2>
           <ul>
-            {group.items.map((item) => <li key={item.fr}>{localize(item, locale)}</li>)}
+            {group.items.map((item) => (
+              <li key={item.fr}>{localize(item, locale)}</li>
+            ))}
           </ul>
         </div>
       ))}

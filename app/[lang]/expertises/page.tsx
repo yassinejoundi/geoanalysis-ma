@@ -6,7 +6,11 @@ import { expertises } from "@/lib/content/site";
 import { isLocale } from "@/lib/i18n";
 import { notFound } from "next/navigation";
 
-export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
   const { lang } = await params;
   if (!isLocale(lang)) return {};
   const copy = expertisePageCopy[lang];
@@ -16,15 +20,27 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   };
 }
 
-export default async function ExpertiseIndex({ params }: { params: Promise<{ lang: string }> }) {
+export default async function ExpertiseIndex({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}) {
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
   const copy = expertisePageCopy[lang];
 
   return (
     <main className="expertise-page">
-      <PageHero kicker={copy.indexTitle} title={copy.indexTitle} lead={copy.indexLead} />
-      <ExpertiseIndexSection expertises={expertises} locale={lang} copy={copy} />
+      <PageHero
+        kicker={copy.indexTitle}
+        title={copy.indexTitle}
+        lead={copy.indexLead}
+      />
+      <ExpertiseIndexSection
+        expertises={expertises}
+        locale={lang}
+        copy={copy}
+      />
     </main>
   );
 }

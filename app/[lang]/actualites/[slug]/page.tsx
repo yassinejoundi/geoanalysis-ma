@@ -9,7 +9,11 @@ export function generateStaticParams() {
   return locales.flatMap((lang) => news.map(({ slug }) => ({ lang, slug })));
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ lang: string; slug: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string; slug: string }>;
+}): Promise<Metadata> {
   const { lang, slug } = await params;
   if (!isLocale(lang)) return {};
   const entry = news.find((item) => item.slug === slug);
@@ -20,12 +24,26 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   };
 }
 
-export default async function NewsPage({ params }: { params: Promise<{ lang: string; slug: string }> }) {
+export default async function NewsPage({
+  params,
+}: {
+  params: Promise<{ lang: string; slug: string }>;
+}) {
   const { lang, slug } = await params;
   if (!isLocale(lang)) notFound();
   const entry = news.find((item) => item.slug === slug);
   if (!entry) notFound();
-  const relatedEntries = news.filter((item) => item.id !== entry.id).slice(0, 3);
+  const relatedEntries = news
+    .filter((item) => item.id !== entry.id)
+    .slice(0, 3);
 
-  return <EditorialDetail entry={entry} relatedEntries={relatedEntries} locale={lang} kind="actualites" copy={newsPageCopy[lang]} />;
+  return (
+    <EditorialDetail
+      entry={entry}
+      relatedEntries={relatedEntries}
+      locale={lang}
+      kind="actualites"
+      copy={newsPageCopy[lang]}
+    />
+  );
 }

@@ -22,7 +22,9 @@ export function ProjectGallerySection({
         </div>
         <ul className="project-gallery-thumbnails" aria-hidden="true">
           {galleryFrames.map((frame) => (
-            <li key={frame}>{copy.galleryImage} {frame}</li>
+            <li key={frame}>
+              {copy.galleryImage} {frame}
+            </li>
           ))}
         </ul>
       </div>

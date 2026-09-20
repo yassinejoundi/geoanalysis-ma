@@ -29,9 +29,16 @@ export function LanguageSwitcher({ locale }: { locale: Locale }) {
   const pathname = usePathname();
 
   return (
-    <nav className="language-switcher" aria-label={locale === "fr" ? "Choisir la langue" : "Choose language"}>
+    <nav
+      className="language-switcher"
+      aria-label={locale === "fr" ? "Choisir la langue" : "Choose language"}>
       {(["fr", "en"] as const).map((code) => (
-        <Link key={code} href={localeHref(pathname, code)} hrefLang={code} lang={code} aria-current={locale === code ? "page" : undefined}>
+        <Link
+          key={code}
+          href={localeHref(pathname, code)}
+          hrefLang={code}
+          lang={code}
+          aria-current={locale === code ? "page" : undefined}>
           {code.toUpperCase()}
         </Link>
       ))}

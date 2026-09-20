@@ -11,10 +11,16 @@ import { isLocale, locales, localize } from "@/lib/i18n";
 import { notFound } from "next/navigation";
 
 export function generateStaticParams() {
-  return locales.flatMap((lang) => expertises.map(({ slug }) => ({ lang, slug })));
+  return locales.flatMap((lang) =>
+    expertises.map(({ slug }) => ({ lang, slug })),
+  );
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ lang: string; slug: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string; slug: string }>;
+}): Promise<Metadata> {
   const { lang, slug } = await params;
   if (!isLocale(lang)) return {};
   const expertise = expertises.find((entry) => entry.slug === slug);
@@ -25,7 +31,11 @@ export async function generateMetadata({ params }: { params: Promise<{ lang: str
   };
 }
 
-export default async function ExpertisePage({ params }: { params: Promise<{ lang: string; slug: string }> }) {
+export default async function ExpertisePage({
+  params,
+}: {
+  params: Promise<{ lang: string; slug: string }>;
+}) {
   const { lang, slug } = await params;
   if (!isLocale(lang)) notFound();
   const expertise = expertises.find((entry) => entry.slug === slug);
@@ -33,13 +43,25 @@ export default async function ExpertisePage({ params }: { params: Promise<{ lang
 
   const copy = expertisePageCopy[lang];
   const detail = expertiseDetails[expertise.id];
-  const relatedProjects = projects.filter((project) => project.expertiseId === expertise.id);
+  const relatedProjects = projects.filter(
+    (project) => project.expertiseId === expertise.id,
+  );
 
   return (
     <main className="expertise-page">
-      <ExpertiseDetailHero expertise={expertise} detail={detail} locale={lang} copy={copy} />
+      <ExpertiseDetailHero
+        expertise={expertise}
+        detail={detail}
+        locale={lang}
+        copy={copy}
+      />
       <ExpertiseContextSection detail={detail} locale={lang} copy={copy} />
-      <ExpertiseMethodologySection detail={detail} locale={lang} kicker={copy.methodologyKicker} title={copy.methodology} />
+      <ExpertiseMethodologySection
+        detail={detail}
+        locale={lang}
+        kicker={copy.methodologyKicker}
+        title={copy.methodology}
+      />
       <ExpertiseCapabilitiesSection detail={detail} locale={lang} copy={copy} />
       <ExpertiseRelatedProjectsSection
         projects={relatedProjects}

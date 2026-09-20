@@ -19,11 +19,19 @@ export function ProjectOverviewSection({
   return (
     <section className="project-overview-section">
       <div>
-        <SectionHeading kicker={copy.descriptionKicker} title={copy.descriptionTitle} />
-        <p className="project-description">{localize(detail.description, locale)}</p>
+        <SectionHeading
+          kicker={copy.descriptionKicker}
+          title={copy.descriptionTitle}
+        />
+        <p className="project-description">
+          {localize(detail.description, locale)}
+        </p>
       </div>
       <div>
-        <SectionHeading kicker={copy.methodologyKicker} title={copy.methodologyTitle} />
+        <SectionHeading
+          kicker={copy.methodologyKicker}
+          title={copy.methodologyTitle}
+        />
         <ol className="project-method-list">
           {detail.methods.map((method, index) => (
             <li key={`${index}-${method.fr}`}>{localize(method, locale)}</li>

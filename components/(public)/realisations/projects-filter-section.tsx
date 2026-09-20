@@ -11,14 +11,26 @@ export function ProjectsFilterSection({
   locale: Locale;
   activeExpertiseId?: Expertise["id"];
   resultCount: number;
-  copy: { filterLabel: string; allDomains: string; activeFilter: string; projectCount: string };
+  copy: {
+    filterLabel: string;
+    allDomains: string;
+    activeFilter: string;
+    projectCount: string;
+  };
 }) {
-  const activeExpertise = expertises.find((expertise) => expertise.id === activeExpertiseId);
+  const activeExpertise = expertises.find(
+    (expertise) => expertise.id === activeExpertiseId,
+  );
   const filters = [
     { id: undefined, label: copy.allDomains },
-    ...expertises.map((expertise) => ({ id: expertise.id, label: localize(expertise.name, locale) })),
+    ...expertises.map((expertise) => ({
+      id: expertise.id,
+      label: localize(expertise.name, locale),
+    })),
   ];
-  const activeLabel = activeExpertise ? localize(activeExpertise.name, locale) : copy.allDomains;
+  const activeLabel = activeExpertise
+    ? localize(activeExpertise.name, locale)
+    : copy.allDomains;
 
   return (
     <section className="projects-filter-section">
@@ -28,9 +40,14 @@ export function ProjectsFilterSection({
             <li key={filter.id ?? "all"}>
               <Link
                 className="projects-filter-link"
-                href={filter.id ? `${localizedHref(locale, "realisations")}?expertise=${filter.id}` : localizedHref(locale, "realisations")}
-                aria-current={filter.id === activeExpertiseId ? "page" : undefined}
-              >
+                href={
+                  filter.id
+                    ? `${localizedHref(locale, "realisations")}?expertise=${filter.id}`
+                    : localizedHref(locale, "realisations")
+                }
+                aria-current={
+                  filter.id === activeExpertiseId ? "page" : undefined
+                }>
                 {filter.label}
               </Link>
             </li>
@@ -38,7 +55,8 @@ export function ProjectsFilterSection({
         </ul>
       </nav>
       <p className="projects-active-filter">
-        <span>{copy.activeFilter}: </span>{activeLabel} · {resultCount} {copy.projectCount}
+        <span>{copy.activeFilter}: </span>
+        {activeLabel} · {resultCount} {copy.projectCount}
       </p>
     </section>
   );

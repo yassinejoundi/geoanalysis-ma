@@ -16,7 +16,9 @@ export function ProjectDetailHero({
     <>
       <div className="project-detail-back">
         <div className="project-detail-back-inner">
-          <Link className="project-back-link" href={localizedHref(locale, "realisations")}>
+          <Link
+            className="project-back-link"
+            href={localizedHref(locale, "realisations")}>
             <span aria-hidden="true">←</span> {backLabel}
           </Link>
         </div>

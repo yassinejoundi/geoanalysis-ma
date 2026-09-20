@@ -12,19 +12,30 @@ type ProjectsPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export async function generateMetadata({ params }: Pick<ProjectsPageProps, "params">): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: Pick<ProjectsPageProps, "params">): Promise<Metadata> {
   const { lang } = await params;
   if (!isLocale(lang)) return {};
   const copy = projectPageCopy[lang];
-  return { title: `${copy.indexTitle} | GEOANALYSIS`, description: copy.indexLead };
+  return {
+    title: `${copy.indexTitle} | GEOANALYSIS`,
+    description: copy.indexLead,
+  };
 }
 
-export default async function ProjectIndex({ params, searchParams }: ProjectsPageProps) {
+export default async function ProjectIndex({
+  params,
+  searchParams,
+}: ProjectsPageProps) {
   const [{ lang }, query] = await Promise.all([params, searchParams]);
   if (!isLocale(lang)) notFound();
 
-  const requestedId = typeof query.expertise === "string" ? query.expertise : undefined;
-  const activeExpertise = expertises.find((expertise) => expertise.id === requestedId);
+  const requestedId =
+    typeof query.expertise === "string" ? query.expertise : undefined;
+  const activeExpertise = expertises.find(
+    (expertise) => expertise.id === requestedId,
+  );
   const visibleProjects = activeExpertise
     ? projects.filter((project) => project.expertiseId === activeExpertise.id)
     : projects;
@@ -32,7 +43,11 @@ export default async function ProjectIndex({ params, searchParams }: ProjectsPag
 
   return (
     <main className="projects-page">
-      <PageHero kicker={copy.indexTitle} title={copy.indexTitle} lead={copy.indexLead} />
+      <PageHero
+        kicker={copy.indexTitle}
+        title={copy.indexTitle}
+        lead={copy.indexLead}
+      />
       <ProjectsFilterSection
         locale={lang}
         activeExpertiseId={activeExpertise?.id}

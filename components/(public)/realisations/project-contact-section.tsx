@@ -19,7 +19,11 @@ export function ProjectContactSection({
           <h2>{title}</h2>
           <p>{lead}</p>
         </div>
-        <Link className="project-contact-action" href={localizedHref(locale, "contact")}>{action}</Link>
+        <Link
+          className="project-contact-action"
+          href={localizedHref(locale, "contact")}>
+          {action}
+        </Link>
       </div>
     </section>
   );

@@ -19,7 +19,9 @@ export function ExpertiseContextSection({
         <h2 className="expertise-subheading">{copy.approach}</h2>
         <p>{localize(detail.approach, locale)}</p>
       </div>
-      <div className="expertise-detail-image" aria-hidden="true">{localize(detail.imageLabel, locale)}</div>
+      <div className="expertise-detail-image" aria-hidden="true">
+        {localize(detail.imageLabel, locale)}
+      </div>
     </section>
   );
 }
