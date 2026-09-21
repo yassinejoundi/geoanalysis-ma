@@ -27,9 +27,9 @@ export default async function AdminDashboardPage() {
     items: items.slice(0, 4).map((item) => ({ id: item.id, title: item.title.fr, meta: item.date, state: item.state })),
   });
   const sections = [
-    section(projects, "projects", "Réalisations récentes", "/admin/realisations", "Voir toutes les réalisations"),
-    section(articles, "articles", "Articles récents", "/admin/articles", "Voir tous les articles"),
-    section(news, "news", "Actualités récentes", "/admin/actualites", "Voir toutes les actualités"),
+    section(projects, "projects", "Réalisations récentes", "/admin/realisations", "Voir les réalisations"),
+    section(articles, "articles", "Articles récents", "/admin/articles", "Voir les articles"),
+    section(news, "news", "Actualités récentes", "/admin/actualites", "Voir les actualités"),
   ];
   const pipeline: AdminDashboardPipelineStage[] = messageStatuses.map(({ id, label }) => ({
     id,
