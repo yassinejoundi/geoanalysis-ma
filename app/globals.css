@@ -2159,10 +2159,10 @@ button:focus-visible {
 
 .contact-field input:focus-visible,
 .contact-field textarea:focus-visible,
+.contact-project-option input:focus-visible,
 .contact-project-option:focus-within {
   border-color: var(--brand);
-  outline: 3px solid var(--brand-bright);
-  outline-offset: 2px;
+  outline: none;
 }
 
 .contact-field input[aria-invalid="true"],
