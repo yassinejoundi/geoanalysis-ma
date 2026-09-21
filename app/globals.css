@@ -795,7 +795,7 @@ button:focus-visible {
   list-style: none;
 }
 
-.projects-grid > li { min-width: 0; }
+.projects-grid > li { display: flex; min-width: 0; }
 .project-detail-back { background: var(--surface-soft); }
 .project-detail-back-inner { width: min(100%, 1360px); margin-inline: auto; padding: 18px clamp(20px, 4vw, 48px) 0; }
 
