@@ -2224,14 +2224,6 @@ button:focus-visible {
   color: var(--foreground);
 }
 
-.contact-project-option input {
-  width: 18px;
-  height: 18px;
-  margin: 0;
-  accent-color: var(--brand);
-  flex: none;
-}
-
 .contact-message-field {
   margin-top: 22px;
 }

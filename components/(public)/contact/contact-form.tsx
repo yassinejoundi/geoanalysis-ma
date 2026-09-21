@@ -161,6 +161,7 @@ export function ContactForm({ locale }: { locale: Locale }) {
             <label className="contact-project-option" key={projectType.value}>
               <input
                 type="radio"
+                className="visually-hidden"
                 name="projectType"
                 value={projectType.value}
                 autoComplete="off"
