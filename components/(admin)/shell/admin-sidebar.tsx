@@ -1,5 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
+import { faGlobe } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { AdminSidebarNavigation } from "./admin-navigation";
 import { AdminSignOutButton } from "@/components/(admin)/sign-in/admin-sign-out-button";
 
@@ -15,7 +17,6 @@ export function AdminSidebar({ adminEmail }: { adminEmail: string }) {
       </Link>
 
       <nav className="sidebar-nav" aria-label="Navigation d’administration">
-        <div className="nav-caption">CONTENU</div>
         <AdminSidebarNavigation />
       </nav>
 
@@ -28,7 +29,10 @@ export function AdminSidebar({ adminEmail }: { adminEmail: string }) {
           </div>
         </div>
         <AdminSignOutButton />
-        <Link className="site-link" href="/fr">Voir le site <span aria-hidden="true">↗</span></Link>
+        <Link className="site-link" href="/fr">
+          <span>Voir le site</span>
+          <FontAwesomeIcon className="site-link-icon" icon={faGlobe} aria-hidden="true" />
+        </Link>
       </div>
     </aside>
   );

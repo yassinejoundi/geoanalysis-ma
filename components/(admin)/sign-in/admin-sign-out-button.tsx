@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createAuthClient } from "@neondatabase/auth/next";
+import { faArrowRightFromBracket } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const authClient = createAuthClient();
 
@@ -20,6 +22,7 @@ export function AdminSignOutButton() {
 
   return (
     <button className="admin-sign-out-button" type="button" onClick={signOut} disabled={busy}>
+      <FontAwesomeIcon className="sign-out-icon" icon={faArrowRightFromBracket} aria-hidden="true" />
       {busy ? "Déconnexion…" : "Se déconnecter"}
     </button>
   );
