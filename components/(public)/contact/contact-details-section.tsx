@@ -20,8 +20,12 @@ export function ContactDetailsSection({ locale }: { locale: Locale }) {
     <aside
       className="contact-details"
       aria-label={locale === "fr" ? "Coordonnées" : "Contact details"}>
-      <div className="contact-map" role="img" aria-label={copy.mapLabel}>
-        <span>{copy.mapCaption}</span>
+      <div className="contact-map">
+        <iframe
+          src="https://www.google.com/maps?q=Quartier+Industriel+Sidi+Ghanem%2C+Marrakech+40000%2C+Maroc&output=embed"
+          title={copy.mapLabel}
+          loading="lazy"
+        />
       </div>
       <dl className="contact-details-list">
         {details.map((detail) => (
