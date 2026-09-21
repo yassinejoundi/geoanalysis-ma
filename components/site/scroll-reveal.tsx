@@ -10,7 +10,7 @@ const revealSelector = [
   "main .editorial-detail-body > *, main .editorial-detail-copy",
   "main .project-detail-back .project-back-link, main .expertise-detail-back .expertise-back-link",
   ".site-conversion h2, .site-conversion p, .site-conversion li, .site-conversion a",
-  ".site-footer-brand > *, .site-footer-grid nav h2, .site-footer-grid nav li, .site-footer-bottom > *",
+  ".site-footer-brand > *, .site-footer-grid nav h2, .site-footer-grid nav li",
 ].join(",");
 
 function isRevealGroup(element: HTMLElement) {
