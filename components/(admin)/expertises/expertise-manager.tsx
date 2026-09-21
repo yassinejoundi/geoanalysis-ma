@@ -1,9 +1,12 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { faBullseye, faPlus, faSitemap } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ConfirmDialog } from "@/components/(admin)/shared/confirm-dialog";
 import { EditorDrawer } from "@/components/(admin)/shared/editor-drawer";
 import { Toast } from "@/components/(admin)/shared/toast";
+import { StatCard } from "@/components/(admin)/dashboard/stat-card";
 import {
   ExpertiseEditorFields,
   type ExpertiseEditorValues,
@@ -285,6 +288,20 @@ export function ExpertiseManager({ initialExpertises }: { initialExpertises: Adm
     editor?.kind === "subService"
       ? "Renseignez le nom et la description dans les deux langues."
       : "Renseignez le nom, la description, le slug et le statut de publication.";
+  const publishedExpertiseCount = expertises.filter(
+    (expertise) => expertise.state === "published",
+  ).length;
+  const subServiceCount = expertises.reduce(
+    (count, expertise) => count + expertise.subServices.length,
+    0,
+  );
+  const publishedSubServiceCount = expertises.reduce(
+    (count, expertise) =>
+      count +
+      expertise.subServices.filter((subService) => subService.state === "published")
+        .length,
+    0,
+  );
 
   return (
     <main className="expertise-manager">
@@ -293,25 +310,49 @@ export function ExpertiseManager({ initialExpertises }: { initialExpertises: Adm
           <p className="admin-eyebrow">ADMINISTRATION · CONTENU</p>
           <h1>Expertises &amp; services</h1>
           <p>
-            Organisez les expertises et les sous-services affichés sur le site.
+            Gérez les domaines d’intervention, leurs sous-services et leur publication.
           </p>
         </div>
         <button
-          className="admin-action admin-action-primary"
+          className="expertise-primary-action"
           type="button"
           onClick={() => openExpertiseEditor()}>
+          <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
           Ajouter une expertise
         </button>
       </header>
 
+      <section className="expertise-overview-grid" aria-label="Résumé des expertises">
+        <StatCard
+          label="Expertises"
+          value={expertises.length}
+          detail={`${publishedExpertiseCount} publiées · ${expertises.length - publishedExpertiseCount} brouillons`}
+          icon={faBullseye}
+          tone="expertise"
+        />
+        <StatCard
+          label="Sous-services"
+          value={subServiceCount}
+          detail={`${publishedSubServiceCount} publiés · ${subServiceCount - publishedSubServiceCount} brouillons`}
+          icon={faSitemap}
+          tone="subservice"
+        />
+      </section>
+
       {expertises.length === 0 ? (
         <div className="expertise-empty-state">
-          <h2>Aucune expertise</h2>
-          <p>Ajoutez une expertise pour commencer à organiser les services.</p>
+          <span className="expertise-empty-icon" aria-hidden="true">
+            <FontAwesomeIcon icon={faBullseye} />
+          </span>
+          <h2>Commencez par une expertise</h2>
+          <p>
+            Créez un domaine d’intervention pour organiser les services proposés sur le site.
+          </p>
           <button
-            className="admin-action admin-action-primary"
+            className="expertise-primary-action"
             type="button"
             onClick={() => openExpertiseEditor()}>
+            <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
             Ajouter une expertise
           </button>
         </div>
