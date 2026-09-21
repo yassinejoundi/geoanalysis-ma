@@ -4,11 +4,14 @@ import { useRef, useState } from "react";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
   faBookOpen,
+  faBullhorn,
   faCalendarDays,
   faClock,
   faEye,
   faEyeSlash,
   faFileLines,
+  faLayerGroup,
+  faNewspaper,
   faPlus,
   faSliders,
   faTags,
@@ -187,20 +190,20 @@ export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; 
   const editorHeading = editor?.mode === "create" ? newItemLabel : `Modifier ${entityLabel}`;
   const filterOptions: { id: EditorialFilter; label: string }[] = [
     { id: "all", label: "Tous" },
-    { id: "published", label: "Publiés" },
+    { id: "published", label: isArticle ? "Publiés" : "Publiées" },
     { id: "draft", label: "Brouillons" },
   ];
 
   return (
-    <main className={`admin-content-manager editorial-manager${isArticle ? " editorial-manager-article" : ""}`}>
+    <main className={`admin-content-manager editorial-manager${isArticle ? " editorial-manager-article" : " editorial-manager-news"}`}>
       <header className="admin-manager-header">
         <div>
           <p className="admin-eyebrow">ADMINISTRATION · ÉDITORIAL</p>
           <h1>{pageTitle}</h1>
-          <p>{isArticle ? "Structurez vos articles, leurs thèmes et leur rythme de lecture." : "Organisez les contenus, leurs catégories et leur publication."}</p>
+          <p>{isArticle ? "Structurez vos articles, leurs thèmes et leur rythme de lecture." : "Partagez les annonces, événements et nouvelles du cabinet."}</p>
         </div>
-        <button className={`admin-action admin-action-primary${isArticle ? " editorial-create-action" : ""}`} type="button" onClick={() => openEditor()}>
-          {isArticle && <FontAwesomeIcon icon={faPlus} aria-hidden="true" />}
+        <button className="admin-action admin-action-primary editorial-create-action" type="button" onClick={() => openEditor()}>
+          <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
           {newItemLabel}
         </button>
       </header>
@@ -231,18 +234,40 @@ export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; 
         </section>
       )}
 
-      <section className={`admin-filter-panel editorial-filter-panel${isArticle ? " editorial-article-filter-panel" : ""}`} aria-label={`Filtres des ${pluralLabel}`}>
+      {!isArticle && (
+        <section className="editorial-overview-grid" aria-label="Résumé des actualités">
+          <StatCard
+            label="Actualités"
+            value={items.length}
+            detail={`${publishedItemCount} publiée${publishedItemCount === 1 ? "" : "s"} · ${draftItemCount} brouillon${draftItemCount === 1 ? "" : "s"}`}
+            icon={faNewspaper}
+            tone="news"
+          />
+          <StatCard
+            label="À diffuser"
+            value={draftItemCount}
+            detail={`${publishedItemCount} déjà en ligne`}
+            icon={faBullhorn}
+            tone="announcements"
+          />
+          <StatCard
+            label="Rubriques"
+            value={categories.length}
+            detail={`${usedTagCount} tags dans le flux`}
+            icon={faLayerGroup}
+            tone="news-categories"
+          />
+        </section>
+      )}
+
+      <section className={`admin-filter-panel editorial-filter-panel${isArticle ? " editorial-article-filter-panel" : " editorial-news-filter-panel"}`} aria-label={`Filtres des ${pluralLabel}`}>
         <div className="admin-filter-heading">
-          {isArticle ? (
-            <div className="editorial-filter-title">
-              <FontAwesomeIcon icon={faSliders} aria-hidden="true" />
-              <h2>Affiner les articles</h2>
-            </div>
-          ) : <h2>Résultats</h2>}
-          <p aria-live={isArticle ? "polite" : undefined} aria-atomic={isArticle ? "true" : undefined}>
-            {isArticle
-              ? `${filteredItems.length.toLocaleString("fr-FR")} ${filteredItems.length === 1 ? singularLabel : pluralLabel}`
-              : `${filteredItems.length} ${filteredItems.length === 1 ? singularLabel : pluralLabel}`}
+          <div className="editorial-filter-title">
+            <FontAwesomeIcon icon={faSliders} aria-hidden="true" />
+            <h2>{isArticle ? "Affiner les articles" : "Affiner les actualités"}</h2>
+          </div>
+          <p aria-live="polite" aria-atomic="true">
+            {filteredItems.length.toLocaleString("fr-FR")} {filteredItems.length === 1 ? singularLabel : pluralLabel}
           </p>
         </div>
         <div className="admin-filter-group">
@@ -271,25 +296,31 @@ export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; 
       </section>
 
       {filteredItems.length === 0 ? (
-        <section className={`admin-empty-state${isArticle ? " editorial-article-empty" : ""}`} aria-live="polite">
-          {isArticle && <span className="editorial-empty-icon" aria-hidden="true"><FontAwesomeIcon icon={faFileLines} /></span>}
-          <h2>{isArticle ? (items.length === 0 ? "Aucun article pour le moment" : "Aucun article trouvé") : "Aucun contenu trouvé"}</h2>
+        <section className={`admin-empty-state${isArticle ? " editorial-article-empty" : " editorial-news-empty"}`} aria-live="polite">
+          <span className="editorial-empty-icon" aria-hidden="true"><FontAwesomeIcon icon={isArticle ? faFileLines : faNewspaper} /></span>
+          <h2>
+            {items.length === 0
+              ? isArticle ? "Aucun article pour le moment" : "Aucune actualité pour le moment"
+              : isArticle ? "Aucun article trouvé" : "Aucune actualité trouvée"}
+          </h2>
           <p>
             {isArticle
               ? items.length === 0
                 ? "Créez une fiche pour partager une analyse ou un conseil."
                 : "Essayez un autre terme, statut ou catégorie."
-              : "Modifiez votre recherche ou choisissez un autre statut ou une autre catégorie."}
+              : items.length === 0
+                ? "Créez une fiche pour partager une annonce ou un temps fort."
+                : "Essayez un autre terme, statut ou catégorie."}
           </p>
-          {(!isArticle || (items.length > 0 && hasActiveFilters)) && (
+          {items.length > 0 && hasActiveFilters && (
             <button className="admin-action" type="button" onClick={() => { setPublicationFilter("all"); setCategoryFilter("all"); setQuery(""); }}>
               Effacer les filtres
             </button>
           )}
         </section>
       ) : (
-        <ul className={isArticle ? "admin-editorial-card-list editorial-article-card-list" : "admin-editorial-card-list"}>
-          {filteredItems.map((item, index) => (
+        <ul className={isArticle ? "admin-editorial-card-list editorial-article-card-list" : "editorial-news-list"}>
+          {filteredItems.map((item) => (
             <li key={item.id}>
               {isArticle ? (
                 <article className="admin-editorial-card editorial-article-card">
@@ -329,28 +360,40 @@ export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; 
                   </div>
                 </article>
               ) : (
-                <article className="admin-editorial-card">
-                  <div className="admin-editorial-image">
-                    <span aria-hidden="true">{`IMAGE — ACTUALITÉ ${String(index + 1).padStart(2, "0")}`}</span>
-                    <StatusBadge status={item.state} />
+                <article className="editorial-news-card">
+                  <div className="editorial-news-date">
+                    <span className="editorial-news-date-icon" aria-hidden="true"><FontAwesomeIcon icon={faCalendarDays} /></span>
+                    <span className="editorial-news-date-copy">
+                      <span className="editorial-news-date-label">DATE</span>
+                      <span className="editorial-news-date-value">{item.date || "Date non renseignée"}</span>
+                    </span>
                   </div>
-                  <div className="admin-editorial-card-body">
+                  <div className="editorial-news-content">
                     <div className="admin-editorial-tags">
                       <span className="admin-editorial-category">{item.category.fr}</span>
                       {item.tags.map((tag) => <span className="admin-editorial-tag" key={tag}>{tag}</span>)}
                     </div>
                     <h2>{item.title.fr || "Sans titre"}</h2>
-                    <p className="admin-record-meta">{item.date || "Date non renseignée"}</p>
-                    <div className="admin-editorial-actions">
-                      <button className="admin-action" type="button" aria-label={`${item.state === "published" ? "Dépublier" : "Publier"} « ${item.title.fr} »`} onClick={() => togglePublication(item)}>
-                        {item.state === "published" ? "Dépublier" : "Publier"}
-                      </button>
-                      <button className="admin-action" type="button" aria-label={`Modifier « ${item.title.fr} »`} onClick={() => openEditor(item)}>
-                        Modifier
-                      </button>
-                      <button className="admin-action admin-action-danger" type="button" aria-label={`Supprimer « ${item.title.fr} »`} onClick={() => setPendingDelete(item)}>
-                        Supprimer
-                      </button>
+                  </div>
+                  <div className="editorial-news-actions" role="group" aria-label={`Actions de l’actualité ${item.title.fr || "Sans titre"}`}>
+                    <span className={`status-pill status-${item.state}`}>{item.state === "published" ? "Publiée" : "Brouillon"}</span>
+                    <div className="editorial-news-action-group">
+                      <EditorialActionButton
+                        icon={item.state === "published" ? faEyeSlash : faEye}
+                        label={`${item.state === "published" ? "Dépublier" : "Publier"} « ${item.title.fr || "Sans titre"} »`}
+                        onClick={() => togglePublication(item)}
+                      />
+                      <EditorialActionButton
+                        icon={faPen}
+                        label={`Modifier « ${item.title.fr || "Sans titre"} »`}
+                        onClick={() => openEditor(item)}
+                      />
+                      <EditorialActionButton
+                        icon={faTrash}
+                        label={`Supprimer « ${item.title.fr || "Sans titre"} »`}
+                        onClick={() => setPendingDelete(item)}
+                        danger
+                      />
                     </div>
                   </div>
                 </article>
