@@ -32,7 +32,7 @@ const routeIcons: Record<string, IconDefinition> = {
   "/admin/parametres": faGear,
 };
 
-export function AdminSidebarNavigation() {
+export function AdminSidebarNavigation({ onNavigate }: { onNavigate?: () => void } = {}) {
   const pathname = usePathname();
   const activeHref = getAdminRoute(pathname).href;
   const { messages } = useAdminMessages();
@@ -49,7 +49,7 @@ export function AdminSidebarNavigation() {
 
               return (
                 <li key={href}>
-                  <Link className={`nav-link${isActive ? " nav-link-active" : " nav-link-muted"}`} href={href} aria-current={pathname === href ? "page" : undefined}>
+                  <Link className={`nav-link${isActive ? " nav-link-active" : " nav-link-muted"}`} href={href} aria-current={pathname === href ? "page" : undefined} onClick={onNavigate}>
                     <FontAwesomeIcon className="nav-icon" icon={routeIcons[href]} aria-hidden="true" />
                     <span>{label}</span>
                     {href === "/admin/messages" && newMessageCount > 0 && (
