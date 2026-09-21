@@ -2224,6 +2224,14 @@ button:focus-visible {
   color: var(--foreground);
 }
 
+@media (hover: hover) {
+  .contact-project-option:hover {
+    border-color: var(--brand);
+    background: var(--surface-green);
+    color: var(--foreground);
+  }
+}
+
 .contact-message-field {
   margin-top: 22px;
 }
