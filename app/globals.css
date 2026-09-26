@@ -1126,24 +1126,11 @@ button:focus-visible {
 }
 
 .site-conversion-panel {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
   padding: clamp(24px, 3vw, 36px);
   border: 1px solid rgba(181, 190, 185, 0.28);
-  border-top: 3px solid var(--brand-bright);
-  background: var(--sidebar);
+  border-top: 3px solid var(--brand-pale);
+  background: var(--brand-hover);
   color: var(--surface);
-}
-
-.site-conversion-panel::before {
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  background: url("/cta-geology-sketch.png") 68% 52% / cover no-repeat;
-  content: "";
-  opacity: 0.12;
-  pointer-events: none;
 }
 
 .site-conversion-panel-title {
@@ -1157,9 +1144,8 @@ button:focus-visible {
 .site-conversion-promises {
   display: grid;
   gap: 13px;
-  margin: 22px 0;
-  padding: 20px 0;
-  border-block: 1px solid rgba(181, 190, 185, 0.28);
+  margin: 22px 0 24px;
+  padding: 0;
   list-style: none;
 }
 
@@ -1200,7 +1186,7 @@ button:focus-visible {
 }
 
 .site-conversion-actions a + a {
-  border-color: rgba(255, 255, 255, 0.34);
+  border-color: var(--brand-pale);
   background: transparent;
   color: var(--surface);
 }
