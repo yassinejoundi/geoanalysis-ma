@@ -26,18 +26,18 @@ export function AboutSection({
       </div>
       <figure className="home-about-visual">
         <Image
-          src="/firm-fieldwork.jpg"
+          src="/approach-field-survey.jpg"
           alt={
             locale === "fr"
-              ? "Équipe GEOANALYSIS en mission de forage au Maroc"
-              : "GEOANALYSIS team drilling at a field site in Morocco"
+              ? "Équipe GEOANALYSIS en reconnaissance sur un versant aride"
+              : "GEOANALYSIS team surveying an arid hillside"
           }
           fill
           sizes="(max-width: 760px) calc(100vw - 40px), (max-width: 1360px) 48vw, 640px"
         />
         <figcaption>
-          <span>{locale === "fr" ? "Sur le terrain" : "In the field"}</span>
-          <span>{locale === "fr" ? "Marrakech · Maroc" : "Marrakech · Morocco"}</span>
+          <span>{locale === "fr" ? "Reconnaissance de terrain" : "Field survey"}</span>
+          <span>{locale === "fr" ? "Maroc" : "Morocco"}</span>
         </figcaption>
       </figure>
     </section>
