@@ -28,9 +28,9 @@ export function MethodsSection({
         <div className="home-method-grid">
           {methodGroups.flatMap((group) =>
             group.items.slice(0, 2).map((method) => (
-              <div key={`${group.id}-${method}`}>
+              <div key={`${group.id}-${method.name.fr}`}>
                 <span aria-hidden="true" />
-                <h3>{method}</h3>
+                <h3>{localize(method.name, locale)}</h3>
                 <p>{localize(group.title, locale)}</p>
               </div>
             )),

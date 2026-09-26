@@ -21,7 +21,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
           href: `/${locale}/bureau`,
         },
         {
-          label: isFrench ? "Méthodes & Technologies" : "Methods & Technology",
+          label: isFrench ? "Prestations" : "Services",
           href: `/${locale}/methodes-technologies`,
         },
         {

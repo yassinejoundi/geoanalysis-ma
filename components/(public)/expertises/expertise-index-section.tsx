@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { expertiseDetails } from "@/lib/content/expertise-details";
 import type { Expertise } from "@/lib/content/site";
 import { localize, type Locale } from "@/lib/i18n";
 import { SectionHeading } from "@/components/(public)/home/section-heading";
@@ -30,9 +29,6 @@ export function ExpertiseIndexSection({
               className="expertise-index-card"
               href={`/${locale}/expertises/${expertise.slug}`}>
               <span className="expertise-index-number">{expertise.number}</span>
-              <span className="expertise-index-image" aria-hidden="true">
-                {localize(expertiseDetails[expertise.id].imageLabel, locale)}
-              </span>
               <span className="expertise-index-title">
                 {localize(expertise.name, locale)}
               </span>

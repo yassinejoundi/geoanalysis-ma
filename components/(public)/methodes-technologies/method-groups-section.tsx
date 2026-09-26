@@ -6,7 +6,7 @@ export function MethodsGroupsSection({ locale }: { locale: Locale }) {
   return (
     <section
       className="methods-groups"
-      aria-label={locale === "fr" ? "Groupes de méthodes" : "Method groups"}>
+      aria-label={locale === "fr" ? "Groupes de prestations" : "Service groups"}>
       {methodGroups.map((group) => (
         <section className="methods-group" key={group.id}>
           <div className="methods-group-heading">
@@ -17,9 +17,9 @@ export function MethodsGroupsSection({ locale }: { locale: Locale }) {
           </div>
           <div className="methods-grid">
             {group.items.map((item) => (
-              <article className="methods-item" key={item}>
-                <h3>{item}</h3>
-                <p>{localize(group.itemDescriptions[item], locale)}</p>
+              <article className="methods-item" key={item.name.fr}>
+                <h3>{localize(item.name, locale)}</h3>
+                <p>{localize(item.description, locale)}</p>
               </article>
             ))}
           </div>

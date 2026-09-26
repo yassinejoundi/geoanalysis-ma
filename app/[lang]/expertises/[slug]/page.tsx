@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import { ExpertiseCapabilitiesSection } from "@/components/(public)/expertises/expertise-capabilities-section";
-import { ExpertiseContextSection } from "@/components/(public)/expertises/expertise-context-section";
 import { ExpertiseDetailHero } from "@/components/(public)/expertises/expertise-detail-hero";
 import { expertisePageCopy } from "@/components/(public)/expertises/content";
-import { ExpertiseMethodologySection } from "@/components/(public)/expertises/expertise-methodology-section";
+import { ExpertiseOverviewSection } from "@/components/(public)/expertises/expertise-overview-section";
+import { ExpertiseServicesSection } from "@/components/(public)/expertises/expertise-services-section";
 import { ExpertiseRelatedProjectsSection } from "@/components/(public)/expertises/expertise-related-projects-section";
 import { expertiseDetails } from "@/lib/content/expertise-details";
 import { expertises, projects } from "@/lib/content/site";
@@ -55,14 +54,13 @@ export default async function ExpertisePage({
         locale={lang}
         copy={copy}
       />
-      <ExpertiseContextSection detail={detail} locale={lang} copy={copy} />
-      <ExpertiseMethodologySection
+      <ExpertiseOverviewSection detail={detail} locale={lang} />
+      <ExpertiseServicesSection
         detail={detail}
         locale={lang}
-        kicker={copy.methodologyKicker}
-        title={copy.methodology}
+        kicker={copy.servicesKicker}
+        title={copy.services}
       />
-      <ExpertiseCapabilitiesSection detail={detail} locale={lang} copy={copy} />
       <ExpertiseRelatedProjectsSection
         projects={relatedProjects}
         locale={lang}

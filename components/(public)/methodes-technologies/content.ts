@@ -1,14 +1,14 @@
 export const methodsPageCopy = {
   fr: {
-    kicker: "Méthodes & Technologies",
-    title: "Méthodes & technologies",
-    lead: "Parc instrumental, chaînes de traitement et référentiels normatifs mobilisés sur nos missions.",
-    description: "Découvrez les méthodes, outils et technologies mobilisés par GEOANALYSIS sur ses missions.",
+    kicker: "Prestations",
+    title: "Études et services",
+    lead: "Études géologiques et minières, hydrologie et environnement, cartographie, SIG et télédétection.",
+    description: "Les prestations proposées par GEOANALYSIS en géologie, mines, hydrologie, environnement, SIG et télédétection.",
   },
   en: {
-    kicker: "Methods & Technology",
-    title: "Methods & technology",
-    lead: "Instrument fleet, processing chains and normative frameworks used on our assignments.",
-    description: "Explore the methods, tools and technologies used by GEOANALYSIS on its assignments.",
+    kicker: "Services",
+    title: "Studies and services",
+    lead: "Geological and mining studies, hydrology and environment, mapping, GIS and remote sensing.",
+    description: "GEOANALYSIS services in geology, mining, hydrology, environment, GIS and remote sensing.",
   },
 } as const;
