@@ -492,7 +492,9 @@ button:focus-visible {
 .site-content > main .page-hero h1 { max-width: 22ch; margin: 18px 0 0; color: var(--foreground); font-size: clamp(32px, 4.6vw, 60px); font-weight: 300; letter-spacing: -.02em; line-height: 1.08; }
 .page-hero-lead { max-width: 60ch; margin: 20px 0 0; color: var(--muted); font-size: clamp(15px, 1.3vw, 17px); font-weight: 300; line-height: 1.7; }
 .firm-overview { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(32px, 4vw, 64px); width: min(100%, 1360px); margin-inline: auto; padding: clamp(56px, 8vh, 96px) clamp(20px, 4vw, 48px); }
-.firm-image-placeholder { display: flex; min-height: clamp(240px, 34vw, 420px); align-items: flex-end; padding: 14px; border: 1px solid var(--border); background: repeating-linear-gradient(118deg,#eeede7 0 12px,#f7f6f2 12px 24px); color: var(--muted); font-family: var(--font-data); font-size: 10px; letter-spacing: .08em; }
+.firm-overview-image { position: relative; min-width: 0; min-height: clamp(240px, 34vw, 420px); aspect-ratio: 3 / 2; margin: 0; overflow: hidden; border: 1px solid var(--border); background: var(--surface-soft); }
+.firm-overview-image img { object-fit: cover; }
+.firm-overview-image figcaption { position: absolute; inset-inline-start: 14px; inset-block-end: 14px; padding: 8px 10px; background: var(--foreground); color: var(--background); font-family: var(--font-data); font-size: 10px; letter-spacing: .08em; }
 .firm-content-blocks { min-width: 0; }
 .firm-content-block { padding: 22px 0; border-top: 1px solid var(--border); }
 .firm-content-block h2 { margin: 0; font-size: 16px; font-weight: 500; line-height: 1.3; }
@@ -505,6 +507,18 @@ button:focus-visible {
 .firm-value-number { color: var(--brand); font-family: var(--font-data); font-size: 11px; }
 .firm-values h3 { margin: 16px 0 0; font-size: 15.5px; font-weight: 500; line-height: 1.35; }
 .firm-values li p { margin: 9px 0 0; color: var(--muted); font-size: 13.5px; font-weight: 300; line-height: 1.6; }
+.firm-domains-section { border-top: 1px solid var(--border); }
+.firm-stages-section { border-top: 1px solid var(--border); background: var(--surface-soft); }
+.firm-story-inner { width: min(100%, 1360px); margin-inline: auto; padding: clamp(52px, 7vh, 88px) clamp(20px, 4vw, 48px); }
+.firm-story-heading { max-width: 760px; }
+.firm-story-eyebrow { margin: 0 0 14px; color: var(--brand); font-family: var(--font-data); font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; }
+.firm-story-heading h2 { max-width: 26ch; margin: 0; font-size: clamp(24px, 3vw, 36px); font-weight: 300; line-height: 1.2; text-wrap: balance; }
+.firm-story-heading > p:last-child { max-width: 68ch; margin: 16px 0 0; color: var(--muted); font-size: 15px; font-weight: 300; line-height: 1.7; }
+.firm-domain-list, .firm-stage-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(18px, 2.5vw, 32px); margin: 36px 0 0; padding: 0; list-style: none; }
+.firm-domain-list li, .firm-stage-list li { min-width: 0; padding-top: 18px; border-top: 1px solid var(--border-strong); }
+.firm-story-number { color: var(--brand); font-family: var(--font-data); font-size: 11px; letter-spacing: .06em; }
+.firm-domain-list h3, .firm-stage-list h3 { margin: 14px 0 0; font-size: 17px; font-weight: 500; line-height: 1.35; }
+.firm-domain-list li p, .firm-stage-list li p { margin: 9px 0 0; color: var(--muted); font-size: 14px; font-weight: 300; line-height: 1.65; }
 .methods-groups { display: flex; width: min(100%, 1360px); flex-direction: column; gap: 44px; margin-inline: auto; padding: clamp(44px, 6vh, 80px) clamp(20px, 4vw, 48px); }
 .methods-group-heading { padding-bottom: 12px; border-bottom: 1px solid var(--border); }
 .methods-group-heading .home-section-heading { display: flex; align-items: baseline; gap: 14px; }
@@ -559,8 +573,8 @@ button:focus-visible {
 .editorial-related-grid .editorial-card-title { font-size: 16px; line-height: 1.34; }
 @media (max-width: 760px) { .home-hero-inner { grid-template-columns: minmax(0, 1fr); min-height: auto; } .hero-rocks { width: min(82vw, 420px); margin-top: 4px; justify-self: center; } .home-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .home-about, .home-editorial-grid { grid-template-columns: minmax(0, 1fr); } .home-expertise-grid, .home-project-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .home-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 479px) { .home-hero-inner, .home-section-inner, .home-section { padding-right: 20px; padding-left: 20px; } .home-expertise-grid, .home-project-grid, .home-method-grid { grid-template-columns: minmax(0, 1fr); } .home-pillars { grid-template-columns: minmax(0, 1fr); } .home-actions > a { flex: 1 1 100%; } .home-expertise-card { min-height: 0; } }
-@media (max-width: 760px) { .firm-overview { grid-template-columns: minmax(0, 1fr); } .firm-image-placeholder { min-height: 280px; } .firm-values ul { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 479px) { .firm-values ul { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 760px) { .firm-overview { grid-template-columns: minmax(0, 1fr); } .firm-values ul, .firm-domain-list, .firm-stage-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 479px) { .firm-values ul, .firm-domain-list, .firm-stage-list { grid-template-columns: minmax(0, 1fr); } }
 
 .expertise-index-section,
 .expertise-section-inner,

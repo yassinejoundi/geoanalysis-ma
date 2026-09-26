@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { OverviewSection } from "@/components/(public)/bureau/overview-section";
+import { FirmStorySections } from "@/components/(public)/bureau/firm-story-sections";
 import { ValuesSection } from "@/components/(public)/bureau/values-section";
 import { PageHero } from "@/components/site/page-hero";
 import { isLocale } from "@/lib/i18n";
@@ -49,6 +50,7 @@ export default async function FirmPage({
       <PageHero kicker={copy.title} title={copy.title} lead={copy.lead} />
       <OverviewSection locale={lang} imageLabel={copy.imageLabel} />
       <ValuesSection locale={lang} title={copy.valuesTitle} />
+      <FirmStorySections locale={lang} />
     </main>
   );
 }

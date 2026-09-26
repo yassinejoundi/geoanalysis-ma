@@ -67,3 +67,57 @@ export const firmValues: FirmValue[] = [
     },
   },
 ];
+
+export const firmDomains: FirmValue[] = [
+  {
+    number: "01",
+    title: { fr: "Géologie et mines", en: "Geology and mining" },
+    description: {
+      fr: "Reconnaissance, levés et études géologiques, planification et suivi de sondages, accompagnement minier.",
+      en: "Reconnaissance, geological surveys and studies, drilling planning and supervision, and mining support.",
+    },
+  },
+  {
+    number: "02",
+    title: { fr: "Eau et hydrogéologie", en: "Water and hydrogeology" },
+    description: {
+      fr: "Études hydrologiques, hydrogéologiques et hydro-géophysiques, analyses in situ et simulation des zones inondables.",
+      en: "Hydrological, hydrogeological and hydrogeophysical studies, in-situ water analysis and flood-zone simulation.",
+    },
+  },
+  {
+    number: "03",
+    title: { fr: "Environnement et cartographie", en: "Environment and mapping" },
+    description: {
+      fr: "Études d’impact et de protection, aménagement de sites, cartographie SIG et télédétection.",
+      en: "Impact and environmental protection studies, site planning, GIS mapping and remote sensing.",
+    },
+  },
+];
+
+export const firmWorkStages: FirmValue[] = [
+  {
+    number: "01",
+    title: { fr: "Terrain", en: "Fieldwork" },
+    description: {
+      fr: "Reconnaissance de sites, levés, échantillonnage et suivi de sondages.",
+      en: "Site reconnaissance, surveys, sampling and drilling supervision.",
+    },
+  },
+  {
+    number: "02",
+    title: { fr: "Études", en: "Studies" },
+    description: {
+      fr: "Études géologiques, hydrologiques et environnementales, analyses de l’eau et faisabilité selon la mission.",
+      en: "Geological, hydrological and environmental studies, water analysis and feasibility work as required.",
+    },
+  },
+  {
+    number: "03",
+    title: { fr: "Synthèse", en: "Synthesis" },
+    description: {
+      fr: "Cartographie SIG, synthèses techniques, simulations hydrauliques et appui administratif selon le dossier.",
+      en: "GIS mapping, technical syntheses, hydraulic simulations and administrative support as required.",
+    },
+  },
+];
