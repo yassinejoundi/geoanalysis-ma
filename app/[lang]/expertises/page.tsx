@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ExpertiseIndexSection } from "@/components/(public)/expertises/expertise-index-section";
+import { ExpertiseApproachSections } from "@/components/(public)/expertises/expertise-approach-sections";
 import { expertisePageCopy } from "@/components/(public)/expertises/content";
 import { PageHero } from "@/components/site/page-hero";
 import { expertises } from "@/lib/content/site";
@@ -41,6 +42,7 @@ export default async function ExpertiseIndex({
         locale={lang}
         copy={copy}
       />
+      <ExpertiseApproachSections locale={lang} />
     </main>
   );
 }

@@ -650,6 +650,96 @@ button:focus-visible {
 }
 
 .expertise-index-action { min-height: 40px; margin-top: 4px; color: var(--brand); font-size: 13px; font-weight: 600; }
+
+.expertise-approach-inner,
+.expertise-geospatial-inner {
+  width: min(100%, 1360px);
+  margin-inline: auto;
+  padding: clamp(48px, 7vh, 88px) clamp(20px, 4vw, 48px);
+}
+
+.expertise-approach-lead,
+.expertise-geospatial-lead {
+  max-width: 66ch;
+  margin: 18px 0 0;
+  color: var(--muted);
+  font-size: 15.5px;
+  line-height: 1.7;
+}
+
+.expertise-approach-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  margin: 34px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.expertise-approach-steps li {
+  min-width: 0;
+  padding: 20px 0 0;
+  border-top: 1px solid var(--brand);
+}
+
+.expertise-approach-steps li > span,
+.expertise-geospatial-services li > span {
+  color: var(--brand-hover);
+  font-family: var(--font-data);
+  font-size: 10.5px;
+  letter-spacing: .06em;
+}
+
+.expertise-approach-steps h3,
+.expertise-geospatial-services h3 {
+  margin: 13px 0 0;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.35;
+}
+
+.expertise-approach-steps p,
+.expertise-geospatial-services p {
+  margin: 9px 0 0;
+  color: var(--muted);
+  font-size: 13.5px;
+  font-weight: 300;
+  line-height: 1.65;
+}
+
+.expertise-geospatial-section {
+  border-block: 1px solid var(--border);
+  background: var(--surface-soft);
+}
+
+.expertise-geospatial-inner {
+  display: grid;
+  grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+  align-items: start;
+  gap: clamp(32px, 6vw, 88px);
+}
+
+.expertise-geospatial-services {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.expertise-geospatial-services li {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 12px;
+  padding: 18px 0;
+  border-top: 1px solid var(--border-strong);
+}
+
+.expertise-geospatial-services h3 { margin-top: 0; }
+
+@media (max-width: 760px) {
+  .expertise-approach-steps { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+  .expertise-geospatial-inner { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+}
+
 .expertise-detail-back { background: var(--surface-soft); }
 .expertise-detail-back-inner { width: min(100%,1360px); margin-inline: auto; padding: 20px clamp(20px,4vw,48px) 0; }
 
