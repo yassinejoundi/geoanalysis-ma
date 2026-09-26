@@ -8,19 +8,19 @@ import { notFound } from "next/navigation";
 const pageCopy = {
   fr: {
     title: "Le Bureau",
-    lead: "Une structure technique construite autour de la qualité de la donnée et de la traçabilité méthodologique.",
+    lead: "Bureau d’études et de services en géologie, géophysique et environnement, basé à Marrakech.",
     description:
-      "Découvrez GEOANALYSIS, bureau d’études à Marrakech, sa mission, ses équipes, ses moyens et ses principes.",
-    imageLabel: "IMAGE — ÉQUIPE / LABORATOIRE",
-    valuesTitle: "Nos valeurs",
+      "Découvrez les activités, les expertises et l’implantation de GEOANALYSIS à Marrakech.",
+    imageLabel: "TERRAIN & ÉTUDES",
+    valuesTitle: "Notre approche",
   },
   en: {
     title: "The Firm",
-    lead: "A technical organisation built around data quality and methodological traceability.",
+    lead: "A geology, geophysics and environmental consultancy based in Marrakech.",
     description:
-      "Meet GEOANALYSIS, a Marrakech-based consultancy: our mission, team, resources and principles.",
-    imageLabel: "IMAGE — TEAM / LABORATORY",
-    valuesTitle: "Our values",
+      "Explore GEOANALYSIS activities, expertise and base in Marrakech.",
+    imageLabel: "FIELDWORK & STUDIES",
+    valuesTitle: "Our approach",
   },
 } as const;
 

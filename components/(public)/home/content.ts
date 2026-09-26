@@ -1,22 +1,102 @@
+import type { Locale } from "@/lib/i18n";
+
 export const homeContent = {
   fr: {
     title: "GEOANALYSIS — Géologie, géophysique & environnement",
-    description: "Bureau d’études à Marrakech. De la donnée terrain à la décision en géologie, géophysique et environnement.",
-    kicker: "Bureau d’études · Marrakech, Maroc", hero: "Géologie, géophysique & environnement", sub: "De la donnée terrain à la décision.",
-    intro: "GEOANALYSIS accompagne opérateurs miniers, institutions publiques et collectivités dans l’acquisition, le traitement et l’interprétation de données géoscientifiques sur l’ensemble du territoire marocain.", expertise: "Nos expertises", talk: "Parler de votre projet", stats: [["12+", "années d’expérience"], ["340+", "missions réalisées"], ["18", "provinces couvertes"], ["96%", "de clients récurrents"]],
-    aboutKicker: "Le Bureau", aboutTitle: "Un bureau d’études scientifique, indépendant et rigoureux", about: "Fondé à Marrakech, GEOANALYSIS réunit géologues, géophysiciens et ingénieurs environnement autour d’une même exigence : produire une donnée traçable, vérifiable et directement exploitable dans la décision technique et réglementaire.", about2: "Nos équipes interviennent dans des contextes variés, notamment les massifs de l’Anti-Atlas, les bassins sédimentaires, les périmètres d’irrigation et les zones urbaines, avec des protocoles normalisés et des chaînes de traitement documentées.", discover: "Découvrir le bureau", pillars: [["Terrain", "Équipes et instruments propres"], ["Traitement", "Chaînes documentées et reproductibles"], ["Décision", "Livrables directement exploitables"]],
-    expTitle: "Trois domaines, un même socle méthodologique", expDesc: "Chaque domaine se décline en sous-services mobilisables séparément ou en mission intégrée, du cadrage initial jusqu’au rapport final.", methodKicker: "Méthodologie", methodTitle: "Un processus en quatre temps, du cadrage au livrable", steps: [["01", "Cadrage", "Objectifs, contraintes et données disponibles définissent le protocole."], ["02", "Acquisition", "Campagnes de terrain instrumentées, protocoles normalisés et contrôle qualité."], ["03", "Traitement", "Inversion, modélisation et intégration multi-sources en environnement SIG."], ["04", "Restitution", "Rapport interprétatif, cartes livrables et recommandations opérationnelles."]],
-    methods: "Méthodes & Technologies", methodsTitle: "Instrumentation, acquisition, traitement", methodsLink: "Voir le parc technique", projects: "Réalisations", projectsTitle: "Missions récentes", projectsLink: "Toutes les réalisations", news: "Actualités", articles: "Articles", all: "Tout voir", read: "de lecture", projectImage: "MISSION GÉOSCIENTIFIQUE", expertiseImage: "DOMAINE D’EXPERTISE",
+    description:
+      "Bureau d’études et de services basé à Marrakech. Géologie, géophysique, mines et environnement.",
+    kicker: "Bureau d’études · Marrakech, Maroc",
+    hero: "Géologie, géophysique & environnement",
+    sub: "De la donnée terrain à la décision.",
+    intro:
+      "GEOANALYSIS est un bureau d’études et de services basé à Marrakech. Ses domaines couvrent la géologie, la géophysique, les mines, l’hydrologie, l’environnement et la cartographie.",
+    expertise: "Nos expertises",
+    talk: "Parler de votre projet",
+    stats: [] as [string, string][],
+    aboutKicker: "Le bureau",
+    aboutTitle: "Un bureau d’études et de services à Marrakech",
+    about:
+      "GEOANALYSIS propose des études et un accompagnement en géologie, géophysique, mines et environnement.",
+    about2:
+      "L’offre inclut aussi l’hydrologie, l’hydrogéologie, la cartographie SIG et la télédétection.",
+    discover: "Découvrir le bureau",
+    pillars: [
+      ["Géologie & mines", "Exploration, études, cartographie et accompagnement minier."],
+      ["Eau", "Études hydrologiques, hydrogéologiques et hydro-géophysiques."],
+      ["Environnement & SIG", "Études d’impact, cartographie, SIG et télédétection."],
+    ],
+    expTitle: "Trois domaines d’intervention",
+    expDesc:
+      "Choisissez le domaine adapté : géologie et mines, environnement, ou hydrologie et hydrogéologie.",
+    methodKicker: "Prestations",
+    methodTitle: "Des études de terrain aux livrables",
+    steps: [
+      ["01", "Études documentaires", "Synthèses à partir de recherches documentaires."],
+      ["02", "Reconnaissance terrain", "Planification, levés géologiques et échantillonnage."],
+      ["03", "Études spécialisées", "Hydrologie, hydrogéologie et études d’impact."],
+      ["04", "Cartes et rapports", "Cartes thématiques, rapports et synthèses."],
+    ],
+    methods: "Méthodes & technologies",
+    methodsTitle: "Études, cartographie et accompagnement",
+    methodsLink: "Voir les prestations",
+    projects: "Réalisations",
+    projectsTitle: "Missions récentes",
+    projectsLink: "Toutes les réalisations",
+    news: "Actualités",
+    articles: "Articles",
+    all: "Tout voir",
+    read: "de lecture",
+    projectImage: "MISSION GÉOSCIENTIFIQUE",
+    expertiseImage: "DOMAINE D’EXPERTISE",
   },
   en: {
     title: "GEOANALYSIS — Geology, geophysics & environment",
-    description: "Marrakech-based consultancy. From field data to decisions in geology, geophysics and environment.",
-    kicker: "Consultancy · Marrakech, Morocco", hero: "Geology, geophysics & environment", sub: "From field data to decisions.",
-    intro: "GEOANALYSIS supports mining operators, public institutions and local authorities with the acquisition, processing and interpretation of geoscientific data across Morocco.", expertise: "Our expertise", talk: "Discuss your project", stats: [["12+", "years of experience"], ["340+", "projects completed"], ["18", "provinces covered"], ["96%", "returning clients"]],
-    aboutKicker: "The firm", aboutTitle: "An independent, rigorous scientific consultancy", about: "Founded in Marrakech, GEOANALYSIS brings geologists, geophysicists and environmental engineers together around one standard: producing traceable, verifiable data that informs technical and regulatory decisions.", about2: "Our teams work across varied settings, including the Anti-Atlas ranges, sedimentary basins, irrigation areas and urban zones, using standardised protocols and documented processing workflows.", discover: "Discover the firm", pillars: [["Fieldwork", "In-house teams and instruments"], ["Processing", "Documented, reproducible workflows"], ["Decisions", "Directly actionable deliverables"]],
-    expTitle: "Three fields, one methodological foundation", expDesc: "Each field includes services that can be commissioned separately or as an integrated assignment, from initial scoping to final report.", methodKicker: "Methodology", methodTitle: "Four steps, from scoping to deliverables", steps: [["01", "Scoping", "Objectives, constraints and available data define the protocol."], ["02", "Acquisition", "Instrumented field campaigns, standardised protocols and quality control."], ["03", "Processing", "Inversion, modelling and multi-source integration in a GIS environment."], ["04", "Reporting", "Interpretive report, deliverable maps and operational recommendations."]],
-    methods: "Methods & Technology", methodsTitle: "Instrumentation, acquisition, processing", methodsLink: "Explore our equipment", projects: "Projects", projectsTitle: "Recent assignments", projectsLink: "All projects", news: "News", articles: "Articles", all: "View all", read: "read", projectImage: "GEOSCIENTIFIC ASSIGNMENT", expertiseImage: "AREA OF EXPERTISE",
+    description:
+      "Marrakech-based consultancy in geology, geophysics, mining and environment.",
+    kicker: "Consultancy · Marrakech, Morocco",
+    hero: "Geology, geophysics & environment",
+    sub: "From field data to decisions.",
+    intro:
+      "GEOANALYSIS is a consultancy based in Marrakech. Its fields include geology, geophysics, mining, hydrology, environment and mapping.",
+    expertise: "Our expertise",
+    talk: "Discuss your project",
+    stats: [] as [string, string][],
+    aboutKicker: "The firm",
+    aboutTitle: "A consultancy based in Marrakech",
+    about:
+      "GEOANALYSIS provides studies and support in geology, geophysics, mining and environment.",
+    about2:
+      "Its services also include hydrology, hydrogeology, GIS mapping and remote sensing.",
+    discover: "Discover the firm",
+    pillars: [
+      ["Geology & mining", "Exploration, studies, mapping and mining support."],
+      ["Water", "Hydrological, hydrogeological and hydrogeophysical studies."],
+      ["Environment & GIS", "Impact studies, mapping, GIS and remote sensing."],
+    ],
+    expTitle: "Three areas of work",
+    expDesc:
+      "Choose a field: geology and mining, environment, or hydrology and hydrogeology.",
+    methodKicker: "Services",
+    methodTitle: "From field studies to deliverables",
+    steps: [
+      ["01", "Desk studies", "Research and documentary summaries."],
+      ["02", "Field reconnaissance", "Planning, geological surveys and sampling."],
+      ["03", "Specialist studies", "Hydrology, hydrogeology and impact studies."],
+      ["04", "Maps and reports", "Thematic maps, reports and summaries."],
+    ],
+    methods: "Methods & technology",
+    methodsTitle: "Studies, mapping and project support",
+    methodsLink: "View services",
+    projects: "Projects",
+    projectsTitle: "Recent assignments",
+    projectsLink: "All projects",
+    news: "News",
+    articles: "Articles",
+    all: "View all",
+    read: "read",
+    projectImage: "GEOSCIENTIFIC ASSIGNMENT",
+    expertiseImage: "AREA OF EXPERTISE",
   },
 } as const;
 
-export type HomeContent = (typeof homeContent)[keyof typeof homeContent];
+export type HomeContent = (typeof homeContent)[Locale];

@@ -30,14 +30,16 @@ export function HeroSection({
           </div>
         </div>
         <HeroRocks />
-        <dl className="home-stats">
-          {content.stats.map(([value, label]) => (
-            <div key={label}>
-              <dt>{value}</dt>
-              <dd>{label}</dd>
-            </div>
-          ))}
-        </dl>
+        {content.stats.length > 0 ? (
+          <dl className="home-stats">
+            {content.stats.map(([value, label]) => (
+              <div key={label}>
+                <dt>{value}</dt>
+                <dd>{label}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : null}
       </div>
     </section>
   );
