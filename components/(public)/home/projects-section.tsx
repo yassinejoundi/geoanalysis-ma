@@ -12,6 +12,8 @@ export function ProjectsSection({
   locale: Locale;
   content: HomeContent;
 }) {
+  if (projects.length === 0) return null;
+
   return (
     <section className="home-section">
       <div className="home-section-heading-row">

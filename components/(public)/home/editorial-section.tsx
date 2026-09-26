@@ -12,6 +12,8 @@ export function EditorialSection({
   locale: Locale;
   content: HomeContent;
 }) {
+  if (news.length === 0 && articles.length === 0) return null;
+
   const newsKicker = locale === "fr" ? "La vie du bureau" : "From the firm";
   const articlesKicker = locale === "fr" ? "Nos analyses" : "Expert insight";
   return (

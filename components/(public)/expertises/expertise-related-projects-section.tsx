@@ -16,6 +16,8 @@ export function ExpertiseRelatedProjectsSection({
   title: string;
   imageLabel: string;
 }) {
+  if (projects.length === 0) return null;
+
   return (
     <section className="expertise-related-projects">
       <div className="expertise-section-inner">

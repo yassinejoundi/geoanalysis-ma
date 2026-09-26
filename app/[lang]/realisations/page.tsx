@@ -48,12 +48,14 @@ export default async function ProjectIndex({
         title={copy.indexTitle}
         lead={copy.indexLead}
       />
-      <ProjectsFilterSection
-        locale={lang}
-        activeExpertiseId={activeExpertise?.id}
-        resultCount={visibleProjects.length}
-        copy={copy}
-      />
+      {visibleProjects.length > 0 && (
+        <ProjectsFilterSection
+          locale={lang}
+          activeExpertiseId={activeExpertise?.id}
+          resultCount={visibleProjects.length}
+          copy={copy}
+        />
+      )}
       <ProjectsListSection projects={visibleProjects} locale={lang} />
     </main>
   );
