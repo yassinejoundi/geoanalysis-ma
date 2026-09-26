@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PageHero } from "@/components/site/page-hero";
+import Image from "next/image";
 import type { Expertise } from "@/lib/content/site";
 import type { ExpertiseDetail } from "@/lib/content/expertise-details";
 import { localize, type Locale } from "@/lib/i18n";
@@ -13,32 +13,52 @@ export function ExpertiseDetailHero({
   expertise: Expertise;
   detail: ExpertiseDetail;
   locale: Locale;
-  copy: { detailKicker: string; backToIndex: string };
+  copy: {
+    detailKicker: string;
+    backToIndex: string;
+    talk: string;
+    exploreServices: string;
+  };
 }) {
   return (
-    <>
-      <div className="expertise-detail-back">
-        <div className="expertise-detail-back-inner">
-          <Link className="expertise-back-link" href={`/${locale}/expertises`}>
-            <span aria-hidden="true">←</span> {copy.backToIndex}
-          </Link>
+    <section className="expertise-detail-hero">
+      <div className="expertise-detail-copy">
+        <Link className="expertise-back-link" href={`/${locale}/expertises`}>
+          <span aria-hidden="true">←</span> {copy.backToIndex}
+        </Link>
+        <div className="expertise-detail-intro">
+          <p className="expertise-detail-kicker">
+            <span>{copy.detailKicker}</span>
+            <span aria-hidden="true"> / </span>
+            <span>{expertise.number}</span>
+          </p>
+          <h1>{localize(expertise.name, locale)}</h1>
+          <p className="expertise-detail-lead">{localize(detail.intro, locale)}</p>
+          <div className="expertise-detail-actions">
+            <Link className="home-primary-action" href={`/${locale}/contact`}>
+              {copy.talk}
+            </Link>
+            <Link
+              className="home-secondary-action expertise-detail-services-link"
+              href="#prestations">
+              {copy.exploreServices}
+              <span aria-hidden="true">↓</span>
+            </Link>
+          </div>
         </div>
       </div>
-      <PageHero
-        kicker={`${expertise.number} — ${copy.detailKicker}`}
-        title={localize(expertise.name, locale)}
-        lead={localize(detail.intro, locale)}
-      />
-      <ul
-        className="expertise-detail-services"
-        aria-label={localize(
-          { fr: "Sous-services", en: "Sub-services" },
-          locale,
-        )}>
-        {expertise.subServices.map((service) => (
-          <li key={service.name.fr}>{localize(service.name, locale)}</li>
-        ))}
-      </ul>
-    </>
+      <figure className="expertise-detail-visual">
+        <Image
+          alt={localize(expertise.image.alt, locale)}
+          fill
+          fetchPriority="high"
+          sizes="(max-width: 879px) 100vw, 52vw"
+          src={expertise.image.src}
+        />
+        <span className="expertise-detail-visual-number" aria-hidden="true">
+          {expertise.number}
+        </span>
+      </figure>
+    </section>
   );
 }

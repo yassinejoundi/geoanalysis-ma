@@ -14,9 +14,9 @@ export function ExpertiseOverviewSection({
 
   return (
     <section className="expertise-overview-section">
-      <div className="expertise-section-inner">
+      <div className="expertise-overview-inner">
         <SectionHeading kicker={copy.overview} title={copy.overviewTitle} />
-        <p>{localize(detail.overview, locale)}</p>
+        <p className="expertise-overview-copy">{localize(detail.overview, locale)}</p>
       </div>
     </section>
   );

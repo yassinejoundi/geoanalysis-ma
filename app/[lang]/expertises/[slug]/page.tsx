@@ -3,9 +3,8 @@ import { ExpertiseDetailHero } from "@/components/(public)/expertises/expertise-
 import { expertisePageCopy } from "@/components/(public)/expertises/content";
 import { ExpertiseOverviewSection } from "@/components/(public)/expertises/expertise-overview-section";
 import { ExpertiseServicesSection } from "@/components/(public)/expertises/expertise-services-section";
-import { ExpertiseRelatedProjectsSection } from "@/components/(public)/expertises/expertise-related-projects-section";
 import { expertiseDetails } from "@/lib/content/expertise-details";
-import { expertises, projects } from "@/lib/content/site";
+import { expertises } from "@/lib/content/site";
 import { isLocale, locales, localize } from "@/lib/i18n";
 import { notFound } from "next/navigation";
 
@@ -42,9 +41,6 @@ export default async function ExpertisePage({
 
   const copy = expertisePageCopy[lang];
   const detail = expertiseDetails[expertise.id];
-  const relatedProjects = projects.filter(
-    (project) => project.expertiseId === expertise.id,
-  );
 
   return (
     <main className="expertise-page">
@@ -60,13 +56,6 @@ export default async function ExpertisePage({
         locale={lang}
         kicker={copy.servicesKicker}
         title={copy.services}
-      />
-      <ExpertiseRelatedProjectsSection
-        projects={relatedProjects}
-        locale={lang}
-        kicker={copy.relatedProjectsKicker}
-        title={copy.relatedProjects}
-        imageLabel={copy.projectImage}
       />
     </main>
   );

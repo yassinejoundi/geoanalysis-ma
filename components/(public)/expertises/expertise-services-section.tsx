@@ -14,18 +14,20 @@ export function ExpertiseServicesSection({
   title: string;
 }) {
   return (
-    <section className="expertise-services">
+    <section className="expertise-services" id="prestations">
       <div className="expertise-section-inner">
         <SectionHeading kicker={kicker} title={title} />
-        <ul className="expertise-service-list">
+        <ol className="expertise-service-list">
           {detail.services.map((service) => (
             <li key={service.number}>
-              <span>{service.number}</span>
-              <h3>{localize(service.name, locale)}</h3>
-              <p>{localize(service.description, locale)}</p>
+              <span aria-hidden="true">{service.number}</span>
+              <div>
+                <h3>{localize(service.name, locale)}</h3>
+                <p>{localize(service.description, locale)}</p>
+              </div>
             </li>
           ))}
-        </ul>
+        </ol>
       </div>
     </section>
   );
