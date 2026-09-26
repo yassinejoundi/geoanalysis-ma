@@ -18,13 +18,6 @@ export const firmContentBlocks: FirmContentBlock[] = [
     },
   },
   {
-    title: { fr: "Notre direction", en: "Our director" },
-    description: {
-      fr: "Le bureau est dirigé par le Dr Farah Abdelouahed, spécialisé en géologie, géophysique et environnement.",
-      en: "The firm is led by Dr Farah Abdelouahed, a specialist in geology, geophysics and environment.",
-    },
-  },
-  {
     title: { fr: "Notre offre", en: "Our services" },
     description: {
       fr: "Les prestations couvrent l’exploration et les études géologiques, l’accompagnement minier, l’hydrologie et l’hydrogéologie, les études d’impact et la cartographie SIG.",
