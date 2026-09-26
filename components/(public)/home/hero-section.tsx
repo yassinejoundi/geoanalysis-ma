@@ -22,24 +22,21 @@ export function HeroSection({
             <Link
               className="home-primary-action"
               href={`/${locale}/expertises`}>
-              {content.expertise}
+              {content.expertiseCta}
             </Link>
             <Link className="home-secondary-action" href={`/${locale}/contact`}>
               {content.talk}
             </Link>
           </div>
+          <ul
+            className="home-hero-specialties"
+            aria-label={locale === "fr" ? "Domaines d’intervention" : "Areas of work"}>
+            {content.pillars.map(([title]) => (
+              <li key={title}>{title}</li>
+            ))}
+          </ul>
         </div>
         <HeroRocks />
-        {content.stats.length > 0 ? (
-          <dl className="home-stats">
-            {content.stats.map(([value, label]) => (
-              <div key={label}>
-                <dt>{value}</dt>
-                <dd>{label}</dd>
-              </div>
-            ))}
-          </dl>
-        ) : null}
       </div>
     </section>
   );

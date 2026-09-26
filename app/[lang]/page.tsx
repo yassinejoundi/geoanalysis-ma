@@ -33,8 +33,8 @@ export default async function HomePage({
   return (
     <main className="home-page">
       <HeroSection locale={lang} content={content} />
-      <AboutSection locale={lang} content={content} />
       <ExpertiseSection locale={lang} content={content} />
+      <AboutSection locale={lang} content={content} />
       <ProcessSection content={content} />
       <MethodsSection locale={lang} content={content} />
       <ProjectsSection locale={lang} content={content} />
