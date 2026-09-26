@@ -412,8 +412,9 @@ button:focus-visible {
 .home-expertise-card:hover, .home-project-card:hover, .home-article-card:hover, .firm-values li:hover { border-color: var(--brand); box-shadow: 0 8px 28px rgba(28,38,34,.07); }
 .home-card-number, .home-project-meta, .home-editorial-meta, .home-editorial-date { color: var(--muted); font-family: var(--font-data); font-size: 10.5px; letter-spacing: .05em; line-height: 1.45; }
 .home-card-number { color: var(--muted); }
+.home-expertise-image { position: relative; display: block; aspect-ratio: 16 / 9; margin: -26px -26px 4px; overflow: hidden; background: var(--surface-soft); }
+.home-expertise-image img { object-fit: cover; }
 .home-placeholder { display: flex; align-items: flex-end; padding: 9px; border: 1px solid var(--border); background: repeating-linear-gradient(124deg,#eeede7 0 9px,#f6f5f1 9px 18px); color: var(--muted); font-family: var(--font-data); font-size: 9px; letter-spacing: .06em; }
-.home-expertise-placeholder { min-height: 76px; }
 .home-expertise-card h3 { margin: 0; font-size: 21px; font-weight: 500; line-height: 1.22; }
 .home-expertise-card > p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.62; }
 .home-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: auto; }

@@ -6,6 +6,7 @@ export interface Expertise {
   number: string;
   name: LocalizedText;
   summary: LocalizedText;
+  image: { src: string; alt: LocalizedText };
   subServices: { name: LocalizedText; summary: LocalizedText }[];
 }
 
@@ -45,6 +46,10 @@ export const expertises: Expertise[] = [
     id: "mining", slug: "exploration-miniere", number: "01",
     name: { fr: "Géologie et mines", en: "Geology and mining" },
     summary: { fr: "Études géologiques, cartographie, travaux de terrain et accompagnement des projets miniers.", en: "Geological studies, mapping, fieldwork and support for mining projects." },
+    image: {
+      src: "https://res.cloudinary.com/d7qa2cop/image/upload/v1790450479/geoanalysis-ma/home-expertises-2026/geology-outcrop.jpg",
+      alt: { fr: "Affleurement rocheux aux couches contrastées", en: "Rock outcrop with contrasting layers" },
+    },
     subServices: [
       { name: { fr: "Études géologiques", en: "Geological studies" }, summary: { fr: "Exploration et études géologiques", en: "Exploration and geological studies" } },
       { name: { fr: "Cartographie", en: "Mapping" }, summary: { fr: "Cartographie et levés de terrain", en: "Mapping and field surveys" } },
@@ -56,6 +61,10 @@ export const expertises: Expertise[] = [
     id: "env", slug: "etudes-impact", number: "02",
     name: { fr: "Études environnementales", en: "Environmental studies" },
     summary: { fr: "Études d’impact, protection de l’environnement et appui aux démarches administratives.", en: "Impact studies, environmental protection and administrative support." },
+    image: {
+      src: "https://res.cloudinary.com/d7qa2cop/image/upload/v1790450492/geoanalysis-ma/home-expertises-2026/environment-landscape.jpg",
+      alt: { fr: "Versant montagneux couvert d’une végétation basse", en: "Mountain slope covered with low-growing vegetation" },
+    },
     subServices: [
       { name: { fr: "Études d’impact", en: "Impact studies" }, summary: { fr: "Projets miniers et carrières", en: "Mining and quarry projects" } },
       { name: { fr: "Protection environnementale", en: "Environmental protection" }, summary: { fr: "Solutions de protection", en: "Protection solutions" } },
@@ -67,6 +76,10 @@ export const expertises: Expertise[] = [
     id: "water", slug: "ressources-en-eau", number: "03",
     name: { fr: "Hydrologie et hydrogéologie", en: "Hydrology and hydrogeology" },
     summary: { fr: "Études hydrologiques et hydrogéologiques, hydro-géophysique et analyse de l’eau.", en: "Hydrological and hydrogeological studies, hydrogeophysics and water analysis." },
+    image: {
+      src: "https://res.cloudinary.com/d7qa2cop/image/upload/v1790450502/geoanalysis-ma/home-expertises-2026/hydrogeology-well.jpg",
+      alt: { fr: "Puits en pierre avec poulie dans un paysage aride", en: "Stone well with a pulley in an arid landscape" },
+    },
     subServices: [
       { name: { fr: "Études hydrologiques", en: "Hydrological studies" }, summary: { fr: "Études hydrologiques et hydrogéologiques", en: "Hydrological and hydrogeological studies" } },
       { name: { fr: "Hydro-géophysique", en: "Hydrogeophysics" }, summary: { fr: "Études hydro-géophysiques", en: "Hydrogeophysical studies" } },
