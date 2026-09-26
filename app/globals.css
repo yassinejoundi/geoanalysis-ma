@@ -1066,62 +1066,46 @@ button:focus-visible {
 }
 
 .site-conversion {
-  position: relative;
-  isolation: isolate;
-  overflow: hidden;
-  background-color: var(--brand-hover);
-  color: var(--surface);
-}
-
-.site-conversion::before,
-.site-conversion::after {
-  position: absolute;
-  z-index: -1;
-  inset: 0;
-  content: "";
-  pointer-events: none;
-}
-
-.site-conversion::before {
-  background: url("/cta-geology-sketch.png") center bottom / cover no-repeat;
-  opacity: 0.2;
-}
-
-.site-conversion::after {
-  background: linear-gradient(
-    125deg,
-    color-mix(in srgb, var(--brand-hover) 34%, transparent),
-    color-mix(in srgb, var(--brand) 24%, transparent)
-  );
+  border-top: 1px solid var(--border);
+  background: var(--surface-soft);
+  color: var(--foreground);
 }
 
 .site-conversion-inner {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(240px, 0.55fr);
-  align-items: end;
-  gap: clamp(32px, 6vw, 96px);
-  padding-block: clamp(40px, 6vw, 72px);
+  grid-template-columns: minmax(0, 1.2fr) minmax(300px, 0.8fr);
+  align-items: center;
+  gap: clamp(36px, 7vw, 96px);
+  padding-block: clamp(60px, 8vw, 104px);
 }
 
 .site-conversion-copy {
-  position: relative;
-  z-index: 1;
-  max-width: 760px;
+  max-width: 680px;
 }
 
 .site-conversion-eyebrow {
-  margin: 0 0 24px;
-  color: var(--brand-pale);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 20px;
+  color: var(--brand-hover);
   font: 500 10.5px/1 var(--font-data);
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 
+.site-conversion-eyebrow::before {
+  width: 22px;
+  height: 1px;
+  background: var(--brand-hover);
+  content: "";
+}
+
 .site-conversion h2 {
-  max-width: 19ch;
+  max-width: 17ch;
   margin: 0;
-  font-size: clamp(34px, 5vw, 64px);
+  font-size: clamp(40px, 5vw, 68px);
   font-weight: 300;
   letter-spacing: -0.035em;
   line-height: 1.03;
@@ -1129,76 +1113,106 @@ button:focus-visible {
 }
 
 .site-conversion h2 span {
-  color: var(--brand-pale);
+  color: var(--brand-hover);
 }
 
 .site-conversion-description {
-  max-width: 60ch;
+  max-width: 55ch;
   margin: 24px 0 0;
-  color: var(--surface);
+  color: var(--muted);
   font-size: 16px;
   line-height: 1.65;
   text-wrap: pretty;
 }
 
+.site-conversion-panel {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: clamp(24px, 3vw, 36px);
+  border: 1px solid rgba(181, 190, 185, 0.28);
+  border-top: 3px solid var(--brand-bright);
+  background: var(--sidebar);
+  color: var(--surface);
+}
+
+.site-conversion-panel::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: url("/cta-geology-sketch.png") 68% 52% / cover no-repeat;
+  content: "";
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+.site-conversion-panel-title {
+  margin: 0;
+  color: var(--brand-pale);
+  font: 500 10.5px/1.4 var(--font-data);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
 .site-conversion-promises {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 24px;
-  margin: 28px 0 0;
-  padding: 0;
+  display: grid;
+  gap: 13px;
+  margin: 22px 0;
+  padding: 20px 0;
+  border-block: 1px solid rgba(181, 190, 185, 0.28);
   list-style: none;
 }
 
 .site-conversion-promises li {
   display: flex;
   align-items: center;
-  gap: 9px;
-  color: var(--brand-pale);
-  font: 500 11px/1.4 var(--font-data);
-  letter-spacing: 0.04em;
+  gap: 10px;
+  color: var(--surface);
+  font: 500 12px/1.5 var(--font-data);
+  letter-spacing: 0.02em;
 }
 
 .site-conversion-promises li::before {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   flex: none;
-  border: 1px solid var(--brand-pale);
-  border-radius: 50%;
+  background: var(--brand-bright);
   content: "";
 }
 
 .site-conversion-actions {
-  position: relative;
-  z-index: 1;
   display: grid;
-  gap: 12px;
+  gap: 8px;
 }
 
 .site-conversion-actions a {
+  display: flex;
   min-height: 52px;
-  padding-inline: 24px;
-  border: 1px solid var(--background);
-  background: var(--background);
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border: 1px solid transparent;
+  background: var(--brand-pale);
   color: var(--foreground);
   font-size: 13.5px;
+  font-weight: 600;
 }
 
 .site-conversion-actions a + a {
-  border-color: color-mix(in srgb, var(--surface) 48%, transparent);
+  border-color: rgba(255, 255, 255, 0.34);
   background: transparent;
   color: var(--surface);
 }
 
 @media (hover: hover) {
   .site-conversion-actions a:hover {
-    background: var(--brand-pale);
-    border-color: var(--brand-pale);
+    border-color: var(--surface);
+    background: var(--surface);
   }
 
   .site-conversion-actions a + a:hover {
-    border-color: color-mix(in srgb, var(--surface) 76%, transparent);
-    background: color-mix(in srgb, var(--surface) 12%, transparent);
+    background: rgba(255, 255, 255, 0.1);
     color: var(--surface);
   }
 }
@@ -1206,8 +1220,7 @@ button:focus-visible {
 @media (prefers-reduced-motion: no-preference) {
   .site-conversion-actions a {
     transition:
-      transform 160ms ease-out,
-      box-shadow 160ms ease-out,
+      transform 150ms ease-out,
       background-color 160ms ease-out,
       border-color 160ms ease-out;
   }
@@ -1215,13 +1228,12 @@ button:focus-visible {
 
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
   .site-conversion-actions a:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 18px rgba(28, 38, 34, 0.16);
+    transform: translateY(-1px);
   }
 }
 
 .site-conversion a:focus-visible {
-  outline-color: var(--background);
+  outline-color: var(--brand-pale);
 }
 
 .site-footer {

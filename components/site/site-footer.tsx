@@ -68,21 +68,34 @@ export function SiteFooter({ locale }: { locale: Locale }) {
             </h2>
             <p className="site-conversion-description">
               {isFrench
-                ? "Partagez-nous votre contexte. Sous 5 jours ouvrés, nous vous proposons une première lecture technique, une méthode et un cadrage budgétaire."
-                : "Share your context. Within 5 working days, we will provide an initial technical assessment, a method and a budget outline."}
+                ? "Partagez-nous votre contexte. Nous vous proposons une première lecture technique, une méthode et un cadrage budgétaire."
+                : "Share your context. We will provide an initial technical assessment, a proposed method and a budget outline."}
             </p>
-            <ul className="site-conversion-promises" aria-label={isFrench ? "Notre engagement" : "Our commitment"}>
-              <li>{isFrench ? "Échange confidentiel" : "Confidential discussion"}</li>
-              <li>{isFrench ? "Réponse sous 5 jours" : "Reply within 5 days"}</li>
-            </ul>
           </div>
-          <div className="site-conversion-actions">
-            <Link href={`/${locale}/contact`}>
-              {isFrench ? "Parler de votre projet" : "Discuss your project"}
-            </Link>
-            <Link href={`/${locale}/expertises`}>
-              {isFrench ? "Nos expertises" : "Our expertise"}
-            </Link>
+          <div className="site-conversion-panel">
+            <h3
+              className="site-conversion-panel-title"
+              id="site-conversion-panel-title">
+              {isFrench ? "Notre engagement" : "Our commitment"}
+            </h3>
+            <ul
+              className="site-conversion-promises"
+              aria-labelledby="site-conversion-panel-title">
+              <li>{isFrench ? "Échange confidentiel" : "Confidential discussion"}</li>
+              <li>
+                {isFrench ? "Réponse sous 5 jours ouvrés" : "Reply within 5 working days"}
+              </li>
+            </ul>
+            <div className="site-conversion-actions">
+              <Link href={`/${locale}/contact`}>
+                {isFrench ? "Parler de votre projet" : "Discuss your project"}
+                <span aria-hidden="true">→</span>
+              </Link>
+              <Link href={`/${locale}/expertises`}>
+                {isFrench ? "Nos expertises" : "Our expertise"}
+                <span aria-hidden="true">→</span>
+              </Link>
+            </div>
           </div>
         </div>
       </section>
