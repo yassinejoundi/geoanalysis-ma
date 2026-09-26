@@ -6,17 +6,17 @@ export function FirmStorySections({ locale }: { locale: Locale }) {
     locale === "fr"
       ? {
           domainsEyebrow: "Nos compétences",
-          domainsTitle: "Des domaines qui se complètent",
+          domainsTitle: "Des expertises qui se rencontrent sur le terrain",
           domainsLead:
             "Le bureau intervient en géologie, géophysique, hydrologie, environnement et cartographie. Les compétences mobilisées dépendent du sujet de chaque mission.",
           stagesEyebrow: "Notre méthode",
-          stagesTitle: "Du terrain à la restitution",
+          stagesTitle: "Du terrain à la décision",
           stagesLead:
             "De la reconnaissance de terrain à la synthèse technique, les prestations mobilisent les étapes utiles au sujet étudié.",
         }
       : {
           domainsEyebrow: "Our expertise",
-          domainsTitle: "Complementary fields of work",
+          domainsTitle: "Different disciplines, one view of the ground",
           domainsLead:
             "The firm works in geology, geophysics, hydrology, environmental studies and mapping. The expertise brought to each assignment depends on its subject.",
           stagesEyebrow: "How we work",
@@ -29,6 +29,7 @@ export function FirmStorySections({ locale }: { locale: Locale }) {
     <>
       <section
         className="firm-domains-section"
+        id="firm-domains"
         aria-labelledby="firm-domains-title">
         <div className="firm-story-inner">
           <header className="firm-story-heading">

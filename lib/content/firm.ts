@@ -9,30 +9,6 @@ export interface FirmValue extends FirmContentBlock {
   number: string;
 }
 
-export const firmContentBlocks: FirmContentBlock[] = [
-  {
-    title: { fr: "Notre activité", en: "Our work" },
-    description: {
-      fr: "GEOANALYSIS est un bureau d’études et de services en géologie, géophysique et environnement.",
-      en: "GEOANALYSIS is a consultancy in geology, geophysics and environment.",
-    },
-  },
-  {
-    title: { fr: "Notre offre", en: "Our services" },
-    description: {
-      fr: "Les prestations couvrent l’exploration et les études géologiques, l’accompagnement minier, l’hydrologie et l’hydrogéologie, les études d’impact et la cartographie SIG.",
-      en: "Services cover geological exploration and studies, mining support, hydrology and hydrogeology, impact studies and GIS mapping.",
-    },
-  },
-  {
-    title: { fr: "Notre implantation", en: "Our location" },
-    description: {
-      fr: "Le siège de GEOANALYSIS se trouve à Marrakech, au Maroc.",
-      en: "GEOANALYSIS is based in Marrakech, Morocco.",
-    },
-  },
-];
-
 export const firmValues: FirmValue[] = [
   {
     number: "01",
