@@ -4,6 +4,11 @@ export const expertisePageCopy = {
   fr: {
     indexTitle: "Nos expertises",
     indexLead: "Des études géologiques et minières aux missions d’hydrologie et d’environnement, découvrez les prestations GEOANALYSIS.",
+    heroKicker: "GEOANALYSIS · MARRAKECH, MAROC",
+    heroTitle: "Des expertises ancrées dans le terrain.",
+    exploreDomains: "Explorer les domaines",
+    contactAction: "Parler de votre projet",
+    indexNavLabel: "Explorer par domaine",
     indexSectionKicker: "Domaines d’intervention",
     indexSectionTitle: "Trois champs d’intervention",
     openDetails: "Voir les prestations",
@@ -19,6 +24,11 @@ export const expertisePageCopy = {
   en: {
     indexTitle: "Our expertise",
     indexLead: "Explore GEOANALYSIS services, from geological and mining studies to hydrology and environmental work.",
+    heroKicker: "GEOANALYSIS · MARRAKECH, MOROCCO",
+    heroTitle: "Expertise grounded in the field.",
+    exploreDomains: "Explore our expertise",
+    contactAction: "Discuss your project",
+    indexNavLabel: "Explore by domain",
     indexSectionKicker: "Areas of work",
     indexSectionTitle: "Three areas of work",
     openDetails: "View services",
