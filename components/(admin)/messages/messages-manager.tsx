@@ -40,7 +40,7 @@ export function MessagesManager() {
 
   const normalizedQuery = query.trim().toLocaleLowerCase("fr");
   const visibleMessages = messages.filter((message) => {
-    const searchableText = [message.name, message.company, message.email, message.phone, message.type.fr, message.date, message.message, message.file]
+    const searchableText = [message.name, message.company, message.email, message.phone, message.type.fr, message.date, message.message]
       .filter(Boolean)
       .join(" ")
       .toLocaleLowerCase("fr");
@@ -153,7 +153,6 @@ export function MessagesManager() {
                           <span className="message-status-mark" aria-hidden="true" />
                           {statusLabel}
                         </span>
-                        {message.file && <span className="message-attachment-label">Pièce jointe</span>}
                       </span>
                     </button>
                   </li>

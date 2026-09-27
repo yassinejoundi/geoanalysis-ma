@@ -6449,11 +6449,6 @@ a.partner-card-link:hover {
   background: var(--danger);
 }
 
-.message-attachment-label {
-  color: var(--muted);
-  font: 400 10px/1.4 var(--font-data);
-}
-
 .message-preview {
   display: flex;
   flex-direction: column;

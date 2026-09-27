@@ -12,8 +12,6 @@ export function MessageEditorFields({
   updating: boolean;
   onStatusChange: (status: MessageStatus) => void;
 }) {
-  const attachmentType = message.file.split(".").pop()?.toUpperCase() || "Fichier";
-
   return (
     <>
       <dl className="message-detail-list">
@@ -43,24 +41,6 @@ export function MessageEditorFields({
         <p>{message.message}</p>
       </section>
 
-      <section className="message-detail-section" aria-labelledby="message-attachment-title">
-        <h3 id="message-attachment-title">Pièce jointe</h3>
-        {message.file ? (
-          <dl className="message-detail-list message-attachment-metadata">
-            <div>
-              <dt>Nom du fichier</dt>
-              <dd aria-label={`Pièce jointe : ${message.file}`}>{message.file}</dd>
-            </div>
-            <div>
-              <dt>Type de fichier</dt>
-              <dd>{attachmentType}</dd>
-            </div>
-          </dl>
-        ) : (
-          <p>Aucun fichier joint à cette demande.</p>
-        )}
-        {message.file && <p className="admin-field-help">Le nom du fichier joint est fourni avec le message.</p>}
-      </section>
     </>
   );
 }
