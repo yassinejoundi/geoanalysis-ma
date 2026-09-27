@@ -36,6 +36,33 @@
 
 * {
   box-sizing: border-box;
+  scrollbar-color: var(--brand) var(--surface-soft);
+}
+
+*::-webkit-scrollbar {
+  width: 14px;
+  height: 14px;
+}
+
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-corner {
+  background: var(--surface-soft);
+}
+
+*::-webkit-scrollbar-thumb {
+  border: 3px solid var(--surface-soft);
+  border-radius: 999px;
+  background: var(--brand);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--brand-hover);
+}
+
+@media (forced-colors: active) {
+  * {
+    scrollbar-color: auto;
+  }
 }
 
 html {
