@@ -119,12 +119,10 @@ export const news: EditorialDetailEntry[] = [
       fr: [
         "L’archive photographique de GEOANALYSIS contient un cliché daté du 22 août 2024. Il montre un versant rocheux entaillé par une coupe de terrain.",
         "La fiche de services du bureau cite les études et levés géologiques, l’échantillonnage et la préparation de travaux de reconnaissance.",
-        "Les documents transmis ne rattachent pas cette photographie à un site, un client ou un résultat précis.",
       ],
       en: [
         "The GEOANALYSIS photo archive contains an image dated August 22, 2024. It shows a rocky slope cut by a field trench.",
         "The firm’s service sheet lists geological studies and surveys, sampling, and reconnaissance planning.",
-        "The supplied documents do not link this photograph to a specific site, client, or result.",
       ],
     },
   },
@@ -189,12 +187,10 @@ export const news: EditorialDetailEntry[] = [
       fr: [
         "Un cliché du fonds photographique, daté du 29 août 2023, montre un affleurement rocheux aux couches visibles.",
         "La fiche de services de GEOANALYSIS cite les études, les levés et la cartographie géologiques.",
-        "Aucun site, client, mandat ou résultat n’est indiqué pour cette photographie dans les documents transmis.",
       ],
       en: [
         "A photo in the archive, dated August 29, 2023, shows a rocky outcrop with visible layers.",
         "The GEOANALYSIS service sheet lists geological studies, surveys, and mapping.",
-        "The supplied documents do not identify a site, client, assignment, or result for this photograph.",
       ],
     },
   },

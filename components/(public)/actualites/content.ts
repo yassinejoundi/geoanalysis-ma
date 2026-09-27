@@ -12,6 +12,9 @@ export const newsPageCopy = {
     back: "Toutes les actualités",
     related: "Autres actualités",
     read: "de lecture",
+    archiveLabel: "Archives photographiques",
+    sourceLabel: "Précision sur les sources",
+    sourceNote: "Les documents fournis ne permettent pas d’associer ces archives à un site ou à un client précis.",
   },
   en: {
     title: "News",
@@ -26,5 +29,8 @@ export const newsPageCopy = {
     back: "All news",
     related: "More news",
     read: "read",
+    archiveLabel: "Photo archive",
+    sourceLabel: "Source note",
+    sourceNote: "The supplied documents do not link these archive images to a specific site or client.",
   },
 } as const;

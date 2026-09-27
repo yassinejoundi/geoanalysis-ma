@@ -9,6 +9,9 @@ export interface EditorialDetailCopy {
   related: string;
   read: string;
   contact?: string;
+  archiveLabel?: string;
+  sourceLabel?: string;
+  sourceNote?: string;
 }
 
 export function EditorialDetail({
@@ -25,12 +28,15 @@ export function EditorialDetail({
   copy: EditorialDetailCopy;
 }) {
   return (
-    <main className="editorial-detail-page">
-      <section className="editorial-detail-hero">
+    <main className={`editorial-detail-page editorial-detail-page-${kind}`}>
+      <section className={`editorial-detail-hero editorial-detail-hero-${kind}`}>
         <div className="editorial-detail-hero-inner">
           <Link className="editorial-back-link" href={`/${locale}/${kind}`}>
             <span aria-hidden="true">←</span> {copy.back}
           </Link>
+          {copy.archiveLabel ? (
+            <p className="editorial-detail-kicker">{copy.archiveLabel}</p>
+          ) : null}
           <div className="editorial-detail-meta">
             <span className="editorial-detail-category">
               {localize(entry.category, locale)}
@@ -55,8 +61,8 @@ export function EditorialDetail({
         </div>
       </section>
 
-      <article className="editorial-detail-body">
-        <div className="editorial-detail-image">
+      <article className={`editorial-detail-body editorial-detail-body-${kind}`}>
+        <figure className="editorial-detail-image">
           {entry.image ? (
             <Image
               src={entry.image.src}
@@ -68,11 +74,24 @@ export function EditorialDetail({
           ) : (
             <span aria-hidden="true">{entry.imageLabel}</span>
           )}
-        </div>
-        <div className="editorial-detail-copy">
-          {entry.body[locale].map((paragraph) => (
-            <p key={paragraph}>{paragraph}</p>
-          ))}
+        </figure>
+        <div
+          className={`editorial-detail-reading-layout editorial-detail-reading-layout-${kind}`}
+        >
+          <div className="editorial-detail-copy">
+            {entry.body[locale].map((paragraph) => (
+              <p key={paragraph}>{paragraph}</p>
+            ))}
+          </div>
+          {copy.sourceNote ? (
+            <aside
+              className="editorial-detail-source-note"
+              aria-label={copy.sourceLabel}
+            >
+              <p>{copy.sourceLabel}</p>
+              <div>{copy.sourceNote}</div>
+            </aside>
+          ) : null}
         </div>
         {copy.contact ? (
           <Link className="editorial-contact-link" href={`/${locale}/contact`}>
