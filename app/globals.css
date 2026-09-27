@@ -719,11 +719,12 @@ button:focus-visible {
 .methods-map-heading span:last-child { color: var(--sidebar-muted); }
 .methods-map-art { position: relative; min-height: clamp(210px, 27vw, 310px); overflow: hidden; margin-top: 13px; border: 1px solid rgba(205, 235, 216, .18); background-image: linear-gradient(rgba(205, 235, 216, .08) 1px, transparent 1px), linear-gradient(90deg, rgba(205, 235, 216, .08) 1px, transparent 1px), radial-gradient(ellipse at 48% 50%, rgba(63, 179, 123, .2), transparent 68%); background-size: 26px 26px, 26px 26px, auto; }
 .methods-map-art::before { position: absolute; inset: -15%; background: repeating-radial-gradient(ellipse at 45% 48%, transparent 0 22px, rgba(205, 235, 216, .31) 23px 24px, transparent 25px 39px); transform: rotate(-15deg) scale(1.2); content: ""; }
-.methods-map-art::after { position: absolute; inset: 0; background: linear-gradient(128deg, transparent 45%, rgba(63, 179, 123, .42) 45.2% 45.6%, transparent 45.8% 100%); content: ""; }
-.methods-map-point { position: absolute; z-index: 1; width: 9px; height: 9px; border: 2px solid var(--sidebar); border-radius: 50%; background: var(--brand-bright); box-shadow: 0 0 0 1px var(--brand-bright); }
+.methods-map-art::after { position: absolute; z-index: 0; inset: 0; background: linear-gradient(128deg, transparent 45%, rgba(63, 179, 123, .42) 45.2% 45.6%, transparent 45.8% 100%); content: ""; }
+.methods-map-connection { position: absolute; z-index: 1; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.methods-map-connection line { stroke: var(--brand-pale); stroke-width: 1; stroke-dasharray: 1.5 2; vector-effect: non-scaling-stroke; }
+.methods-map-point { position: absolute; z-index: 2; width: 9px; height: 9px; border: 2px solid var(--sidebar); border-radius: 50%; background: var(--brand-bright); box-shadow: 0 0 0 1px var(--brand-bright); transform: translate(-50%, -50%); }
 .methods-map-point-one { top: 32%; left: 31%; }
-.methods-map-point-two { right: 24%; bottom: 29%; }
-.methods-map-line { position: absolute; z-index: 1; top: 34%; left: 32%; width: 41%; border-top: 1px dashed var(--brand-pale); transform: rotate(23deg); transform-origin: left; }
+.methods-map-point-two { top: 71%; left: 76%; }
 .methods-map-legend { justify-content: flex-start; gap: 10px; padding-top: 13px; color: var(--sidebar-muted); font-size: 8px; }
 .methods-map-legend span:nth-child(2) { color: var(--brand-bright); }
 .methods-map-figure figcaption { margin-top: 9px; color: var(--sidebar-muted); font-family: var(--font-data); font-size: 10px; line-height: 1.5; }

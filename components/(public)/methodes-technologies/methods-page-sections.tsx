@@ -48,9 +48,11 @@ export function MethodsPageSections({ locale }: { locale: Locale }) {
             <div className="methods-map-panel" aria-hidden="true">
               <div className="methods-map-heading"><span>{copy.mapVisualTitle}</span><span>GEOANALYSIS</span></div>
               <div className="methods-map-art">
+                <svg className="methods-map-connection" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                  <line x1="31" y1="32" x2="76" y2="71" />
+                </svg>
                 <span className="methods-map-point methods-map-point-one" />
                 <span className="methods-map-point methods-map-point-two" />
-                <span className="methods-map-line" />
               </div>
               <div className="methods-map-legend"><span>{copy.mapVisualStart}</span><span aria-hidden="true">→</span><span>{copy.mapVisualEnd}</span></div>
             </div>
