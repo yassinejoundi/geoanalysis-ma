@@ -106,6 +106,43 @@ button:focus-visible {
   outline-offset: 3px;
 }
 
+.whatsapp-float {
+  position: fixed;
+  z-index: 50;
+  inset-inline-end: max(20px, env(safe-area-inset-right));
+  inset-block-end: max(20px, env(safe-area-inset-bottom));
+  display: grid;
+  width: 56px;
+  height: 56px;
+  place-items: center;
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+  background: var(--brand-hover);
+  color: var(--surface);
+  box-shadow: 0 4px 16px rgba(28, 38, 34, 0.22);
+}
+
+.whatsapp-float svg {
+  width: 27px;
+  height: 27px;
+}
+
+.whatsapp-float:focus-visible {
+  outline: 3px solid var(--foreground);
+  outline-offset: 3px;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .whatsapp-float {
+    transition: background-color 150ms ease, transform 150ms ease;
+  }
+
+  .whatsapp-float:hover {
+    transform: translateY(-2px);
+    background: var(--brand);
+  }
+}
+
 .skip-link {
   position: fixed;
   z-index: 100;
