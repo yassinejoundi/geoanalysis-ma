@@ -54,7 +54,7 @@ export default async function MethodsPage({
                 fill
                 priority
                 sizes="(max-width: 760px) 100vw, 48vw"
-                src="/expertises/geology-outcrop.jpg"
+                src="/expertises/hydrogeology-well.jpg"
               />
             </div>
             <figcaption><span>{copy.photoCaption}</span><span>{copy.photoStamp}</span></figcaption>
