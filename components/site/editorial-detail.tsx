@@ -12,6 +12,7 @@ export interface EditorialDetailCopy {
   archiveLabel?: string;
   sourceLabel?: string;
   sourceNote?: string;
+  sources?: string;
 }
 
 export function EditorialDetail({
@@ -83,7 +84,21 @@ export function EditorialDetail({
               <p key={paragraph}>{paragraph}</p>
             ))}
           </div>
-          {copy.sourceNote ? (
+          {entry.sources?.length ? (
+            <aside
+              className="editorial-detail-source-note editorial-detail-sources"
+              aria-labelledby="editorial-sources-heading"
+            >
+              <h2 id="editorial-sources-heading">{copy.sources}</h2>
+              <ul>
+                {entry.sources.map((source) => (
+                  <li key={source.url}>
+                    <a href={source.url}>{localize(source.label, locale)}</a>
+                  </li>
+                ))}
+              </ul>
+            </aside>
+          ) : copy.sourceNote ? (
             <aside
               className="editorial-detail-source-note"
               aria-label={copy.sourceLabel}

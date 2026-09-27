@@ -11,18 +11,22 @@ export function EditorialCard({
   kind,
   readLabel,
   headingLevel = 2,
+  featured = false,
+  featuredLabel,
 }: {
   entry: EditorialEntry;
   locale: Locale;
   kind: EditorialKind;
   readLabel?: string;
   headingLevel?: 2 | 3;
+  featured?: boolean;
+  featuredLabel?: string;
 }) {
   const Title = headingLevel === 3 ? "h3" : "h2";
 
   return (
     <Link
-      className={`editorial-card editorial-card-${kind}`}
+      className={`editorial-card editorial-card-${kind}${featured ? " editorial-card-featured" : ""}`}
       href={`/${locale}/${kind}/${entry.slug}`}>
       <span className="editorial-card-image">
         {entry.image ? (
@@ -30,13 +34,16 @@ export function EditorialCard({
             src={entry.image.src}
             alt={localize(entry.image.alt, locale)}
             fill
-            sizes="(max-width: 760px) 100vw, (max-width: 1200px) 45vw, 32vw"
+            sizes={featured ? "(max-width: 760px) 100vw, 56vw" : "(max-width: 760px) 100vw, (max-width: 1200px) 45vw, 32vw"}
           />
         ) : (
           <span aria-hidden="true">{entry.imageLabel}</span>
         )}
       </span>
       <div className="editorial-card-content">
+        {featured && featuredLabel ? (
+          <span className="editorial-card-featured-label">{featuredLabel}</span>
+        ) : null}
         <span className="editorial-card-meta">
           <span className="editorial-card-category">
             {localize(entry.category, locale)}
