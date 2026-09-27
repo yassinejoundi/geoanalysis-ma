@@ -3,7 +3,6 @@ import { articles, news } from "@/lib/content/site";
 import type { Locale } from "@/lib/i18n";
 import type { HomeContent } from "./content";
 import { EditorialCard } from "./cards";
-import { SectionHeading } from "./section-heading";
 
 export function EditorialSection({
   locale,
@@ -14,47 +13,108 @@ export function EditorialSection({
 }) {
   if (news.length === 0 && articles.length === 0) return null;
 
-  const newsKicker = locale === "fr" ? "La vie du bureau" : "From the firm";
-  const articlesKicker = locale === "fr" ? "Nos analyses" : "Expert insight";
+  const newsEntries = news.slice(0, 3);
+  const articleEntries = articles.slice(0, 2);
+
   return (
-    <section className="home-band home-editorial">
-      <div className="home-section-inner home-editorial-grid">
-        <div>
-          <div className="home-section-heading-row">
-            <SectionHeading kicker={newsKicker} title={content.news} />
-            <Link className="home-text-link" href={`/${locale}/actualites`}>
-              {content.all} <span aria-hidden="true">→</span>
-            </Link>
+    <section
+      className="home-band home-editorial"
+      aria-labelledby="home-editorial-title">
+      <div className="home-section-inner home-editorial-inner">
+        <header className="home-editorial-header">
+          <div>
+            <p className="home-kicker">{content.editorialKicker}</p>
+            <h2 id="home-editorial-title">{content.editorialTitle}</h2>
           </div>
-          <div className="home-news-list">
-            {news.slice(0, 3).map((entry) => (
-              <EditorialCard
-                key={entry.id}
-                entry={entry}
-                locale={locale}
-                kind="actualites"
-              />
-            ))}
-          </div>
-        </div>
-        <div>
-          <div className="home-section-heading-row">
-            <SectionHeading kicker={articlesKicker} title={content.articles} />
-            <Link className="home-text-link" href={`/${locale}/articles`}>
-              {content.all} <span aria-hidden="true">→</span>
-            </Link>
-          </div>
-          <div className="home-article-list">
-            {articles.slice(0, 2).map((entry) => (
-              <EditorialCard
-                key={entry.id}
-                entry={entry}
-                locale={locale}
-                kind="articles"
-                readLabel={content.read}
-              />
-            ))}
-          </div>
+          <span className="home-editorial-edition" aria-hidden="true">
+            GEOANALYSIS <span>·</span> {locale === "fr" ? "MARRAKECH" : "MOROCCO"}
+          </span>
+        </header>
+
+        <div className="home-editorial-grid">
+          {newsEntries.length > 0 && (
+            <section
+              className="home-editorial-column home-editorial-news"
+              aria-labelledby="home-news-title">
+              <div className="home-editorial-column-heading">
+                <div>
+                  <p className="home-kicker">
+                    {locale === "fr" ? "Sur le terrain" : "In the field"}
+                  </p>
+                  <h3 id="home-news-title">{content.news}</h3>
+                </div>
+                <Link
+                  className="home-editorial-all-link"
+                  href={`/${locale}/actualites`}>
+                  {content.allNews}<span aria-hidden="true">↗</span>
+                </Link>
+              </div>
+              <div className="home-editorial-feature-list">
+                {newsEntries[0] && (
+                  <EditorialCard
+                    entry={newsEntries[0]}
+                    locale={locale}
+                    kind="actualites"
+                    variant="featured"
+                  />
+                )}
+                <div className="home-editorial-compact-list">
+                  {newsEntries.slice(1).map((entry) => (
+                    <EditorialCard
+                      key={entry.id}
+                      entry={entry}
+                      locale={locale}
+                      kind="actualites"
+                      variant="compact"
+                    />
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
+
+          {articleEntries.length > 0 && (
+            <section
+              className="home-editorial-column home-editorial-articles"
+              aria-labelledby="home-articles-title">
+              <div className="home-editorial-column-heading">
+                <div>
+                  <p className="home-kicker">
+                    {locale === "fr" ? "Nos analyses" : "Expert insight"}
+                  </p>
+                  <h3 id="home-articles-title">{content.articles}</h3>
+                </div>
+                <Link
+                  className="home-editorial-all-link"
+                  href={`/${locale}/articles`}>
+                  {content.allArticles}<span aria-hidden="true">↗</span>
+                </Link>
+              </div>
+              <div className="home-editorial-feature-list">
+                {articleEntries[0] && (
+                  <EditorialCard
+                    entry={articleEntries[0]}
+                    locale={locale}
+                    kind="articles"
+                    readLabel={content.read}
+                    variant="featured"
+                  />
+                )}
+                <div className="home-editorial-compact-list">
+                  {articleEntries.slice(1).map((entry) => (
+                    <EditorialCard
+                      key={entry.id}
+                      entry={entry}
+                      locale={locale}
+                      kind="articles"
+                      readLabel={content.read}
+                      variant="compact"
+                    />
+                  ))}
+                </div>
+              </div>
+            </section>
+          )}
         </div>
       </div>
     </section>
