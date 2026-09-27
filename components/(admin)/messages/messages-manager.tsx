@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { faCircleCheck, faComments, faEnvelope, faInbox } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { MessageEditorFields } from "@/components/(admin)/messages/message-editor-fields";
 import { Toast } from "@/components/(admin)/shared/toast";
 import { useAdminMessages } from "@/components/(admin)/shared/admin-messages-provider";
@@ -81,14 +83,19 @@ export function MessagesManager() {
 
       <section className="message-overview" aria-label="Résumé des messages">
         {[
-          { label: "Au total", value: messages.length },
-          { label: "Nouveaux", value: newCount },
-          { label: "En cours", value: activeCount },
-          { label: "Terminés", value: closedCount },
-        ].map(({ label, value }) => (
+          { label: "Au total", value: messages.length, icon: faEnvelope },
+          { label: "Nouveaux", value: newCount, icon: faInbox },
+          { label: "En cours", value: activeCount, icon: faComments },
+          { label: "Terminés", value: closedCount, icon: faCircleCheck },
+        ].map(({ label, value, icon }) => (
           <div className="message-overview-card" key={label}>
+            <div className="message-overview-topline">
+              <span className="message-overview-label">{label}</span>
+              <span className="stat-icon" aria-hidden="true">
+                <FontAwesomeIcon icon={icon} />
+              </span>
+            </div>
             <strong>{value}</strong>
-            <span>{label}</span>
           </div>
         ))}
       </section>

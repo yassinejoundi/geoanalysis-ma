@@ -6142,6 +6142,10 @@ a.partner-card-link:hover {
   outline-color: var(--brand-hover);
 }
 
+.messages-manager .admin-field .message-search-control input:focus-visible {
+  outline: 0;
+}
+
 .message-overview {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -6151,11 +6155,19 @@ a.partner-card-link:hover {
 .message-overview-card {
   display: grid;
   min-width: 0;
-  gap: 5px;
+  gap: 8px;
   padding: 14px 17px;
   border: 1px solid var(--border);
   border-radius: 3px;
   background: var(--surface);
+}
+
+.message-overview-topline {
+  display: flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .message-overview-card strong {
@@ -6164,9 +6176,17 @@ a.partner-card-link:hover {
   font-variant-numeric: tabular-nums;
 }
 
-.message-overview-card span {
+.message-overview-label {
+  min-width: 0;
   color: var(--muted);
   font-size: 12px;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.message-overview-card .stat-icon {
+  color: var(--brand-hover);
+  font-size: 15px;
 }
 
 .message-toolbar {
@@ -6219,6 +6239,8 @@ a.partner-card-link:hover {
 
 .message-search-control:focus-within {
   border-color: var(--brand);
+  outline: 3px solid var(--brand-hover);
+  outline-offset: 2px;
 }
 
 .message-search-icon {
@@ -6626,6 +6648,12 @@ a.partner-card-link:hover {
 .message-empty-state .admin-action {
   min-height: 40px;
   margin-top: 5px;
+}
+
+@media (max-width: 1100px) {
+  .message-overview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 @media (max-width: 920px) {
