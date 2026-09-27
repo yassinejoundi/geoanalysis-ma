@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { ExpertiseIndexSection } from "@/components/(public)/expertises/expertise-index-section";
 import { ExpertiseApproachSections } from "@/components/(public)/expertises/expertise-approach-sections";
 import { expertisePageCopy } from "@/components/(public)/expertises/content";
-import { expertises } from "@/lib/content/site";
-import { isLocale, localize, localizedHref } from "@/lib/i18n";
+import { isLocale, localizedHref } from "@/lib/i18n";
 import { notFound } from "next/navigation";
 
 export async function generateMetadata({
@@ -31,43 +31,47 @@ export default async function ExpertiseIndex({
   const copy = expertisePageCopy[lang];
 
   return (
-    <main className="expertise-page">
-      <section className="expertise-hero" aria-labelledby="expertise-page-title">
-        <div className="expertise-hero-inner">
-          <div className="expertise-hero-copy">
-            <p className="expertise-hero-kicker">{copy.heroKicker}</p>
+    <main className="expertise-page services-page">
+      <section className="services-hero" aria-labelledby="expertise-page-title">
+        <div className="services-hero-inner">
+          <div className="services-hero-copy">
+            <p className="services-hero-kicker">{copy.heroKicker}</p>
             <h1 id="expertise-page-title">{copy.heroTitle}</h1>
-            <p className="expertise-hero-lead">{copy.indexLead}</p>
-            <div className="expertise-hero-actions">
-              <Link className="expertise-primary-action" href="#expertise-catalog">
-                {copy.exploreDomains}<span aria-hidden="true"> ↓</span>
+            <p className="services-hero-lead">{copy.indexLead}</p>
+            <div className="services-hero-actions">
+              <Link
+                className="services-primary-action"
+                href={localizedHref(lang, "/contact")}
+              >
+                {copy.contactAction}
+                <span aria-hidden="true">↗</span>
               </Link>
-              <Link className="expertise-secondary-action" href={localizedHref(lang, "/contact")}>
-                {copy.contactAction}<span aria-hidden="true"> ↗</span>
+              <Link className="services-secondary-action" href="#services-list">
+                {copy.exploreDomains}
+                <span aria-hidden="true">↓</span>
               </Link>
             </div>
           </div>
-          <nav className="expertise-hero-index" aria-label={copy.indexNavLabel}>
-            <p>{copy.indexNavLabel}</p>
-            <ul>
-              {expertises.map((expertise) => (
-                <li key={expertise.id}>
-                  <Link href={`#expertise-${expertise.id}`}>
-                    <span>{expertise.number}</span>
-                    <span>{localize(expertise.name, lang)}</span>
-                    <span aria-hidden="true">↗</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+
+          <figure className="services-hero-visual">
+            <div className="services-hero-image">
+              <Image
+                alt={copy.photoAlt}
+                fill
+                priority
+                sizes="(max-width: 760px) 100vw, 48vw"
+                src="/approach-field-survey.jpg"
+              />
+            </div>
+            <figcaption>
+              <span>{copy.photoCaption}</span>
+              <span>GEOANALYSIS</span>
+            </figcaption>
+          </figure>
         </div>
       </section>
-      <ExpertiseIndexSection
-        expertises={expertises}
-        locale={lang}
-        copy={copy}
-      />
+
+      <ExpertiseIndexSection locale={lang} copy={copy} />
       <ExpertiseApproachSections locale={lang} />
     </main>
   );
