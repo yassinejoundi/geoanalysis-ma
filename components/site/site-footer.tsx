@@ -130,7 +130,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
           </div>
           <div className="site-footer-bottom">
             <span>© 2026 GEOANALYSIS · Marrakech, Maroc</span>
-            <Link href={`/${locale}/design-system`}>Design System</Link>
+            <Link href="/admin">Admin</Link>
           </div>
         </div>
       </footer>
