@@ -46,6 +46,16 @@ try {
     )
   `;
   await sql`
+    CREATE TABLE IF NOT EXISTS cms_team_members (
+      id text PRIMARY KEY,
+      record jsonb NOT NULL,
+      position integer NOT NULL DEFAULT 0,
+      updated_by text NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    )
+  `;
+  await sql`
     CREATE TABLE IF NOT EXISTS cms_migrations (
       version text PRIMARY KEY,
       applied_at timestamptz NOT NULL DEFAULT now()
@@ -73,7 +83,6 @@ try {
       ["projects", adminProjects.map((project) => ({ ...project, context: { fr: "", en: "" }, methodology: { fr: "", en: "" }, results: { fr: "", en: "" }, seoTitle: { ...project.title }, seoDescription: { fr: "", en: "" }, gallery: [] }))],
       ["articles", adminArticles.map((item) => ({ ...item, content: { fr: "", en: "" }, seoTitle: { ...item.title }, seoDescription: { fr: "", en: "" } }))],
       ["news", adminNews.map((item) => ({ ...item, content: { fr: "", en: "" }, seoTitle: { ...item.title }, seoDescription: { fr: "", en: "" } }))],
-      ["team", adminTeam],
       ["partners", adminPartners],
       ["messages", adminMessages],
       ["media", adminMedia.map((record, index) => ({ ...record, id: "fixture-" + index }))],
@@ -138,6 +147,40 @@ try {
 
     // Roll back before later team edits: restore legacyAdminTeam, delete t5-t9, then remove this marker.
     await sql`INSERT INTO cms_migrations (version) VALUES (${teamMigration}) ON CONFLICT (version) DO NOTHING`;
+  }
+
+  const teamTableMigration = "003_team_members_table";
+  const teamTableMigrationApplied = await sql`SELECT version FROM cms_migrations WHERE version = ${teamTableMigration}`;
+  if (teamTableMigrationApplied.length === 0) {
+    await sql`
+      INSERT INTO cms_team_members (id, record, position, updated_by, created_at, updated_at)
+      SELECT id, record, position, updated_by, created_at, updated_at
+      FROM cms_records
+      WHERE collection = 'team'
+      ON CONFLICT (id) DO NOTHING
+    `;
+
+    const updatedTeam = JSON.stringify(adminTeam);
+    await sql`
+      INSERT INTO cms_team_members (id, record, position, updated_by)
+      SELECT seed.value->>'id', seed.value, (seed.value->>'order')::integer - 1, 'system'
+      FROM jsonb_array_elements(${updatedTeam}::jsonb) AS seed(value)
+      WHERE NOT EXISTS (SELECT 1 FROM cms_records WHERE collection = 'team')
+        AND NOT EXISTS (
+          SELECT 1
+          FROM cms_team_members AS existing
+          WHERE NOT EXISTS (
+            SELECT 1
+            FROM jsonb_array_elements(${updatedTeam}::jsonb) AS desired(value)
+            WHERE desired.value->>'id' = existing.id
+              AND desired.value = existing.record
+          )
+        )
+      ON CONFLICT (id) DO NOTHING
+    `;
+
+    // Rollback after new writes: sync this table into cms_records before restoring the old data layer.
+    await sql`INSERT INTO cms_migrations (version) VALUES (${teamTableMigration}) ON CONFLICT (version) DO NOTHING`;
   }
 
   console.log("Admin data schema is ready.");

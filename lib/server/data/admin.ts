@@ -46,12 +46,18 @@ function authorize(actor: AdminActor) {
 export async function listAdminRecords<T>(actor: AdminActor, collection: AdminCollection) {
   authorize(actor);
   const sql = getDatabase();
-  const rows = await sql`
-    SELECT id, record, position
-    FROM cms_records
-    WHERE collection = ${collection}
-    ORDER BY position ASC, created_at ASC, id ASC
-  ` as CmsRow[];
+  const rows = collection === "team"
+    ? await sql`
+        SELECT id, record, position
+        FROM cms_team_members
+        ORDER BY position ASC, created_at ASC, id ASC
+      ` as CmsRow[]
+    : await sql`
+        SELECT id, record, position
+        FROM cms_records
+        WHERE collection = ${collection}
+        ORDER BY position ASC, created_at ASC, id ASC
+      ` as CmsRow[];
   return rows.map(({ record }) => {
     if (collection === "media" && record && typeof record === "object") {
       const safeRecord = Object.fromEntries(Object.entries(record).filter(([key]) => key !== "ownerId"));
@@ -83,12 +89,19 @@ export async function validateProjectReferences(actor: AdminActor, expertiseId: 
 export async function getAdminRecord<T>(actor: AdminActor, collection: AdminCollection, id: string) {
   authorize(actor);
   const sql = getDatabase();
-  const rows = await sql`
-    SELECT id, record, position
-    FROM cms_records
-    WHERE collection = ${collection} AND id = ${id}
-    LIMIT 1
-  ` as CmsRow[];
+  const rows = collection === "team"
+    ? await sql`
+        SELECT id, record, position
+        FROM cms_team_members
+        WHERE id = ${id}
+        LIMIT 1
+      ` as CmsRow[]
+    : await sql`
+        SELECT id, record, position
+        FROM cms_records
+        WHERE collection = ${collection} AND id = ${id}
+        LIMIT 1
+      ` as CmsRow[];
   return rows[0] ? (rows[0].record as T) : null;
 }
 
@@ -102,12 +115,19 @@ export async function createAdminRecord(
   authorize(actor);
   const sql = getDatabase();
   const recordJson = JSON.stringify(record);
-  const rows = await sql`
-    INSERT INTO cms_records (collection, id, record, position, updated_by)
-    VALUES (${collection}, ${id}, ${recordJson}::jsonb, ${position}, ${actor.id})
-    ON CONFLICT DO NOTHING
-    RETURNING id
-  ` as { id: string }[];
+  const rows = collection === "team"
+    ? await sql`
+        INSERT INTO cms_team_members (id, record, position, updated_by)
+        VALUES (${id}, ${recordJson}::jsonb, ${position}, ${actor.id})
+        ON CONFLICT DO NOTHING
+        RETURNING id
+      ` as { id: string }[]
+    : await sql`
+        INSERT INTO cms_records (collection, id, record, position, updated_by)
+        VALUES (${collection}, ${id}, ${recordJson}::jsonb, ${position}, ${actor.id})
+        ON CONFLICT DO NOTHING
+        RETURNING id
+      ` as { id: string }[];
   return rows.length === 1;
 }
 
@@ -121,26 +141,42 @@ export async function updateAdminRecord(
   authorize(actor);
   const sql = getDatabase();
   const recordJson = JSON.stringify(record);
-  const rows = await sql`
-    UPDATE cms_records
-    SET record = ${recordJson}::jsonb,
-        position = COALESCE(${position ?? null}, position),
-        updated_by = ${actor.id},
-        updated_at = now()
-    WHERE collection = ${collection} AND id = ${id}
-    RETURNING id
-  ` as { id: string }[];
+  const rows = collection === "team"
+    ? await sql`
+        UPDATE cms_team_members
+        SET record = ${recordJson}::jsonb,
+            position = COALESCE(${position ?? null}, position),
+            updated_by = ${actor.id},
+            updated_at = now()
+        WHERE id = ${id}
+        RETURNING id
+      ` as { id: string }[]
+    : await sql`
+        UPDATE cms_records
+        SET record = ${recordJson}::jsonb,
+            position = COALESCE(${position ?? null}, position),
+            updated_by = ${actor.id},
+            updated_at = now()
+        WHERE collection = ${collection} AND id = ${id}
+        RETURNING id
+      ` as { id: string }[];
   return rows.length === 1;
 }
 
 export async function deleteAdminRecord(actor: AdminActor, collection: AdminCollection, id: string) {
   authorize(actor);
   const sql = getDatabase();
-  const rows = await sql`
-    DELETE FROM cms_records
-    WHERE collection = ${collection} AND id = ${id}
-    RETURNING id
-  ` as { id: string }[];
+  const rows = collection === "team"
+    ? await sql`
+        DELETE FROM cms_team_members
+        WHERE id = ${id}
+        RETURNING id
+      ` as { id: string }[]
+    : await sql`
+        DELETE FROM cms_records
+        WHERE collection = ${collection} AND id = ${id}
+        RETURNING id
+      ` as { id: string }[];
   return rows.length === 1;
 }
 
@@ -148,36 +184,58 @@ export async function reorderAdminRecords(actor: AdminActor, collection: AdminCo
   authorize(actor);
   const sql = getDatabase();
   const ordering = JSON.stringify(ids.map((id, position) => ({ id, position })));
-  const rows = await sql`
-    WITH desired AS (
-      SELECT id, position
-      FROM jsonb_to_recordset(${ordering}::jsonb) AS item(id text, position integer)
-    ), valid AS (
-      SELECT
-        count(*) AS desired_count,
-        count(DISTINCT desired.id) AS distinct_count,
-        (SELECT count(*) FROM cms_records WHERE collection = ${collection}) AS current_count,
-        count(*) FILTER (WHERE EXISTS (
-          SELECT 1 FROM cms_records AS existing
-          WHERE existing.collection = ${collection} AND existing.id = desired.id
-        )) AS matched_count
-      FROM desired
-    )
-    UPDATE cms_records AS record
-    SET position = desired.position,
-        record = CASE WHEN ${collection} = 'team'
-          THEN jsonb_set(record.record, '{order}', to_jsonb(desired.position + 1), true)
-          ELSE record.record
-        END,
-        updated_by = ${actor.id}, updated_at = now()
-    FROM desired, valid
-    WHERE record.collection = ${collection}
-      AND record.id = desired.id
-      AND valid.desired_count = valid.distinct_count
-      AND valid.desired_count = valid.current_count
-      AND valid.matched_count = valid.desired_count
-    RETURNING record.id
-  ` as { id: string }[];
+  const rows = collection === "team"
+    ? await sql`
+        WITH desired AS (
+          SELECT id, position
+          FROM jsonb_to_recordset(${ordering}::jsonb) AS item(id text, position integer)
+        ), valid AS (
+          SELECT
+            count(*) AS desired_count,
+            count(DISTINCT desired.id) AS distinct_count,
+            (SELECT count(*) FROM cms_team_members) AS current_count,
+            count(*) FILTER (WHERE EXISTS (
+              SELECT 1 FROM cms_team_members AS existing WHERE existing.id = desired.id
+            )) AS matched_count
+          FROM desired
+        )
+        UPDATE cms_team_members AS record
+        SET position = desired.position,
+            record = jsonb_set(record.record, '{order}', to_jsonb(desired.position + 1), true),
+            updated_by = ${actor.id}, updated_at = now()
+        FROM desired, valid
+        WHERE record.id = desired.id
+          AND valid.desired_count = valid.distinct_count
+          AND valid.desired_count = valid.current_count
+          AND valid.matched_count = valid.desired_count
+        RETURNING record.id
+      ` as { id: string }[]
+    : await sql`
+        WITH desired AS (
+          SELECT id, position
+          FROM jsonb_to_recordset(${ordering}::jsonb) AS item(id text, position integer)
+        ), valid AS (
+          SELECT
+            count(*) AS desired_count,
+            count(DISTINCT desired.id) AS distinct_count,
+            (SELECT count(*) FROM cms_records WHERE collection = ${collection}) AS current_count,
+            count(*) FILTER (WHERE EXISTS (
+              SELECT 1 FROM cms_records AS existing
+              WHERE existing.collection = ${collection} AND existing.id = desired.id
+            )) AS matched_count
+          FROM desired
+        )
+        UPDATE cms_records AS record
+        SET position = desired.position,
+            updated_by = ${actor.id}, updated_at = now()
+        FROM desired, valid
+        WHERE record.collection = ${collection}
+          AND record.id = desired.id
+          AND valid.desired_count = valid.distinct_count
+          AND valid.desired_count = valid.current_count
+          AND valid.matched_count = valid.desired_count
+        RETURNING record.id
+      ` as { id: string }[];
   return rows.length === ids.length;
 }
 
