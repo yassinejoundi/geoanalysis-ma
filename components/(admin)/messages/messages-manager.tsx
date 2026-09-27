@@ -47,6 +47,9 @@ export function MessagesManager() {
     return matchesFilter(message, filter) && (!normalizedQuery || searchableText.includes(normalizedQuery));
   });
   const selectedMessage = visibleMessages.find((message) => message.id === selectedId) ?? visibleMessages[0] ?? null;
+  const resultCount = visibleMessages.length === 1
+    ? "1 message affiché"
+    : `${visibleMessages.length} messages affichés`;
   const newCount = messages.filter((message) => message.status === "new").length;
   const activeCount = messages.filter((message) => ["contacted", "talking", "quoted"].includes(message.status)).length;
   const closedCount = messages.filter((message) => ["won", "lost"].includes(message.status)).length;
@@ -113,7 +116,7 @@ export function MessagesManager() {
       </section>
 
       <p className="message-results-count" role="status" aria-live="polite" aria-atomic="true">
-        {visibleMessages.length} message{visibleMessages.length === 1 ? "" : "s"} affiché{visibleMessages.length === 1 ? "" : "s"}
+        {resultCount}
       </p>
 
       <div className="message-inbox-layout">
@@ -162,7 +165,9 @@ export function MessagesManager() {
               <h3>{messages.length ? "Aucun résultat" : "Aucun message reçu"}</h3>
               <p>
                 {messages.length
-                  ? "Modifiez la recherche ou le filtre pour retrouver une demande."
+                  ? normalizedQuery
+                    ? `Aucun message ne correspond à « ${query} ». Modifiez la recherche ou le filtre.`
+                    : "Aucun message ne correspond à ce filtre. Choisissez un autre filtre."
                   : "Les demandes envoyées depuis le formulaire de contact apparaîtront ici."}
               </p>
               {messages.length > 0 && (query || filter !== "all") && (
