@@ -24,11 +24,13 @@ export interface EditorialEntry {
   id: string;
   slug: string;
   category: LocalizedText;
-  date: string;
+  date: LocalizedText;
+  dateISO?: string;
   readingTime?: string;
   title: LocalizedText;
   teaser: LocalizedText;
   imageLabel: string;
+  image?: { src: string; alt: LocalizedText };
 }
 
 export interface EditorialDetailEntry extends EditorialEntry {
@@ -90,7 +92,113 @@ export const expertises: Expertise[] = [
 ];
 
 export const projects: Project[] = [];
-export const news: EditorialDetailEntry[] = [];
+export const news: EditorialDetailEntry[] = [
+  {
+    id: "reconnaissance-terrain",
+    slug: "reconnaissance-geologique-aout-2024",
+    category: { fr: "Terrain", en: "Fieldwork" },
+    date: { fr: "22 août 2024", en: "August 22, 2024" },
+    dateISO: "2024-08-22",
+    title: {
+      fr: "Reconnaissance géologique sur le terrain",
+      en: "Geological reconnaissance in the field",
+    },
+    teaser: {
+      fr: "Une archive du 22 août 2024 montre un versant rocheux entaillé par une coupe de terrain.",
+      en: "An archive photo dated August 22, 2024 shows a rocky slope with a field cut.",
+    },
+    imageLabel: "Versant rocheux dans une archive de terrain",
+    image: {
+      src: "/actualites/reconnaissance-terrain.webp",
+      alt: {
+        fr: "Versant rocheux aride marqué par une coupe de terrain",
+        en: "Arid rocky slope marked by a field cut",
+      },
+    },
+    body: {
+      fr: [
+        "L’archive photographique de GEOANALYSIS contient un cliché daté du 22 août 2024. Il montre un versant rocheux entaillé par une coupe de terrain.",
+        "La fiche de services du bureau cite les études et levés géologiques, l’échantillonnage et la préparation de travaux de reconnaissance.",
+        "Les documents transmis ne rattachent pas cette photographie à un site, un client ou un résultat précis.",
+      ],
+      en: [
+        "The GEOANALYSIS photo archive contains an image dated August 22, 2024. It shows a rocky slope cut by a field trench.",
+        "The firm’s service sheet lists geological studies and surveys, sampling, and reconnaissance planning.",
+        "The supplied documents do not link this photograph to a specific site, client, or result.",
+      ],
+    },
+  },
+  {
+    id: "echantillons-roches",
+    slug: "echantillons-roches-fevrier-2024",
+    category: { fr: "Échantillonnage", en: "Sampling" },
+    date: { fr: "14 février 2024", en: "February 14, 2024" },
+    dateISO: "2024-02-14",
+    title: {
+      fr: "Des échantillons de roche documentés",
+      en: "Rock samples documented",
+    },
+    teaser: {
+      fr: "Des clichés datés de février 2024 montrent des échantillons photographiés avec un repère de mesure.",
+      en: "Photos dated February 2024 show rock samples photographed beside a measuring scale.",
+    },
+    imageLabel: "Échantillon de roche avec repère de mesure",
+    image: {
+      src: "/actualites/echantillons-roche.webp",
+      alt: {
+        fr: "Échantillon de roche posé sur une planche graduée",
+        en: "Rock sample placed on a measuring board",
+      },
+    },
+    body: {
+      fr: [
+        "Plusieurs images conservées dans les supports du bureau sont datées du 14 février 2024. Elles montrent des roches photographiées avec un repère de mesure.",
+        "La fiche de services mentionne l’échantillonnage géologique et les synthèses issues de recherches documentaires.",
+        "Les sources ne précisent ni l’origine de ces échantillons ni les analyses éventuellement associées.",
+      ],
+      en: [
+        "Several images in the firm’s archive are dated February 14, 2024. They show rocks photographed beside a measuring scale.",
+        "The service sheet mentions geological sampling and syntheses based on documentary research.",
+        "The sources do not identify the origin of these samples or any related analyses.",
+      ],
+    },
+  },
+  {
+    id: "affleurements-geologiques",
+    slug: "affleurements-geologiques-aout-2023",
+    category: { fr: "Géologie", en: "Geology" },
+    date: { fr: "29 août 2023", en: "August 29, 2023" },
+    dateISO: "2023-08-29",
+    title: {
+      fr: "Lire les couches, décrire l’affleurement",
+      en: "Reading the layers, describing the outcrop",
+    },
+    teaser: {
+      fr: "Une vue d’archive montre un affleurement aux couches contrastées, dans un ensemble de photos datées d’août 2023.",
+      en: "An archive image shows a rocky outcrop with contrasting layers in a photo set dated August 2023.",
+    },
+    imageLabel: "Affleurement rocheux aux couches contrastées",
+    image: {
+      src: "/actualites/affleurement-geologique.webp",
+      alt: {
+        fr: "Affleurement rocheux présentant des couches contrastées",
+        en: "Rocky outcrop with contrasting visible layers",
+      },
+    },
+    body: {
+      fr: [
+        "Un cliché du fonds photographique, daté du 29 août 2023, montre un affleurement rocheux aux couches visibles.",
+        "La fiche de services de GEOANALYSIS cite les études, les levés et la cartographie géologiques.",
+        "Aucun site, client, mandat ou résultat n’est indiqué pour cette photographie dans les documents transmis.",
+      ],
+      en: [
+        "A photo in the archive, dated August 29, 2023, shows a rocky outcrop with visible layers.",
+        "The GEOANALYSIS service sheet lists geological studies, surveys, and mapping.",
+        "The supplied documents do not identify a site, client, assignment, or result for this photograph.",
+      ],
+    },
+  },
+];
 export const articles: EditorialDetailEntry[] = [];
 
 export const methodGroups: MethodGroup[] = [

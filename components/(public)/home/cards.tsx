@@ -58,7 +58,11 @@ export function EditorialCard({
         {localize(entry.title, locale)}
       </span>
       <span className="home-editorial-date">
-        {entry.date}
+        {entry.dateISO ? (
+          <time dateTime={entry.dateISO}>{localize(entry.date, locale)}</time>
+        ) : (
+          localize(entry.date, locale)
+        )}
         {entry.readingTime && readLabel
           ? ` · ${entry.readingTime} ${readLabel}`
           : ""}

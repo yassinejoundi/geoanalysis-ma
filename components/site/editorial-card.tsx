@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { EditorialEntry } from "@/lib/content/site";
 import { localize, type Locale } from "@/lib/i18n";
@@ -23,15 +24,28 @@ export function EditorialCard({
     <Link
       className={`editorial-card editorial-card-${kind}`}
       href={`/${locale}/${kind}/${entry.slug}`}>
-      <span className="editorial-card-image" aria-hidden="true">
-        {entry.imageLabel}
+      <span className="editorial-card-image">
+        {entry.image ? (
+          <Image
+            src={entry.image.src}
+            alt={localize(entry.image.alt, locale)}
+            fill
+            sizes="(max-width: 760px) 100vw, (max-width: 1200px) 45vw, 32vw"
+          />
+        ) : (
+          <span aria-hidden="true">{entry.imageLabel}</span>
+        )}
       </span>
       <div className="editorial-card-content">
         <span className="editorial-card-meta">
           <span className="editorial-card-category">
             {localize(entry.category, locale)}
           </span>
-          <span>{entry.date}</span>
+          {entry.dateISO ? (
+            <time dateTime={entry.dateISO}>{localize(entry.date, locale)}</time>
+          ) : (
+            <span>{localize(entry.date, locale)}</span>
+          )}
         </span>
         <Title className="editorial-card-title">
           {localize(entry.title, locale)}

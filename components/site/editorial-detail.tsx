@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { EditorialDetailEntry } from "@/lib/content/site";
 import { localize, type Locale } from "@/lib/i18n";
@@ -34,7 +35,13 @@ export function EditorialDetail({
             <span className="editorial-detail-category">
               {localize(entry.category, locale)}
             </span>
-            <span>{entry.date}</span>
+            {entry.dateISO ? (
+              <time dateTime={entry.dateISO}>
+                {localize(entry.date, locale)}
+              </time>
+            ) : (
+              <span>{localize(entry.date, locale)}</span>
+            )}
             {entry.readingTime ? (
               <span>
                 {entry.readingTime} {copy.read}
@@ -49,8 +56,18 @@ export function EditorialDetail({
       </section>
 
       <article className="editorial-detail-body">
-        <div className="editorial-detail-image" aria-hidden="true">
-          {entry.imageLabel}
+        <div className="editorial-detail-image">
+          {entry.image ? (
+            <Image
+              src={entry.image.src}
+              alt={localize(entry.image.alt, locale)}
+              fill
+              preload
+              sizes="(max-width: 760px) 100vw, 900px"
+            />
+          ) : (
+            <span aria-hidden="true">{entry.imageLabel}</span>
+          )}
         </div>
         <div className="editorial-detail-copy">
           {entry.body[locale].map((paragraph) => (
