@@ -43,6 +43,12 @@ html {
   scroll-behavior: smooth;
 }
 
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 body {
   min-height: 100vh;
   margin: 0;
@@ -3421,6 +3427,10 @@ button:focus-visible {
   letter-spacing: -0.025em;
   line-height: 1.2;
   text-wrap: balance;
+}
+
+#contact-form-title {
+  scroll-margin-top: 104px;
 }
 
 .contact-panel-heading > p:last-child {

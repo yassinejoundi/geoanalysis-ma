@@ -87,7 +87,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
               </li>
             </ul>
             <div className="site-conversion-actions">
-              <Link href={`/${locale}/contact`}>
+              <Link href={`/${locale}/contact#contact-form-title`}>
                 {isFrench ? "Parler de votre projet" : "Discuss your project"}
                 <span aria-hidden="true">→</span>
               </Link>
