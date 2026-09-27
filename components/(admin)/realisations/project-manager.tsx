@@ -92,6 +92,7 @@ export function ProjectManager({ initialProjects, initialExpertises }: { initial
   const [editor, setEditor] = useState<{ mode: "create" | "edit" } | null>(null);
   const [editorValues, setEditorValues] = useState<ManagedProject>(emptyProject);
   const [editorLanguage, setEditorLanguage] = useState<"fr" | "en">("fr");
+  const [imageBusy, setImageBusy] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<ManagedProject | null>(null);
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastSequence = useRef(0);
@@ -318,8 +319,10 @@ export function ProjectManager({ initialProjects, initialExpertises }: { initial
         description="Renseignez le contenu, la méthodologie et les résultats du projet."
         onClose={() => setEditor(null)}
         onSave={saveEditor}
+        saving={imageBusy}
+        savingLabel="Envoi de l’image…"
       >
-          <ProjectEditorFields values={editorValues} onChange={setEditorValues} expertises={initialExpertises} language={editorLanguage} onLanguageChange={setEditorLanguage} />
+        <ProjectEditorFields values={editorValues} onChange={setEditorValues} expertises={initialExpertises} language={editorLanguage} onLanguageChange={setEditorLanguage} onUploadBusyChange={setImageBusy} />
       </EditorDrawer>
 
       <ConfirmDialog

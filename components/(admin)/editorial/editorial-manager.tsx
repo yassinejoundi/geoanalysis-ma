@@ -47,6 +47,7 @@ function emptyItem(kind: EditorialKind, categories: LocalizedText[]): EditorialD
     date: "",
     ...(kind === "article" ? { readingTime: "" } : {}),
     title: { fr: "", en: "" },
+    image: null,
     content: { fr: "", en: "" },
     seoTitle: { fr: "", en: "" },
     seoDescription: { fr: "", en: "" },
@@ -96,6 +97,7 @@ export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; 
   const [editor, setEditor] = useState<{ mode: "create" | "edit" } | null>(null);
   const [editorValues, setEditorValues] = useState<EditorialDraft>(() => emptyItem(kind, []));
   const [editorLanguage, setEditorLanguage] = useState<"fr" | "en">("fr");
+  const [imageBusy, setImageBusy] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<EditorialDraft | null>(null);
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastSequence = useRef(0);
@@ -409,8 +411,10 @@ export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; 
         description={`Renseignez le contenu et les métadonnées de ${entityLabel}.`}
         onClose={() => setEditor(null)}
         onSave={saveEditor}
+        saving={imageBusy}
+        savingLabel="Envoi de l’image…"
       >
-        <EditorialEditorFields values={editorValues} onChange={setEditorValues} language={editorLanguage} onLanguageChange={setEditorLanguage} categories={categories} />
+        <EditorialEditorFields values={editorValues} onChange={setEditorValues} language={editorLanguage} onLanguageChange={setEditorLanguage} categories={categories} onUploadBusyChange={setImageBusy} />
       </EditorDrawer>
 
       <ConfirmDialog

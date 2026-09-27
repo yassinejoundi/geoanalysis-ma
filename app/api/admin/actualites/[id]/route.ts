@@ -3,7 +3,7 @@ import { adminMutationAccess, logAdminMutation, mutationFailureResponse, mutatio
 import { hasOnlyKeys, isIdentifier, isRecord, parseEditorialFields } from "@/lib/server/validation";
 
 type RouteContext = { params: Promise<{ id: string }> };
-const keys = ["state", "category", "tags", "date", "title", "content", "seoTitle", "seoDescription"] as const;
+const keys = ["state", "category", "tags", "date", "title", "content", "seoTitle", "seoDescription", "image"] as const;
 
 export async function PATCH(request: Request, context: RouteContext) {
   const access = await adminMutationAccess(request);

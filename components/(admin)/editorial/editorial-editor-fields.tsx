@@ -3,8 +3,10 @@
 import type { Dispatch, SetStateAction } from "react";
 import type { LocalizedText } from "@/lib/i18n";
 import type { PublicationState } from "@/lib/content/admin";
+import { ImageUploadField, type UploadedImage } from "@/components/(admin)/shared/image-upload-field";
 
 export type EditorialKind = "article" | "news";
+export type EditorialImage = { src: string; alt: LocalizedText };
 
 export type EditorialDraft = {
   id: string;
@@ -14,6 +16,7 @@ export type EditorialDraft = {
   date: string;
   readingTime?: string;
   title: LocalizedText;
+  image?: EditorialImage | null;
   content: LocalizedText;
   seoTitle: LocalizedText;
   seoDescription: LocalizedText;
@@ -25,12 +28,14 @@ export function EditorialEditorFields({
   language,
   onLanguageChange,
   categories,
+  onUploadBusyChange,
 }: {
   values: EditorialDraft;
   onChange: Dispatch<SetStateAction<EditorialDraft>>;
   language: "fr" | "en";
   onLanguageChange: (language: "fr" | "en") => void;
   categories: LocalizedText[];
+  onUploadBusyChange: (busy: boolean) => void;
 }) {
   const languageName = language === "fr" ? "Français" : "English";
 
@@ -41,6 +46,13 @@ export function EditorialEditorFields({
     onChange((current) => ({
       ...current,
       [field]: { ...current[field], [language]: value },
+    }));
+  }
+
+  function setImage(image: UploadedImage) {
+    onChange((current) => ({
+      ...current,
+      image: { src: image.url, alt: { fr: current.title.fr, en: current.title.en } },
     }));
   }
 
@@ -112,9 +124,31 @@ export function EditorialEditorFields({
 
       <div className="admin-field">
         <span>Image principale</span>
-        <p className="admin-disabled-field">
-          Les fichiers peuvent être ajoutés depuis la médiathèque.
-        </p>
+        <ImageUploadField
+          id="editorial-image"
+          label="Choisir une image"
+          value={values.image?.src}
+          onUploaded={setImage}
+          onBusyChange={onUploadBusyChange}
+        />
+        {values.image && (
+          <>
+            <label className="admin-field">
+              <span>Texte alternatif — {languageName}</span>
+              <input
+                required
+                value={values.image.alt[language]}
+                onChange={(event) => onChange((current) => current.image ? ({
+                  ...current,
+                  image: { ...current.image, alt: { ...current.image.alt, [language]: event.currentTarget.value } },
+                }) : current)}
+              />
+            </label>
+            <button className="admin-action" type="button" onClick={() => onChange((current) => ({ ...current, image: null }))}>
+              Retirer l’image
+            </button>
+          </>
+        )}
       </div>
 
       <label className="admin-field">

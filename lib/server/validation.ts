@@ -31,6 +31,25 @@ export function localizedText(value: unknown, maxLength: number, required = true
   return fr !== null && en !== null ? { fr, en } : null;
 }
 
+function isAllowedImageSource(value: string) {
+  if (value.startsWith("/") && !value.startsWith("//")) return true;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && url.hostname === "res.cloudinary.com";
+  } catch {
+    return false;
+  }
+}
+
+function parseEditorialImage(value: unknown) {
+  if (value === null) return null;
+  if (!isRecord(value) || !hasOnlyKeys(value, ["src", "alt"])) return false;
+  const src = textField(value.src, 2048);
+  const alt = localizedText(value.alt, 250);
+  if (!src || !alt || !isAllowedImageSource(src)) return false;
+  return { src, alt };
+}
+
 export function publicationState(value: unknown): PublicationState | null {
   return value === "published" || value === "draft" ? value : null;
 }
@@ -101,22 +120,24 @@ export function parseProjectFields(value: unknown) {
 
 function parseProjectGallery(value: unknown) {
   if (!Array.isArray(value) || value.length > 30) return null;
-  const items: { id: string; caption: string; isCover: boolean }[] = [];
+  const items: { id: string; caption: string; isCover: boolean; url?: string }[] = [];
   for (const item of value) {
-    if (!isRecord(item) || !hasOnlyKeys(item, ["id", "caption", "isCover"])) return null;
+    if (!isRecord(item) || !hasOnlyKeys(item, ["id", "caption", "isCover", "url"])) return null;
     const id = textField(item.id, 80);
     const caption = textField(item.caption, 240, false);
-    if (!id || !isIdentifier(id) || caption === null || typeof item.isCover !== "boolean") return null;
-    items.push({ id, caption, isCover: item.isCover });
+    const url = item.url === undefined ? undefined : textField(item.url, 2048);
+    if (!id || !isIdentifier(id) || caption === null || typeof item.isCover !== "boolean" ||
+      (item.url !== undefined && (!url || !isAllowedImageSource(url)))) return null;
+    items.push({ id, caption, isCover: item.isCover, ...(url ? { url } : {}) });
   }
   if (items.filter((item) => item.isCover).length > 1) return null;
   return items;
 }
 
 export function parseEditorialFields(value: unknown, kind: "articles" | "news") {
-  const common = ["state", "category", "tags", "date", "title", "content", "seoTitle", "seoDescription"];
-  const keys = kind === "articles" ? [...common, "readingTime"] : common;
-  if (!isRecord(value) || !hasOnlyKeys(value, keys) || keys.some((key) => !(key in value))) return null;
+  const requiredKeys = ["state", "category", "tags", "date", "title", "content", "seoTitle", "seoDescription"];
+  const keys = [...requiredKeys, "image", ...(kind === "articles" ? ["readingTime"] : [])];
+  if (!isRecord(value) || !hasOnlyKeys(value, keys) || requiredKeys.some((key) => !(key in value))) return null;
   const state = publicationState(value.state);
   const category = localizedText(value.category, 100);
   const date = textField(value.date, 40);
@@ -124,11 +145,16 @@ export function parseEditorialFields(value: unknown, kind: "articles" | "news") 
   const content = localizedText(value.content, 20_000, false);
   const seoTitle = localizedText(value.seoTitle, 160, false);
   const seoDescription = localizedText(value.seoDescription, 320, false);
+  const image = value.image === undefined ? undefined : parseEditorialImage(value.image);
   const readingTime = kind === "articles" ? textField(value.readingTime, 30) : undefined;
-  if (!Array.isArray(value.tags) || value.tags.length > 12) return null;
+  if (!Array.isArray(value.tags) || value.tags.length > 12 || image === false) return null;
   const tags = value.tags.map((tag) => textField(tag, 30)).filter((tag): tag is string => tag !== null);
   if (tags.length !== value.tags.length || !state || !category || !date || !title || !content || !seoTitle || !seoDescription || (kind === "articles" && !readingTime)) return null;
-  return { state, category, tags, date, title, content, seoTitle, seoDescription, ...(readingTime ? { readingTime } : {}) };
+  return {
+    state, category, tags, date, title, content, seoTitle, seoDescription,
+    ...(image !== undefined ? { image } : {}),
+    ...(readingTime ? { readingTime } : {}),
+  };
 }
 
 export function parseTeamFields(value: unknown) {

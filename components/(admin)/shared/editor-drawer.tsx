@@ -10,6 +10,7 @@ type EditorDrawerProps = {
   onClose: () => void;
   onSave: () => void;
   saving?: boolean;
+  savingLabel?: string;
 };
 
 export function EditorDrawer({
@@ -20,6 +21,7 @@ export function EditorDrawer({
   onClose,
   onSave,
   saving = false,
+  savingLabel = "Enregistrement…",
 }: EditorDrawerProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -40,7 +42,7 @@ export function EditorDrawer({
       aria-describedby="editor-drawer-description"
       onCancel={(event) => {
         event.preventDefault();
-        onClose();
+        if (!saving) onClose();
       }}
     >
       <form
@@ -68,7 +70,7 @@ export function EditorDrawer({
             Annuler
           </button>
           <button className="admin-action admin-action-primary" type="submit" disabled={saving}>
-            {saving ? "Enregistrement…" : "Enregistrer"}
+            {saving ? savingLabel : "Enregistrer"}
           </button>
         </footer>
       </form>

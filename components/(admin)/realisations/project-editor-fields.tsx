@@ -1,13 +1,16 @@
 "use client";
 
 import type { Dispatch, SetStateAction } from "react";
+import Image from "next/image";
 import type { LocalizedText } from "@/lib/i18n";
 import type { AdminExpertise, PublicationState } from "@/lib/content/admin";
+import { ImageUploadField, type UploadedImage } from "@/components/(admin)/shared/image-upload-field";
 
 export type ProjectImage = {
   id: string;
   caption: string;
   isCover: boolean;
+  url?: string;
 };
 
 export type ProjectDraft = {
@@ -32,12 +35,14 @@ export function ProjectEditorFields({
   expertises,
   language,
   onLanguageChange,
+  onUploadBusyChange,
 }: {
   values: ProjectDraft;
   onChange: Dispatch<SetStateAction<ProjectDraft>>;
   expertises: AdminExpertise[];
   language: "fr" | "en";
   onLanguageChange: (language: "fr" | "en") => void;
+  onUploadBusyChange: (busy: boolean) => void;
 }) {
   const selectedExpertise = expertises.find(
     (expertise) => expertise.id === values.expertiseId,
@@ -81,6 +86,18 @@ export function ProjectEditorFields({
       }
       return { ...current, gallery };
     });
+  }
+
+  function addImage(image: UploadedImage) {
+    onChange((current) => ({
+      ...current,
+      gallery: [...current.gallery, {
+        id: image.id,
+        url: image.url,
+        caption: "",
+        isCover: current.gallery.length === 0,
+      }],
+    }));
   }
 
   return (
@@ -215,8 +232,19 @@ export function ProjectEditorFields({
           <ul className="project-gallery-grid">
             {values.gallery.map((image, index) => (
               <li className="project-gallery-card" key={image.id}>
-                <div className="project-gallery-placeholder" aria-hidden="true">
-                  <span>{image.isCover ? "Couverture" : `Image ${index + 1}`}</span>
+                <div className="project-gallery-placeholder">
+                  {image.url ? (
+                    <Image
+                      className="project-gallery-preview-image"
+                      src={image.url}
+                      alt={image.caption || `Aperçu de l’image ${index + 1}`}
+                      width={420}
+                      height={236}
+                      unoptimized
+                    />
+                  ) : (
+                    <span aria-hidden="true">{image.isCover ? "Couverture" : `Image ${index + 1}`}</span>
+                  )}
                 </div>
                 <label className="admin-field">
                   <span>Légende de l’image {index + 1}</span>
@@ -247,9 +275,12 @@ export function ProjectEditorFields({
             ))}
           </ul>
         )}
-        <button className="admin-action" type="button" disabled>
-          Ajouter des images — médiathèque indisponible
-        </button>
+        <ImageUploadField
+          id="project-gallery-image"
+          label="Ajouter une image"
+          onUploaded={addImage}
+          onBusyChange={onUploadBusyChange}
+        />
       </section>
 
       <section className="project-seo-editor" aria-labelledby="project-seo-title">
