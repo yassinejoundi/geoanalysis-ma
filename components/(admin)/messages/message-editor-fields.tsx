@@ -5,38 +5,31 @@ import { messageStatuses } from "@/lib/content/admin";
 
 export function MessageEditorFields({
   message,
+  updating,
   onStatusChange,
 }: {
   message: AdminMessage;
+  updating: boolean;
   onStatusChange: (status: MessageStatus) => void;
 }) {
-  const attachmentType = message.file.split(".").pop()?.toUpperCase() ?? "Fichier";
+  const attachmentType = message.file.split(".").pop()?.toUpperCase() || "Fichier";
 
   return (
     <>
       <dl className="message-detail-list">
         <div>
-          <dt>Contact</dt>
-          <dd>{message.name}</dd>
-        </div>
-        <div>
-          <dt>Société</dt>
-          <dd>{message.company}</dd>
-        </div>
-        <div>
           <dt>Type de projet</dt>
           <dd>{message.type.fr}</dd>
         </div>
-        <div>
-          <dt>Date de réception</dt>
-          <dd>{message.date}</dd>
-        </div>
+        {message.email && <div><dt>E-mail</dt><dd><a href={`mailto:${message.email}`}>{message.email}</a></dd></div>}
+        {message.phone && <div><dt>Téléphone</dt><dd><a href={`tel:${message.phone}`}>{message.phone}</a></dd></div>}
       </dl>
 
       <label className="admin-field">
         <span>Statut</span>
         <select
           value={message.status}
+          disabled={updating}
           onChange={(event) => onStatusChange(event.currentTarget.value as MessageStatus)}
         >
           {messageStatuses.map(({ id, label }) => (
@@ -66,7 +59,7 @@ export function MessageEditorFields({
         ) : (
           <p>Aucun fichier joint à cette demande.</p>
         )}
-        <p className="admin-field-help">Le nom du fichier joint est fourni avec le message.</p>
+        {message.file && <p className="admin-field-help">Le nom du fichier joint est fourni avec le message.</p>}
       </section>
     </>
   );

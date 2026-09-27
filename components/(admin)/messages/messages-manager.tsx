@@ -2,17 +2,34 @@
 
 import { useRef, useState } from "react";
 import { MessageEditorFields } from "@/components/(admin)/messages/message-editor-fields";
-import { EditorDrawer } from "@/components/(admin)/shared/editor-drawer";
 import { Toast } from "@/components/(admin)/shared/toast";
 import { useAdminMessages } from "@/components/(admin)/shared/admin-messages-provider";
 import { messageStatuses, type AdminMessage, type MessageStatus } from "@/lib/content/admin";
 import { sendApiMutation } from "@/lib/api-client";
 
 type ToastMessage = { id: number; message: string };
+type MessageFilter = "all" | "new" | "active" | "closed";
+
+const filters: { id: MessageFilter; label: string }[] = [
+  { id: "all", label: "Tous" },
+  { id: "new", label: "Nouveaux" },
+  { id: "active", label: "En cours" },
+  { id: "closed", label: "Terminés" },
+];
+
+function matchesFilter(message: AdminMessage, filter: MessageFilter) {
+  if (filter === "new") return message.status === "new";
+  if (filter === "active") return ["contacted", "talking", "quoted"].includes(message.status);
+  if (filter === "closed") return ["won", "lost"].includes(message.status);
+  return true;
+}
 
 export function MessagesManager() {
   const { messages, setMessages } = useAdminMessages();
-  const [editorValues, setEditorValues] = useState<AdminMessage | null>(null);
+  const [filter, setFilter] = useState<MessageFilter>("all");
+  const [query, setQuery] = useState("");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastSequence = useRef(0);
 
@@ -21,28 +38,32 @@ export function MessagesManager() {
     setToast({ id: toastSequence.current, message });
   }
 
-  function openMessage(message: AdminMessage) {
-    setEditorValues({ ...message, type: { ...message.type } });
-  }
+  const normalizedQuery = query.trim().toLocaleLowerCase("fr");
+  const visibleMessages = messages.filter((message) => {
+    const searchableText = [message.name, message.company, message.email, message.phone, message.type.fr, message.date, message.message, message.file]
+      .filter(Boolean)
+      .join(" ")
+      .toLocaleLowerCase("fr");
+    return matchesFilter(message, filter) && (!normalizedQuery || searchableText.includes(normalizedQuery));
+  });
+  const selectedMessage = visibleMessages.find((message) => message.id === selectedId) ?? visibleMessages[0] ?? null;
+  const newCount = messages.filter((message) => message.status === "new").length;
+  const activeCount = messages.filter((message) => ["contacted", "talking", "quoted"].includes(message.status)).length;
+  const closedCount = messages.filter((message) => ["won", "lost"].includes(message.status)).length;
 
   async function changeStatus(message: AdminMessage, status: MessageStatus) {
-    if (message.status === status) return;
+    if (message.status === status || updatingId) return;
+    setUpdatingId(message.id);
     try {
       await sendApiMutation(`/api/admin/messages/${message.id}`, "PATCH", { status });
       setMessages((current) => current.map((item) => item.id === message.id ? { ...item, status } : item));
       const label = messageStatuses.find((item) => item.id === status)?.label.fr.toLocaleLowerCase("fr");
-      notify(`${message.name} déplacé vers « ${label} ».`);
-    } catch (error) { notify(error instanceof Error ? error.message : "Mise à jour impossible."); }
-  }
-
-  async function saveEditor() {
-    if (!editorValues) return;
-    try {
-      await sendApiMutation(`/api/admin/messages/${editorValues.id}`, "PATCH", { status: editorValues.status });
-      setMessages((current) => current.map((message) => message.id === editorValues.id ? { ...message, status: editorValues.status } : message));
-      notify(`Statut de ${editorValues.name} mis à jour.`);
-      setEditorValues(null);
-    } catch (error) { notify(error instanceof Error ? error.message : "Mise à jour impossible."); }
+      notify(`Statut de ${message.name} mis à jour : ${label}.`);
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "Mise à jour impossible.");
+    } finally {
+      setUpdatingId(null);
+    }
   }
 
   return (
@@ -50,89 +71,141 @@ export function MessagesManager() {
       <header className="admin-manager-header">
         <div>
           <p className="admin-eyebrow">ADMINISTRATION · DEMANDES</p>
-          <h1>Messages & demandes</h1>
-          <p>Suivez les demandes entrantes et mettez à jour leur statut.</p>
+          <h1>Messages</h1>
+          <p>Retrouvez les demandes reçues et leur suivi.</p>
         </div>
       </header>
 
-      <p className="message-board-hint" id="message-board-hint">
-        Choisissez un statut dans une carte pour déplacer la demande. Les colonnes peuvent défiler horizontalement.
+      <section className="message-overview" aria-label="Résumé des messages">
+        {[
+          { label: "Au total", value: messages.length },
+          { label: "Nouveaux", value: newCount },
+          { label: "En cours", value: activeCount },
+          { label: "Terminés", value: closedCount },
+        ].map(({ label, value }) => (
+          <div className="message-overview-card" key={label}>
+            <strong>{value}</strong>
+            <span>{label}</span>
+          </div>
+        ))}
+      </section>
+
+      <section className="message-toolbar" aria-label="Recherche et filtres des messages">
+        <div className="message-filter-group" role="group" aria-label="Filtrer les messages">
+          {filters.map(({ id, label }) => (
+            <button key={id} type="button" aria-pressed={filter === id} onClick={() => setFilter(id)}>
+              {label}
+            </button>
+          ))}
+        </div>
+        <label className="admin-field message-search">
+          <span>Rechercher</span>
+          <span className="message-search-control">
+            <span className="message-search-icon" aria-hidden="true" />
+            <input
+              type="search"
+              value={query}
+              onChange={(event) => setQuery(event.currentTarget.value)}
+              placeholder="Nom, société, e-mail ou contenu"
+            />
+          </span>
+        </label>
+      </section>
+
+      <p className="message-results-count" role="status" aria-live="polite" aria-atomic="true">
+        {visibleMessages.length} message{visibleMessages.length === 1 ? "" : "s"} affiché{visibleMessages.length === 1 ? "" : "s"}
       </p>
 
-      <div className="message-board-scroll" role="region" aria-label="Tableau des messages" aria-describedby="message-board-hint" tabIndex={0}>
-        <ul className="message-board">
-          {messageStatuses.map(({ id: status, label }) => {
-            const columnMessages = messages.filter((message) => message.status === status);
-            return (
-              <li className="message-column" key={status}>
-                <section aria-labelledby={`message-column-${status}`}>
-                  <header className="message-column-header">
-                    <span className="message-column-mark" aria-hidden="true" />
-                    <h2 id={`message-column-${status}`}>{label.fr}</h2>
-                    <span className="message-column-count" aria-label={`${columnMessages.length} message${columnMessages.length === 1 ? "" : "s"}`}>
-                      {columnMessages.length}
-                    </span>
-                  </header>
+      <div className="message-inbox-layout">
+        <section className="message-inbox-list" aria-labelledby="message-list-title">
+          <header className="message-panel-header">
+            <div>
+              <h2 id="message-list-title">Boîte de réception</h2>
+              <p>Sélectionnez une demande pour lire son contenu.</p>
+            </div>
+            <span className="message-list-count">{visibleMessages.length}</span>
+          </header>
 
-                  {columnMessages.length === 0 ? (
-                    <p className="message-column-empty">Aucun message dans cette étape.</p>
-                  ) : (
-                    <ul className="message-column-cards">
-                      {columnMessages.map((message) => (
-                        <li key={message.id}>
-                          <article className="message-card">
-                            <header className="message-card-header">
-                              <h3>{message.name}</h3>
-                              <time>{message.date}</time>
-                            </header>
-                            <p className="message-card-company">{message.company}</p>
-                            <p className="message-card-project">{message.type.fr}</p>
-                            {message.file && (
-                              <p className="message-card-attachment" aria-label={`Pièce jointe : ${message.file}`}>
-                                Pièce jointe · {message.file}
-                              </p>
-                            )}
-                            <label className="admin-field message-card-status">
-                              <span>Statut</span>
-                              <select
-                                value={message.status}
-                                aria-label={`Statut du message de ${message.name}`}
-                                onChange={(event) => changeStatus(message, event.currentTarget.value as MessageStatus)}
-                              >
-                                {messageStatuses.map((option) => (
-                                  <option key={option.id} value={option.id}>{option.label.fr}</option>
-                                ))}
-                              </select>
-                            </label>
-                            <button className="admin-action" type="button" aria-label={`Voir les détails du message de ${message.name}`} onClick={() => openMessage(message)}>
-                              Voir les détails
-                            </button>
-                          </article>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </section>
-              </li>
-            );
-          })}
-        </ul>
+          {visibleMessages.length ? (
+            <ul className="message-list">
+              {visibleMessages.map((message) => {
+                const statusLabel = messageStatuses.find(({ id }) => id === message.status)?.label.fr ?? message.status;
+                return (
+                  <li key={message.id}>
+                    <button
+                      type="button"
+                      className="message-list-item"
+                      aria-pressed={selectedMessage?.id === message.id}
+                      onClick={() => setSelectedId(message.id)}
+                    >
+                      <span className="message-list-top">
+                        <span className="message-list-name">{message.name}</span>
+                        <span className="message-list-date">{message.date}</span>
+                      </span>
+                      {message.company && <span className="message-list-company">{message.company}</span>}
+                      <span className="message-list-subject">{message.type.fr}</span>
+                      <span className="message-list-preview">{message.message}</span>
+                      <span className="message-list-bottom">
+                        <span className="message-status" data-status={message.status}>
+                          <span className="message-status-mark" aria-hidden="true" />
+                          {statusLabel}
+                        </span>
+                        {message.file && <span className="message-attachment-label">Pièce jointe</span>}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <div className="message-empty-state">
+              <h3>{messages.length ? "Aucun résultat" : "Aucun message reçu"}</h3>
+              <p>
+                {messages.length
+                  ? "Modifiez la recherche ou le filtre pour retrouver une demande."
+                  : "Les demandes envoyées depuis le formulaire de contact apparaîtront ici."}
+              </p>
+              {messages.length > 0 && (query || filter !== "all") && (
+                <button className="admin-action" type="button" onClick={() => { setQuery(""); setFilter("all"); }}>
+                  Effacer les filtres
+                </button>
+              )}
+            </div>
+          )}
+        </section>
+
+        <aside className="message-preview" aria-labelledby="message-preview-title">
+          {selectedMessage ? (
+            <>
+              <header className="message-preview-header">
+                <div>
+                  <p className="admin-eyebrow">DEMANDE REÇUE</p>
+                  <h2 id="message-preview-title">{selectedMessage.name}</h2>
+                  {selectedMessage.company && <p>{selectedMessage.company}</p>}
+                </div>
+                <span className="message-preview-date">{selectedMessage.date}</span>
+              </header>
+              <MessageEditorFields
+                message={selectedMessage}
+                updating={updatingId === selectedMessage.id}
+                onStatusChange={(status) => changeStatus(selectedMessage, status)}
+              />
+              {selectedMessage.email && (
+                <div className="message-preview-actions">
+                  <a className="admin-action admin-action-primary" href={`mailto:${selectedMessage.email}`}>
+                    Répondre par e-mail
+                  </a>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="message-preview-empty">
+              <h2 id="message-preview-title">Aucun message sélectionné</h2>
+              <p>Choisissez une demande dans la liste pour afficher ses coordonnées et son contenu.</p>
+            </div>
+          )}
+        </aside>
       </div>
-
-      <EditorDrawer
-        open={editorValues !== null}
-        heading="Détails du message"
-        description="Consultez les informations reçues et mettez à jour leur statut."
-        onClose={() => setEditorValues(null)}
-        onSave={saveEditor}
-      >
-        {editorValues && (
-          <MessageEditorFields
-            message={editorValues}
-            onStatusChange={(status) => setEditorValues((current) => current && ({ ...current, status }))}
-          />
-        )}
-      </EditorDrawer>
 
       {toast && <Toast key={toast.id} message={toast.message} />}
     </main>
