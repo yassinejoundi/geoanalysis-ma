@@ -26,6 +26,7 @@ export function PartnerEditorFields({
         <input
           autoFocus
           required
+          maxLength={120}
           value={values.name}
           onChange={(event) => {
             const name = event.currentTarget.value;
@@ -39,6 +40,7 @@ export function PartnerEditorFields({
         <input
           type="url"
           required
+          maxLength={2048}
           value={values.url}
           aria-describedby="partner-url-help"
           aria-invalid={urlError ? true : undefined}

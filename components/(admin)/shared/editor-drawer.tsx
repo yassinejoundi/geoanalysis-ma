@@ -9,6 +9,7 @@ type EditorDrawerProps = {
   children: ReactNode;
   onClose: () => void;
   onSave: () => void;
+  saving?: boolean;
 };
 
 export function EditorDrawer({
@@ -18,6 +19,7 @@ export function EditorDrawer({
   children,
   onClose,
   onSave,
+  saving = false,
 }: EditorDrawerProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -54,7 +56,7 @@ export function EditorDrawer({
             <h2 id="editor-drawer-title">{heading}</h2>
             <p id="editor-drawer-description">{description}</p>
           </div>
-          <button className="admin-action" type="button" onClick={onClose}>
+          <button className="admin-action" type="button" onClick={onClose} disabled={saving}>
             Fermer
           </button>
         </header>
@@ -62,11 +64,11 @@ export function EditorDrawer({
         <div className="editor-drawer-content">{children}</div>
 
         <footer className="editor-drawer-footer">
-          <button className="admin-action" type="button" onClick={onClose}>
+          <button className="admin-action" type="button" onClick={onClose} disabled={saving}>
             Annuler
           </button>
-          <button className="admin-action admin-action-primary" type="submit">
-            Enregistrer
+          <button className="admin-action admin-action-primary" type="submit" disabled={saving}>
+            {saving ? "Enregistrement…" : "Enregistrer"}
           </button>
         </footer>
       </form>
