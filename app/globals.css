@@ -679,7 +679,7 @@ button:focus-visible {
 .methods-secondary-action:hover { border-color: var(--brand); color: var(--brand-hover); }
 .methods-hero-visual { width: min(100%, 600px); justify-self: end; margin: 0; }
 .methods-hero-image { position: relative; overflow: hidden; aspect-ratio: 1.16; border: 1px solid var(--border); background: var(--surface); }
-.methods-hero-image img { object-fit: cover; object-position: center 54%; }
+.methods-hero-image img { object-fit: cover; object-position: center 74%; }
 .methods-hero-visual figcaption { display: flex; min-height: 42px; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 12px; background: var(--sidebar); color: var(--surface); font-family: var(--font-data); font-size: 9px; letter-spacing: .06em; line-height: 1.5; text-transform: uppercase; }
 .methods-hero-visual figcaption span:first-child { color: var(--brand-pale); }
 .methods-quick-nav { border-bottom: 1px solid var(--border); background: var(--surface); }
