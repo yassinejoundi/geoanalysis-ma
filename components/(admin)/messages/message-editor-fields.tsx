@@ -25,15 +25,19 @@ export function MessageEditorFields({
 
       <label className="admin-field">
         <span>Statut</span>
-        <select
-          value={message.status}
-          disabled={updating}
-          onChange={(event) => onStatusChange(event.currentTarget.value as MessageStatus)}
-        >
-          {messageStatuses.map(({ id, label }) => (
-            <option key={id} value={id}>{label.fr}</option>
-          ))}
-        </select>
+        <span className="message-status-control">
+          <select
+            className="message-status-select"
+            value={message.status}
+            disabled={updating}
+            onChange={(event) => onStatusChange(event.currentTarget.value as MessageStatus)}
+          >
+            {messageStatuses.map(({ id, label }) => (
+              <option key={id} value={id}>{label.fr}</option>
+            ))}
+          </select>
+          <span className="message-status-chevron" aria-hidden="true" />
+        </span>
       </label>
 
       <section className="message-detail-section" aria-labelledby="message-body-title">
