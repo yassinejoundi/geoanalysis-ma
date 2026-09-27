@@ -17,13 +17,14 @@ export async function PATCH(request: Request, context: RouteContext) {
   try {
     const current = await getAdminRecord<Record<string, unknown>>(access.actor, "projects", id);
     if (!current) return mutationFailureResponse(404, "Record not found.");
-    const candidate = { ...current, ...body.value };
+    const candidate = Object.fromEntries(fields.map((field) => [field, Object.hasOwn(body.value, field) ? body.value[field] : current[field]]));
     const parsed = parseProjectFields(candidate);
     if (!parsed) return mutationFailureResponse(400, "Invalid request.");
     if (!await validateProjectReferences(access.actor, parsed.expertiseId, parsed.subServiceId, parsed.gallery.map((image) => image.id))) return mutationFailureResponse(422, "An expertise, service, or media item is unavailable.");
-    if (!await updateAdminRecord(access.actor, "projects", id, { id, ...parsed })) return mutationFailureResponse(404, "Record not found.");
+    const record = { ...current, id, ...parsed };
+    if (!await updateAdminRecord(access.actor, "projects", id, record)) return mutationFailureResponse(404, "Record not found.");
     logAdminMutation(request, access.actor, "projects.update", "success");
-    return mutationResponse({ data: { id, ...parsed } });
+    return mutationResponse({ data: record });
   } catch {
     logAdminMutation(request, access.actor, "projects.update", "failure");
     return mutationFailureResponse(503, "The request could not be processed.");

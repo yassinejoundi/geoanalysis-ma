@@ -8,7 +8,10 @@ Read [DESIGN_SYSTEM.md](DESIGN_SYSTEM.md) before changing the interface. The das
 
 ## Local development
 
+Set `DATABASE_URL` in `.env.local` and apply the schema before opening admin pages:
+
 ```bash
+npm run db:migrate
 npm run dev
 ```
 

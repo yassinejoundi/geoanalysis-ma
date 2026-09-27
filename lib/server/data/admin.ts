@@ -19,6 +19,18 @@ export type AdminCollection = (typeof adminCollections)[number];
 
 type CmsRow = { id: string; record: unknown; position: number };
 
+const dedicatedTables = {
+  expertises: "cms_expertises",
+  projects: "cms_realisations",
+  articles: "cms_articles",
+  news: "cms_actualites",
+  team: "cms_team_members",
+} as const;
+
+function isDedicatedCollection(collection: AdminCollection): collection is keyof typeof dedicatedTables {
+  return Object.prototype.hasOwnProperty.call(dedicatedTables, collection);
+}
+
 export async function getAuthorizedAdminRecords<T>(collection: AdminCollection) {
   const access = await getAdminAccess();
   if ("response" in access) return access;
@@ -46,10 +58,10 @@ function authorize(actor: AdminActor) {
 export async function listAdminRecords<T>(actor: AdminActor, collection: AdminCollection) {
   authorize(actor);
   const sql = getDatabase();
-  const rows = collection === "team"
+  const rows = isDedicatedCollection(collection)
     ? await sql`
         SELECT id, record, position
-        FROM cms_team_members
+        FROM ${sql.unsafe(dedicatedTables[collection])}
         ORDER BY position ASC, created_at ASC, id ASC
       ` as CmsRow[]
     : await sql`
@@ -89,10 +101,10 @@ export async function validateProjectReferences(actor: AdminActor, expertiseId: 
 export async function getAdminRecord<T>(actor: AdminActor, collection: AdminCollection, id: string) {
   authorize(actor);
   const sql = getDatabase();
-  const rows = collection === "team"
+  const rows = isDedicatedCollection(collection)
     ? await sql`
         SELECT id, record, position
-        FROM cms_team_members
+        FROM ${sql.unsafe(dedicatedTables[collection])}
         WHERE id = ${id}
         LIMIT 1
       ` as CmsRow[]
@@ -115,9 +127,9 @@ export async function createAdminRecord(
   authorize(actor);
   const sql = getDatabase();
   const recordJson = JSON.stringify(record);
-  const rows = collection === "team"
+  const rows = isDedicatedCollection(collection)
     ? await sql`
-        INSERT INTO cms_team_members (id, record, position, updated_by)
+        INSERT INTO ${sql.unsafe(dedicatedTables[collection])} (id, record, position, updated_by)
         VALUES (${id}, ${recordJson}::jsonb, ${position}, ${actor.id})
         ON CONFLICT DO NOTHING
         RETURNING id
@@ -141,9 +153,9 @@ export async function updateAdminRecord(
   authorize(actor);
   const sql = getDatabase();
   const recordJson = JSON.stringify(record);
-  const rows = collection === "team"
+  const rows = isDedicatedCollection(collection)
     ? await sql`
-        UPDATE cms_team_members
+        UPDATE ${sql.unsafe(dedicatedTables[collection])}
         SET record = ${recordJson}::jsonb,
             position = COALESCE(${position ?? null}, position),
             updated_by = ${actor.id},
@@ -166,9 +178,9 @@ export async function updateAdminRecord(
 export async function deleteAdminRecord(actor: AdminActor, collection: AdminCollection, id: string) {
   authorize(actor);
   const sql = getDatabase();
-  const rows = collection === "team"
+  const rows = isDedicatedCollection(collection)
     ? await sql`
-        DELETE FROM cms_team_members
+        DELETE FROM ${sql.unsafe(dedicatedTables[collection])}
         WHERE id = ${id}
         RETURNING id
       ` as { id: string }[]
@@ -184,7 +196,7 @@ export async function reorderAdminRecords(actor: AdminActor, collection: AdminCo
   authorize(actor);
   const sql = getDatabase();
   const ordering = JSON.stringify(ids.map((id, position) => ({ id, position })));
-  const rows = collection === "team"
+  const rows = isDedicatedCollection(collection)
     ? await sql`
         WITH desired AS (
           SELECT id, position
@@ -193,15 +205,18 @@ export async function reorderAdminRecords(actor: AdminActor, collection: AdminCo
           SELECT
             count(*) AS desired_count,
             count(DISTINCT desired.id) AS distinct_count,
-            (SELECT count(*) FROM cms_team_members) AS current_count,
+            (SELECT count(*) FROM ${sql.unsafe(dedicatedTables[collection])}) AS current_count,
             count(*) FILTER (WHERE EXISTS (
-              SELECT 1 FROM cms_team_members AS existing WHERE existing.id = desired.id
+              SELECT 1 FROM ${sql.unsafe(dedicatedTables[collection])} AS existing WHERE existing.id = desired.id
             )) AS matched_count
           FROM desired
         )
-        UPDATE cms_team_members AS record
+        UPDATE ${sql.unsafe(dedicatedTables[collection])} AS record
         SET position = desired.position,
-            record = jsonb_set(record.record, '{order}', to_jsonb(desired.position + 1), true),
+            record = CASE WHEN ${collection} = 'team'
+              THEN jsonb_set(record.record, '{order}', to_jsonb(desired.position + 1), true)
+              ELSE record.record
+            END,
             updated_by = ${actor.id}, updated_at = now()
         FROM desired, valid
         WHERE record.id = desired.id

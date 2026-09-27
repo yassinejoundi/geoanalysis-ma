@@ -16,9 +16,10 @@ export async function PATCH(request: Request, context: RouteContext) {
   try {
     const current = await getAdminRecord<Record<string, unknown>>(access.actor, "articles", id);
     if (!current) return mutationFailureResponse(404, "Record not found.");
-    const fields = parseEditorialFields({ ...current, ...body.value }, "articles");
+    const currentFields = Object.fromEntries(keys.map((key) => [key, current[key]]));
+    const fields = parseEditorialFields({ ...currentFields, ...body.value }, "articles");
     if (!fields) return mutationFailureResponse(400, "Invalid request.");
-    const record = { id, ...fields };
+    const record = { ...current, id, ...fields };
     if (!await updateAdminRecord(access.actor, "articles", id, record)) return mutationFailureResponse(404, "Record not found.");
     logAdminMutation(request, access.actor, "articles.update", "success");
     return mutationResponse({ data: record });

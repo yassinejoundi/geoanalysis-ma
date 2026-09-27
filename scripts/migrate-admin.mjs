@@ -10,6 +10,71 @@ import {
   adminSettings,
   adminTeam,
 } from "../lib/content/admin.ts";
+import { articles as publicArticles, expertises as publicExpertises, news as publicNews } from "../lib/content/site.ts";
+import { expertiseDetails } from "../lib/content/expertise-details.ts";
+import { realisationMissions } from "../components/(public)/realisations/content.ts";
+
+const contentTables = {
+  expertises: "cms_expertises",
+  projects: "cms_realisations",
+  articles: "cms_articles",
+  news: "cms_actualites",
+};
+
+const publicExpertiseRecords = publicExpertises.map((expertise) => ({
+  ...expertise,
+  state: "published",
+  short: expertise.summary,
+  subServices: expertise.subServices.map((service, index) => ({
+    id: `${expertise.id}-service-${index + 1}`,
+    state: "published",
+    name: service.name,
+    short: service.summary,
+  })),
+  publicDetails: expertiseDetails[expertise.id],
+}));
+
+const publicArticleRecords = publicArticles.map((article) => ({
+  ...article,
+  state: "published",
+  tags: [],
+  date: article.dateISO ?? article.date.fr,
+  content: Object.fromEntries(Object.entries(article.body).map(([locale, paragraphs]) => [locale, paragraphs.join("\n\n")])),
+  seoTitle: article.title,
+  seoDescription: article.teaser,
+}));
+
+const publicNewsRecords = publicNews.map((item) => ({
+  ...item,
+  state: "published",
+  tags: [],
+  date: item.dateISO ?? item.date.fr,
+  content: Object.fromEntries(Object.entries(item.body).map(([locale, paragraphs]) => [locale, paragraphs.join("\n\n")])),
+  seoTitle: item.title,
+  seoDescription: item.teaser,
+}));
+
+const publicProjectRecords = realisationMissions.map((mission) => ({
+  ...mission,
+  state: "published",
+  expertiseId: mission.id === "eau" ? "water" : "mining",
+  subServiceId: "",
+  location: "Non précisé",
+  date: "Non précisée",
+  context: mission.description,
+  methodology: { fr: "", en: "" },
+  results: { fr: "", en: "" },
+  seoTitle: mission.title,
+  seoDescription: mission.description,
+  gallery: [],
+}));
+
+const legacySeedRows = {
+  expertises: adminExpertises,
+  projects: adminProjects.map((project) => ({ ...project, context: { fr: "", en: "" }, methodology: { fr: "", en: "" }, results: { fr: "", en: "" }, seoTitle: { ...project.title }, seoDescription: { fr: "", en: "" }, gallery: [] })),
+  articles: adminArticles.map((item) => ({ ...item, content: { fr: "", en: "" }, seoTitle: { ...item.title }, seoDescription: { fr: "", en: "" } })),
+  news: adminNews.map((item) => ({ ...item, content: { fr: "", en: "" }, seoTitle: { ...item.title }, seoDescription: { fr: "", en: "" } })),
+};
 
 const legacyAdminTeam = [
   { id: "t1", order: 1, name: "Dr. S. Benali", role: { fr: "Directeur · Géologue", en: "Director · Geologist" }, bio: { fr: "Vingt ans d’expérience en exploration minière et cartographie structurale au Maroc.", en: "Twenty years in mineral exploration and structural mapping in Morocco." } },
@@ -55,6 +120,18 @@ try {
       updated_at timestamptz NOT NULL DEFAULT now()
     )
   `;
+  for (const table of Object.values(contentTables)) {
+    await sql`
+      CREATE TABLE IF NOT EXISTS ${sql.unsafe(table)} (
+        id text PRIMARY KEY,
+        record jsonb NOT NULL,
+        position integer NOT NULL DEFAULT 0,
+        updated_by text NOT NULL,
+        created_at timestamptz NOT NULL DEFAULT now(),
+        updated_at timestamptz NOT NULL DEFAULT now()
+      )
+    `;
+  }
   await sql`
     CREATE TABLE IF NOT EXISTS cms_migrations (
       version text PRIMARY KEY,
@@ -65,6 +142,10 @@ try {
     CREATE UNIQUE INDEX IF NOT EXISTS cms_expertise_slug_unique
     ON cms_records ((record->>'slug'))
     WHERE collection = 'expertises'
+  `;
+  await sql`
+    CREATE UNIQUE INDEX IF NOT EXISTS cms_expertises_slug_unique
+    ON cms_expertises ((record->>'slug'))
   `;
   await sql`
     CREATE TABLE IF NOT EXISTS api_rate_limits (
@@ -181,6 +262,43 @@ try {
 
     // Rollback after new writes: sync this table into cms_records before restoring the old data layer.
     await sql`INSERT INTO cms_migrations (version) VALUES (${teamTableMigration}) ON CONFLICT (version) DO NOTHING`;
+  }
+
+  const contentTableMigration = "004_public_content_tables_v1";
+  const contentTableMigrationApplied = await sql`SELECT version FROM cms_migrations WHERE version = ${contentTableMigration}`;
+  if (contentTableMigrationApplied.length === 0) {
+    const collections = [
+      ["expertises", contentTables.expertises, legacySeedRows.expertises, publicExpertiseRecords],
+      ["projects", contentTables.projects, legacySeedRows.projects, publicProjectRecords],
+      ["articles", contentTables.articles, legacySeedRows.articles, publicArticleRecords],
+      ["news", contentTables.news, legacySeedRows.news, publicNewsRecords],
+    ];
+
+    for (const [collection, table, fixtures, records] of collections) {
+      await sql`
+        INSERT INTO ${sql.unsafe(table)} (id, record, position, updated_by, created_at, updated_at)
+        SELECT legacy.id, legacy.record, legacy.position, legacy.updated_by, legacy.created_at, legacy.updated_at
+        FROM cms_records AS legacy
+        WHERE legacy.collection = ${collection}
+          AND NOT EXISTS (
+            SELECT 1
+            FROM jsonb_array_elements(${JSON.stringify(fixtures)}::jsonb) AS fixture(value)
+            WHERE fixture.value->>'id' = legacy.id AND fixture.value = legacy.record
+          )
+        ON CONFLICT (id) DO NOTHING
+      `;
+
+      for (const [position, record] of records.entries()) {
+        const payload = JSON.stringify(record);
+        await sql`
+          INSERT INTO ${sql.unsafe(table)} (id, record, position, updated_by)
+          VALUES (${String(record.id)}, ${payload}::jsonb, ${position}, 'system')
+          ON CONFLICT DO NOTHING
+        `;
+      }
+    }
+
+    await sql`INSERT INTO cms_migrations (version) VALUES (${contentTableMigration}) ON CONFLICT (version) DO NOTHING`;
   }
 
   console.log("Admin data schema is ready.");
