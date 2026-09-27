@@ -11,6 +11,13 @@ import {
   adminTeam,
 } from "../lib/content/admin.ts";
 
+const legacyAdminTeam = [
+  { id: "t1", order: 1, name: "Dr. S. Benali", role: { fr: "Directeur · Géologue", en: "Director · Geologist" }, bio: { fr: "Vingt ans d’expérience en exploration minière et cartographie structurale au Maroc.", en: "Twenty years in mineral exploration and structural mapping in Morocco." } },
+  { id: "t2", order: 2, name: "I. Ouazzani", role: { fr: "Responsable géophysique", en: "Head of geophysics" }, bio: { fr: "Spécialiste des levés magnétiques et de l’inversion multi-méthodes.", en: "Specialist in magnetic surveys and multi-method inversion." } },
+  { id: "t3", order: 3, name: "M. El Amrani", role: { fr: "Hydrogéologue senior", en: "Senior hydrogeologist" }, bio: { fr: "Prospection ERT, essais de pompage et modélisation d’aquifères.", en: "ERT prospecting, pumping tests and aquifer modelling." } },
+  { id: "t4", order: 4, name: "L. Tazi", role: { fr: "Ingénieure environnement", en: "Environmental engineer" }, bio: { fr: "Études d’impact, états initiaux et plans de gestion environnementale.", en: "Impact studies, baselines and environmental management plans." } },
+];
+
 if (!process.env.DATABASE_URL && process.env.NODE_ENV !== "test") {
   try {
     process.loadEnvFile(".env.local");
@@ -86,6 +93,51 @@ try {
     }
 
     await sql`INSERT INTO cms_migrations (version) VALUES (${migration}) ON CONFLICT (version) DO NOTHING`;
+  }
+
+  const teamMigration = "002_team_roster_from_archive";
+  const teamMigrationApplied = await sql`SELECT version FROM cms_migrations WHERE version = ${teamMigration}`;
+  if (teamMigrationApplied.length === 0) {
+    await sql`
+      WITH current_team AS MATERIALIZED (
+        SELECT id, record, position
+        FROM cms_records
+        WHERE collection = 'team'
+      ),
+      legacy_team AS MATERIALIZED (
+        SELECT value->>'id' AS id, value AS record, (value->>'order')::integer - 1 AS position
+        FROM jsonb_array_elements(${JSON.stringify(legacyAdminTeam)}::jsonb) AS seed(value)
+      ),
+      migration_guard AS (
+        SELECT
+          (SELECT count(*) FROM current_team) = (SELECT count(*) FROM legacy_team)
+          AND (
+            SELECT count(*)
+            FROM current_team AS current
+            JOIN legacy_team AS legacy
+              ON current.id = legacy.id
+             AND current.record = legacy.record
+             AND current.position = legacy.position
+          ) = (SELECT count(*) FROM legacy_team) AS matches_legacy_seed
+      ),
+      replacement AS (
+        INSERT INTO cms_records (collection, id, record, position, updated_by)
+        SELECT 'team', seed.value->>'id', seed.value, (seed.value->>'order')::integer - 1, 'system'
+        FROM jsonb_array_elements(${JSON.stringify(adminTeam)}::jsonb) AS seed(value)
+        CROSS JOIN migration_guard
+        WHERE migration_guard.matches_legacy_seed
+        ON CONFLICT (collection, id) DO UPDATE
+          SET record = EXCLUDED.record,
+              position = EXCLUDED.position,
+              updated_by = 'system',
+              updated_at = now()
+        RETURNING id
+      )
+      SELECT count(*) FROM replacement
+    `;
+
+    // Roll back before later team edits: restore legacyAdminTeam, delete t5-t9, then remove this marker.
+    await sql`INSERT INTO cms_migrations (version) VALUES (${teamMigration}) ON CONFLICT (version) DO NOTHING`;
   }
 
   console.log("Admin data schema is ready.");
