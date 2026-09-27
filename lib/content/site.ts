@@ -211,12 +211,12 @@ export const articles: EditorialDetailEntry[] = [
       fr: "À quoi servent les bandes optiques et quelle précision attendre d’une image satellitaire ?",
       en: "What do optical bands show, and what resolution can you expect from satellite imagery?",
     },
-    imageLabel: "Affleurement observé sur le terrain",
+    imageLabel: "Versant semi-aride observé sur le terrain",
     image: {
-      src: "/articles/lecture-paysage.webp",
+      src: "/articles/sentinel-2-landscape.webp",
       alt: {
-        fr: "Versant aride et affleurement de roches claires",
-        en: "Arid slope and pale rock outcrop",
+        fr: "Versant semi-aride couvert de végétation basse et entaillé de ravines",
+        en: "Semi-arid hillside with low vegetation and drainage gullies",
       },
     },
     body: {
