@@ -187,16 +187,17 @@ export function parsePartnerFields(value: unknown) {
 }
 
 export function parseSettingsFields(value: unknown) {
-  const keys = ["siteName", "languages", "phone", "email", "address", "hours", "linkedin", "seoTitle", "seoDescription"];
+  const keys = ["siteName", "languages", "phone", "email", "address", "hours", "linkedin", "seoTitle", "seoDescription", "logo", "logoInverse"];
   if (!isRecord(value) || !hasOnlyKeys(value, keys) || !Object.keys(value).length) return null;
   const result: Record<string, string> = {};
   for (const key of keys) {
     if (!(key in value)) continue;
-    const max = key === "seoDescription" ? 320 : key === "linkedin" ? 2048 : key === "address" ? 500 : 180;
+    const max = key === "seoDescription" ? 320 : key === "linkedin" || key === "logo" || key === "logoInverse" ? 2048 : key === "address" ? 500 : 180;
     const field = textField(value[key], max);
     if (!field) return null;
     if (key === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(field)) return null;
     if (key === "linkedin" && !parsePartnerFields({ name: "LinkedIn", url: field })) return null;
+    if ((key === "logo" || key === "logoInverse") && !isAllowedImageSource(field)) return null;
     result[key] = field;
   }
   return result;

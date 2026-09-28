@@ -2,6 +2,8 @@ import "server-only";
 
 import { neon } from "@neondatabase/serverless";
 import { connection } from "next/server";
+import { cache } from "react";
+import { adminSettings } from "@/lib/content/admin";
 import { getAdminAccess, isAllowedAdminEmail, type AdminActor } from "@/lib/server/auth";
 import {
   isRecord,
@@ -9,6 +11,7 @@ import {
   parseExpertisePageContentFields,
   parseHomeContentFields,
   parsePartnerFields,
+  parseSettingsFields,
   parseTeamFields,
 } from "@/lib/server/validation";
 import { homeContent, type HomeContent, type HomeContentRecord } from "@/components/(public)/home/content";
@@ -123,6 +126,22 @@ export async function getPublicExpertisePageContent(locale: Locale): Promise<Exp
     return null;
   }
 }
+
+export const getPublicSettings = cache(async () => {
+  await connection();
+  try {
+    const sql = getDatabase();
+    const rows = await sql`
+      SELECT record FROM cms_records WHERE collection = 'settings' AND id = 'site' LIMIT 1
+    ` as { record: unknown }[];
+    if (!isRecord(rows[0]?.record)) return adminSettings;
+    const settings = { ...rows[0].record };
+    delete settings.id;
+    return { ...adminSettings, ...parseSettingsFields(settings) };
+  } catch {
+    return adminSettings;
+  }
+});
 
 export async function getPublicFirmDirectory(): Promise<{
   team: PublicTeamMember[];

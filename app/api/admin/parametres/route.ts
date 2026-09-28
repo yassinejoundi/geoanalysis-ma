@@ -2,7 +2,7 @@ import { getAdminRecord, updateAdminRecord } from "@/lib/server/data/admin";
 import { adminMutationAccess, logAdminMutation, mutationFailureResponse, mutationResponse, readMutationJson } from "@/lib/server/api";
 import { hasOnlyKeys, isRecord, parseSettingsFields } from "@/lib/server/validation";
 
-const keys = ["siteName", "languages", "phone", "email", "address", "hours", "linkedin", "seoTitle", "seoDescription"] as const;
+const keys = ["siteName", "languages", "phone", "email", "address", "hours", "linkedin", "seoTitle", "seoDescription", "logo", "logoInverse"] as const;
 
 export async function PATCH(request: Request) {
   const access = await adminMutationAccess(request);

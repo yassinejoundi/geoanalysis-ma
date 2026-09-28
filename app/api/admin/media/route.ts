@@ -29,11 +29,11 @@ export async function POST(request: Request) {
     }
     const file = form.get("file");
     const folder = form.get("folder");
-    if (!(file instanceof File) || (folder !== null && folder !== "home" && folder !== "bureau" && folder !== "expertises") ||
+    if (!(file instanceof File) || (folder !== null && folder !== "home" && folder !== "bureau" && folder !== "expertises" && folder !== "logo") ||
       [...form.keys()].some((key) => key !== "file" && key !== "folder")) {
       return mutationFailureResponse(400, "Le fichier ou son dossier de destination est invalide.");
     }
-    const result = await storeMedia(file, access.actor.id, folder === "home" || folder === "bureau" || folder === "expertises" ? folder : "default");
+    const result = await storeMedia(file, access.actor.id, folder === "home" || folder === "bureau" || folder === "expertises" || folder === "logo" ? folder : "default");
     if ("error" in result) return mutationFailureResponse(
       result.error === "too-large" ? 413 : 415,
       result.error === "too-large" ? "L’image dépasse la limite de 4 Mo après conversion." : "Choisissez une image JPEG, PNG ou WebP valide.",

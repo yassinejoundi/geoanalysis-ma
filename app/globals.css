@@ -8156,3 +8156,167 @@ a.partner-card-link:hover {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+.settings-page-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.settings-page-heading h1 {
+  margin: 0;
+  font-size: clamp(25px, 3vw, 32px);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+}
+
+.settings-page-heading > div > p:last-child {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.settings-save-top {
+  min-width: 132px;
+  min-height: 44px;
+  border-color: var(--brand-hover);
+  background: var(--brand-hover);
+  color: var(--surface);
+}
+
+.settings-save-top:hover:not(:disabled) {
+  border-color: var(--brand-hover);
+  background: var(--brand-hover);
+  color: var(--surface);
+}
+
+.settings-grid {
+  width: min(100%, 900px);
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+
+.settings-panel {
+  overflow: visible;
+}
+
+.settings-panel-heading {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 17px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-panel-heading > span {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  place-items: center;
+  border-radius: 2px;
+  background: var(--surface-green);
+  color: var(--brand-hover);
+  font: 500 10px/1 var(--font-data);
+}
+
+.settings-panel-heading h2 {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.settings-panel-heading p {
+  margin: 3px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.settings-fields {
+  gap: 18px;
+  padding: 20px;
+}
+
+.settings-fields-grid,
+.settings-logo-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.settings-fields-grid [data-field="address"],
+.settings-fields-grid [data-field="linkedin"] {
+  grid-column: 1 / -1;
+}
+
+.settings-logo-preview {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface-soft);
+}
+
+.settings-logo-inverse {
+  background: var(--sidebar);
+}
+
+.settings-logo-inverse .admin-image-upload {
+  background: var(--sidebar);
+}
+
+.settings-logo-preview .admin-image-preview {
+  margin-top: 12px;
+  padding: 8px;
+  border-color: var(--border);
+  background: var(--surface);
+}
+
+.settings-logo-inverse .admin-image-preview,
+.settings-logo-inverse .admin-image-preview img {
+  background: var(--sidebar);
+}
+
+.settings-logo-preview .admin-image-preview img {
+  width: 100%;
+  height: 92px;
+  object-fit: contain;
+}
+
+.settings-logo-inverse,
+.settings-logo-inverse .admin-image-upload > label,
+.settings-logo-inverse .admin-image-selected-name,
+.settings-logo-inverse .admin-field-help,
+.settings-logo-inverse .admin-image-preview figcaption {
+  color: var(--background);
+}
+
+@media (max-width: 680px) {
+  .settings-page-heading {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .settings-save-top {
+    width: 100%;
+  }
+
+  .settings-fields .admin-field input,
+  .settings-fields .admin-field textarea {
+    font-size: 16px;
+  }
+
+  .settings-fields-grid,
+  .settings-logo-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .settings-fields-grid [data-field="address"],
+  .settings-fields-grid [data-field="linkedin"] {
+    grid-column: auto;
+  }
+}

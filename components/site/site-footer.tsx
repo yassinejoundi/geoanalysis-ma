@@ -1,9 +1,12 @@
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { expertises } from "@/lib/content/site";
+import type { adminSettings } from "@/lib/content/admin";
 import { localize, type Locale } from "@/lib/i18n";
 import Link from "next/link";
 
-export function SiteFooter({ locale }: { locale: Locale }) {
+type SiteSettings = Pick<typeof adminSettings, "siteName" | "address" | "logo" | "logoInverse">;
+
+export function SiteFooter({ locale, settings }: { locale: Locale; settings: SiteSettings }) {
   const isFrench = locale === "fr";
   const columns = [
     {
@@ -99,7 +102,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
         <div className="site-footer-inner">
           <div className="site-footer-grid">
             <div className="site-footer-brand">
-              <BrandLogo locale={locale} compact white />
+              <BrandLogo locale={locale} settings={settings} compact white />
               <p className="site-footer-statement">
                 {isFrench
                   ? "Lire le terrain. Éclairer la décision."
@@ -107,8 +110,8 @@ export function SiteFooter({ locale }: { locale: Locale }) {
               </p>
               <p className="site-footer-description">
                 {isFrench
-                  ? "Bureau d’études en géologie, géophysique et environnement. Marrakech, Maroc."
-                  : "Consulting firm in geology, geophysics and environment. Marrakech, Morocco."}
+                  ? `Bureau d’études en géologie, géophysique et environnement. ${settings.address}.`
+                  : `Consulting firm in geology, geophysics and environment. ${settings.address}.`}
               </p>
             </div>
             {columns.map((column) => (
@@ -125,7 +128,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
             ))}
           </div>
           <div className="site-footer-bottom">
-            <span>© 2026 GEOANALYSIS · Marrakech, Maroc</span>
+            <span>© 2026 {settings.siteName}</span>
             <Link href="/admin">Admin</Link>
           </div>
         </div>

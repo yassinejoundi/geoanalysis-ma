@@ -5,7 +5,7 @@ import { basename } from "node:path";
 import { v2 as cloudinary } from "cloudinary";
 import { validateMediaFile } from "@/lib/server/validation";
 
-export async function storeMedia(file: File, actorId: string, folder: "default" | "home" | "bureau" | "expertises" = "default") {
+export async function storeMedia(file: File, actorId: string, folder: "default" | "home" | "bureau" | "expertises" | "logo" = "default") {
   const bytes = new Uint8Array(await file.arrayBuffer());
   const validation = validateMediaFile(file, bytes);
   if (validation !== "valid") return { error: validation } as const;
@@ -23,7 +23,7 @@ export async function storeMedia(file: File, actorId: string, folder: "default" 
   const uploaded = await new Promise<{ secure_url: string; bytes: number; format: string }>((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       {
-        folder: folder === "home" ? "geoanalysis/home" : folder === "bureau" ? "geoanalysis/bureau" : folder === "expertises" ? "geoanalysis/expertises" : "geoanalysis/" + actorFolder,
+        folder: folder === "home" || folder === "bureau" || folder === "expertises" || folder === "logo" ? `geoanalysis/${folder}` : "geoanalysis/" + actorFolder,
         public_id: publicId,
         resource_type: resourceType,
         overwrite: false,

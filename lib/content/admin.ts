@@ -129,7 +129,19 @@ export const adminMedia = [
   ["schema-methodologie.svg", "SVG", "240 KB"], ["logo-geoanalysis.png", "PNG", "180 KB"], ["donnees-piezo-2026.csv", "CSV", "96 KB"],
 ].map(([name, kind, size]) => ({ name, kind, size }));
 
-export const adminSettings = { siteName: "GEOANALYSIS", languages: "FR, EN", phone: "+212 5 24 00 00 00", email: "contact@geoanalysis.ma", address: "Quartier Industriel Sidi Ghanem, Marrakech", hours: "Lun – Ven · 8h30 – 18h00", linkedin: "linkedin.com/company/geoanalysis", seoTitle: "GEOANALYSIS — Géologie, géophysique & environnement", seoDescription: "Bureau d’études basé à Marrakech." };
+export const adminSettings = {
+  siteName: "GEOANALYSIS",
+  languages: "FR, EN",
+  phone: "+212 5 24 00 00 00",
+  email: "contact@geoanalysis.ma",
+  address: "Quartier Industriel Sidi Ghanem, Marrakech 40000, Maroc",
+  hours: "Lun – Ven · 8h30 – 18h00",
+  linkedin: "https://linkedin.com/company/geoanalysis",
+  seoTitle: "GEOANALYSIS — Géologie, géophysique & environnement",
+  seoDescription: "Bureau d’études basé à Marrakech.",
+  logo: "https://res.cloudinary.com/d7qa2cop/image/upload/v1790632682/geoanalysis/logo/geoanalysis-logo-transparent.png",
+  logoInverse: "https://res.cloudinary.com/d7qa2cop/image/upload/v1790632336/geoanalysis/logo/geoanalysis-logo-white.png",
+};
 
 const publishedProjects = adminProjects.filter(({ state }) => state === "published").length;
 const draftProjects = adminProjects.length - publishedProjects;

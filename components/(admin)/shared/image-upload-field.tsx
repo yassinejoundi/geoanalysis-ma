@@ -7,7 +7,7 @@ import { sendApiForm } from "@/lib/api-client";
 
 export type UploadedImage = { id: string; name: string; url: string };
 
-export async function uploadImageToCloudinary(file: File, uploadFolder?: "home" | "bureau" | "expertises") {
+export async function uploadImageToCloudinary(file: File, uploadFolder?: "home" | "bureau" | "expertises" | "logo") {
   const optimized = await compressImageToWebp(file);
   const form = new FormData();
   form.append("file", optimized);
@@ -34,7 +34,7 @@ export function ImageUploadField({
   disabled?: boolean;
   deferUpload?: boolean;
   onFileSelected?: (file: File) => void;
-  uploadFolder?: "home" | "bureau" | "expertises";
+  uploadFolder?: "home" | "bureau" | "expertises" | "logo";
 }) {
   const [preview, setPreview] = useState(value ?? null);
   const [status, setStatus] = useState("");

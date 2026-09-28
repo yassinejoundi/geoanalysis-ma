@@ -2,6 +2,7 @@
 
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { LanguageSwitcher } from "@/components/shared/language-switcher";
+import type { adminSettings } from "@/lib/content/admin";
 import {
   MobileNavigation,
   NavigationLinks,
@@ -41,8 +42,9 @@ const paths = [
   "/articles",
   "/contact",
 ];
+type SiteSettings = Pick<typeof adminSettings, "siteName" | "logo" | "logoInverse">;
 
-export function SiteHeader({ locale }: { locale: Locale }) {
+export function SiteHeader({ locale, settings }: { locale: Locale; settings: SiteSettings }) {
   const pathname = usePathname();
   const previousPathname = useRef(pathname);
 
@@ -57,6 +59,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
       key={pathname}
       locale={locale}
       pathname={pathname}
+      settings={settings}
     />
   );
 }
@@ -64,9 +67,11 @@ export function SiteHeader({ locale }: { locale: Locale }) {
 function SiteHeaderContent({
   locale,
   pathname,
+  settings,
 }: {
   locale: Locale;
   pathname: string;
+  settings: SiteSettings;
 }) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -99,7 +104,7 @@ function SiteHeaderContent({
   return (
     <header className="site-header">
       <div className="site-header-inner">
-        <BrandLogo locale={locale} />
+        <BrandLogo locale={locale} settings={settings} />
         <nav
           className="desktop-navigation"
           aria-label={

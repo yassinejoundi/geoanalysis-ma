@@ -2,11 +2,34 @@ import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { ScrollReveal } from "@/components/site/scroll-reveal";
 import { isLocale, locales } from "@/lib/i18n";
+import { getPublicSettings } from "@/lib/server/data/admin";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
+import type { Metadata } from "next";
 
 export function generateStaticParams() {
   return locales.map((lang) => ({ lang }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ lang: string }>;
+}): Promise<Metadata> {
+  const { lang } = await params;
+  if (!isLocale(lang)) return {};
+  const settings = await getPublicSettings();
+  return {
+    title: settings.seoTitle,
+    description: settings.seoDescription,
+    applicationName: settings.siteName,
+    openGraph: {
+      siteName: settings.siteName,
+      title: settings.seoTitle,
+      description: settings.seoDescription,
+      type: "website",
+    },
+  };
 }
 
 export default async function LocaleLayout({
@@ -18,26 +41,27 @@ export default async function LocaleLayout({
 }) {
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
+  const settings = await getPublicSettings();
   return (
     <>
       <a className="skip-link" href="#contenu-principal">
         {lang === "fr" ? "Aller au contenu" : "Skip to content"}
       </a>
-      <SiteHeader locale={lang} />
+      <SiteHeader locale={lang} settings={settings} />
       <ScrollReveal />
       <div className="site-content" id="contenu-principal" tabIndex={-1}>
         {children}
       </div>
-      <SiteFooter locale={lang} />
+      <SiteFooter locale={lang} settings={settings} />
       <a
         className="whatsapp-float"
-        href="https://wa.me/212524000000"
+        href={`https://wa.me/${settings.phone.replace(/\D/g, "")}`}
         target="_blank"
         rel="noopener noreferrer"
         aria-label={
           lang === "fr"
-            ? "Contacter GEOANALYSIS sur WhatsApp"
-            : "Contact GEOANALYSIS on WhatsApp"
+            ? `Contacter ${settings.siteName} sur WhatsApp`
+            : `Contact ${settings.siteName} on WhatsApp`
         }>
         <svg viewBox="0 0 24 24" aria-hidden="true" fill="none">
           <path

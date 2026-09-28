@@ -1,19 +1,25 @@
 import { contactPageCopy } from "./content";
+import type { adminSettings } from "@/lib/content/admin";
 import type { Locale } from "@/lib/i18n";
 
-export function ContactDetailsSection({ locale }: { locale: Locale }) {
+type ContactSettings = Pick<typeof adminSettings, "address" | "email" | "phone" | "hours" | "linkedin">;
+
+export function ContactDetailsSection({ locale, settings }: { locale: Locale; settings: ContactSettings }) {
   const copy = contactPageCopy[locale];
+  const phoneHref = settings.phone.replace(/[^\d+]/g, "");
+  const linkedinHref = /^https?:\/\//i.test(settings.linkedin) ? settings.linkedin : `https://${settings.linkedin}`;
   const details = [
-    { label: copy.addressLabel, value: copy.address },
+    { label: copy.addressLabel, value: settings.address },
     {
       label: copy.emailLabel,
-      value: <a href="mailto:contact@geoanalysis.ma">contact@geoanalysis.ma</a>,
+      value: <a href={`mailto:${settings.email}`}>{settings.email}</a>,
     },
     {
       label: copy.phoneLabel,
-      value: <a href="tel:+212524000000">+212 5 24 00 00 00</a>,
+      value: <a href={`tel:${phoneHref}`}>{settings.phone}</a>,
     },
-    { label: copy.hoursLabel, value: copy.hours },
+    { label: copy.hoursLabel, value: settings.hours },
+    { label: copy.linkedinLabel, value: <a href={linkedinHref} target="_blank" rel="noopener noreferrer">LinkedIn</a> },
   ];
 
   return (
@@ -24,14 +30,14 @@ export function ContactDetailsSection({ locale }: { locale: Locale }) {
       <h2>{copy.detailsTitle}</h2>
       <div className="contact-map">
         <iframe
-          src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d16150.283655086854!2d-8.053126842386856!3d31.683676685614206!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xdafeb0073fed14b%3A0x81d2e6ae6e89d670!2sGeoanalysis%20engineering%20office!5e0!3m2!1sen!2sma!4v1789988217249!5m2!1sen!2sma"
-          title={copy.mapLabel}
+          src={`https://maps.google.com/maps?q=${encodeURIComponent(settings.address)}&output=embed`}
+          title={locale === "fr" ? `Carte de ${settings.address}` : `Map of ${settings.address}`}
           loading="lazy"
           allowFullScreen
           referrerPolicy="strict-origin-when-cross-origin"
         />
       </div>
-      <p className="contact-map-caption">{copy.location}</p>
+      <p className="contact-map-caption">{settings.address}</p>
       <dl className="contact-details-list">
         {details.map((detail) => (
           <div key={detail.label}>

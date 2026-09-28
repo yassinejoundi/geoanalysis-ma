@@ -3,6 +3,7 @@ import { ContactDetailsSection } from "@/components/(public)/contact/contact-det
 import { ContactForm } from "@/components/(public)/contact/contact-form";
 import { contactPageCopy } from "@/components/(public)/contact/content";
 import { isLocale } from "@/lib/i18n";
+import { getPublicSettings } from "@/lib/server/data/admin";
 import { notFound } from "next/navigation";
 
 export async function generateMetadata({
@@ -13,7 +14,7 @@ export async function generateMetadata({
   const { lang } = await params;
   if (!isLocale(lang)) return {};
   return {
-    title: `${contactPageCopy[lang].title} | GEOANALYSIS`,
+    title: contactPageCopy[lang].title,
     description: contactPageCopy[lang].description,
   };
 }
@@ -26,6 +27,7 @@ export default async function ContactPage({
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
   const copy = contactPageCopy[lang];
+  const settings = await getPublicSettings();
 
   return (
     <main className="contact-page">
@@ -63,7 +65,7 @@ export default async function ContactPage({
           </header>
           <ContactForm locale={lang} />
         </div>
-        <ContactDetailsSection locale={lang} />
+        <ContactDetailsSection locale={lang} settings={settings} />
       </section>
     </main>
   );
