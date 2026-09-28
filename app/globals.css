@@ -8249,7 +8249,7 @@ a.partner-card-link:hover {
 }
 
 .settings-fields-grid [data-field="address"],
-.settings-fields-grid [data-field="linkedin"] {
+.settings-fields-grid [data-field="hours"] {
   grid-column: 1 / -1;
 }
 
@@ -8316,7 +8316,7 @@ a.partner-card-link:hover {
   }
 
   .settings-fields-grid [data-field="address"],
-  .settings-fields-grid [data-field="linkedin"] {
+  .settings-fields-grid [data-field="hours"] {
     grid-column: auto;
   }
 }

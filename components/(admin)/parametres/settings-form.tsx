@@ -15,7 +15,6 @@ const contactFields: { key: SettingKey; label: string; type: "email" | "tel" | "
   { key: "email", label: "E-mail", type: "email" },
   { key: "address", label: "Adresse", type: "text" },
   { key: "hours", label: "Horaires", type: "text" },
-  { key: "linkedin", label: "LinkedIn", type: "url" },
 ];
 
 export function SettingsForm({ initialSettings }: { initialSettings: SettingsValues }) {
