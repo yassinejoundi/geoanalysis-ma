@@ -22,6 +22,7 @@ const routeIcons: Record<string, IconDefinition> = {
   "/admin/dashboard": faGaugeHigh,
   "/admin/contenu": faHouse,
   "/admin/contenu/bureau": faBuilding,
+  "/admin/contenu/expertises": faBullseye,
   "/admin/expertises": faBullseye,
   "/admin/realisations": faFolderOpen,
   "/admin/articles": faFileLines,
