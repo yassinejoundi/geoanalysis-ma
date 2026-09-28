@@ -151,7 +151,7 @@ export function TeamManager({ initialMembers }: { initialMembers: TeamDraft[] })
   }
 
   return (
-    <main className="admin-content-manager directory-manager team-directory">
+    <main className={`admin-content-manager directory-manager team-directory ${styles.teamManager}`}>
       <header className="directory-header">
         <div className="directory-heading-copy">
           <p className="admin-eyebrow">ORGANISATION / ÉQUIPE</p>
@@ -205,17 +205,15 @@ export function TeamManager({ initialMembers }: { initialMembers: TeamDraft[] })
               return (
                 <li className="directory-record team-record" key={member.id}>
                   <span className="directory-position">{String(member.order).padStart(2, "0")}</span>
-                  <span className="directory-avatar" aria-hidden="true">
-                    {member.image ? (
-                      <Image src={member.image} alt="" width={48} height={48} sizes="48px" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
-                    ) : initials(member.name)}
-                  </span>
-                  <div className="directory-record-copy">
-                    <div className={styles.memberHeading}>
-                      <h2>{member.name}</h2>
-                      <span className="directory-role">{member.role.fr}</span>
-                    </div>
-                    <p className="directory-description">{member.bio.fr || "Biographie non renseignée."}</p>
+                  <div className={styles.memberProfile}>
+                    <span className="directory-avatar" aria-hidden="true">
+                      {member.image ? (
+                        <Image src={member.image} alt="" width={48} height={48} sizes="48px" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+                      ) : initials(member.name)}
+                    </span>
+                    <h2 className={styles.memberName}>{member.name}</h2>
+                    <span className={`directory-role ${styles.memberRole}`}>{member.role.fr}</span>
+                    <p className={`directory-description ${styles.memberBio}`}>{member.bio.fr || "Biographie non renseignée."}</p>
                   </div>
                   <div className="directory-actions">
                     <div className="directory-order-actions" role="group" aria-label={"Ordre de " + member.name}>

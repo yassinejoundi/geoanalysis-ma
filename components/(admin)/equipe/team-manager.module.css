@@ -1,6 +1,62 @@
-.memberHeading {
+.teamManager :global(.team-record) {
+  grid-template-columns: 34px minmax(0, 1fr) auto;
+}
+
+.memberProfile {
   display: grid;
-  justify-items: start;
-  gap: 3px;
   min-width: 0;
+  grid-template-columns: 48px minmax(0, 1fr);
+  align-items: center;
+  gap: 5px 12px;
+}
+
+.memberProfile > :global(.directory-avatar) {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.memberName {
+  min-width: 0;
+  grid-column: 2;
+  grid-row: 1;
+  margin: 0;
+  color: var(--foreground);
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.memberRole,
+.memberBio {
+  grid-column: 1 / -1;
+}
+
+.memberRole {
+  grid-row: 2;
+}
+
+.memberBio {
+  grid-row: 3;
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .teamManager :global(.team-record) {
+    grid-template-columns: 30px minmax(0, 1fr);
+  }
+
+  .memberProfile {
+    grid-template-columns: 44px minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 680px) {
+  .teamManager :global(.team-record) {
+    grid-template-columns: 26px minmax(0, 1fr);
+  }
+
+  .memberProfile {
+    grid-template-columns: 40px minmax(0, 1fr);
+  }
 }

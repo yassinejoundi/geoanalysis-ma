@@ -92,9 +92,9 @@ export function BureauDirectorySections({
                     </div>
                     <div className={styles.teamIdentity}>
                       <h3>{member.name}</h3>
-                      <p className={styles.teamRole}>{member.role[locale]}</p>
                     </div>
                   </div>
+                  <p className={styles.teamRole}>{member.role[locale]}</p>
                   <p className={styles.teamBio}>{member.bio[locale]}</p>
                 </li>
               ))}
