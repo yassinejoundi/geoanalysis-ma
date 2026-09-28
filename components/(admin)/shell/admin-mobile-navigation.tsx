@@ -3,9 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { faBars, faGlobe, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faBars, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { AdminSignOutButton } from "@/components/(admin)/sign-in/admin-sign-out-button";
 import { AdminSidebarNavigation } from "./admin-navigation";
 
 export function AdminMobileNavigation({
@@ -82,23 +81,8 @@ export function AdminMobileNavigation({
           </div>
 
           <nav className="sidebar-nav" aria-label="Navigation d’administration">
-            <AdminSidebarNavigation onNavigate={() => setIsOpen(false)} />
+            <AdminSidebarNavigation adminEmail={adminEmail} onNavigate={() => setIsOpen(false)} />
           </nav>
-
-          <div className="sidebar-footer">
-            <div className="profile">
-              <span className="avatar" aria-hidden="true">{adminEmail.slice(0, 1).toLocaleUpperCase("fr")}</span>
-              <div>
-                <div className="profile-name">{adminEmail}</div>
-                <div className="profile-role">Administrateur</div>
-              </div>
-            </div>
-            <AdminSignOutButton />
-            <Link className="site-link" href="/fr" onClick={() => setIsOpen(false)}>
-              <span>Voir le site</span>
-              <FontAwesomeIcon className="site-link-icon" icon={faGlobe} aria-hidden="true" />
-            </Link>
-          </div>
         </aside>
       </dialog>
     </>

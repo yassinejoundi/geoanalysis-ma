@@ -1,9 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { faGlobe } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { AdminSidebarNavigation } from "./admin-navigation";
-import { AdminSignOutButton } from "@/components/(admin)/sign-in/admin-sign-out-button";
 import { AdminMobileNavigation } from "./admin-mobile-navigation";
 
 const whiteLogoUrl =
@@ -19,23 +16,8 @@ export function AdminSidebar({ adminEmail }: { adminEmail: string }) {
         </Link>
 
         <nav className="sidebar-nav" aria-label="Navigation d’administration">
-          <AdminSidebarNavigation />
+          <AdminSidebarNavigation adminEmail={adminEmail} />
         </nav>
-
-        <div className="sidebar-footer">
-          <div className="profile">
-            <span className="avatar" aria-hidden="true">{adminEmail.slice(0, 1).toLocaleUpperCase("fr")}</span>
-            <div>
-              <div className="profile-name">{adminEmail}</div>
-              <div className="profile-role">Administrateur</div>
-            </div>
-          </div>
-          <AdminSignOutButton />
-          <Link className="site-link" href="/fr">
-            <span>Voir le site</span>
-            <FontAwesomeIcon className="site-link-icon" icon={faGlobe} aria-hidden="true" />
-          </Link>
-        </div>
       </aside>
       <AdminMobileNavigation adminEmail={adminEmail} whiteLogoUrl={whiteLogoUrl} />
     </>

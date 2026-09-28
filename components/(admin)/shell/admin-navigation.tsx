@@ -30,7 +30,13 @@ const routeIcons: Record<string, IconDefinition> = {
   "/admin/parametres": faGear,
 };
 
-export function AdminSidebarNavigation({ onNavigate }: { onNavigate?: () => void } = {}) {
+export function AdminSidebarNavigation({
+  adminEmail,
+  onNavigate,
+}: {
+  adminEmail: string;
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
   const activeHref = getAdminRoute(pathname).href;
   const { messages } = useAdminMessages();
@@ -60,6 +66,17 @@ export function AdminSidebarNavigation({ onNavigate }: { onNavigate?: () => void
               );
             })}
           </ul>
+          {routes.some(({ href }) => href === "/admin/parametres") && (
+            <div className="sidebar-account">
+              <div className="profile">
+                <span className="avatar" aria-hidden="true">{adminEmail.slice(0, 1).toLocaleUpperCase("fr")}</span>
+                <div>
+                  <div className="profile-name">{adminEmail}</div>
+                  <div className="profile-role">Administrateur</div>
+                </div>
+              </div>
+            </div>
+          )}
         </li>
       ))}
     </ul>
