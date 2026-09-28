@@ -15,7 +15,6 @@ export const adminRouteGroups: readonly AdminRouteGroup[] = [
       { href: "/admin/realisations", label: "Réalisations" },
       { href: "/admin/articles", label: "Articles" },
       { href: "/admin/actualites", label: "Actualités" },
-      { href: "/admin/mediatheque", label: "Médiathèque" },
     ],
   },
   {

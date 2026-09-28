@@ -21,10 +21,6 @@ export function SiteFooter({ locale }: { locale: Locale }) {
           href: `/${locale}/bureau`,
         },
         {
-          label: isFrench ? "Prestations" : "Services",
-          href: `/${locale}/methodes-technologies`,
-        },
-        {
           label: isFrench ? "Réalisations" : "Projects",
           href: `/${locale}/realisations`,
         },

@@ -20,7 +20,7 @@ export function MethodsSection({
           />
           <Link
             className="home-text-link"
-            href={`/${locale}/methodes-technologies`}>
+            href={`/${locale}/expertises`}>
             {content.methodsLink} <span aria-hidden="true">→</span>
           </Link>
         </div>

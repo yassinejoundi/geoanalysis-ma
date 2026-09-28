@@ -13,7 +13,6 @@ import {
   faGear,
   faHouse,
   faNewspaper,
-  faPhotoFilm,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useAdminMessages } from "@/components/(admin)/shared/admin-messages-provider";
@@ -27,7 +26,6 @@ const routeIcons: Record<string, IconDefinition> = {
   "/admin/realisations": faFolderOpen,
   "/admin/articles": faFileLines,
   "/admin/actualites": faNewspaper,
-  "/admin/mediatheque": faPhotoFilm,
   "/admin/messages": faEnvelope,
   "/admin/parametres": faGear,
 };
