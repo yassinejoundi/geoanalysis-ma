@@ -202,32 +202,62 @@ export function parseSettingsFields(value: unknown) {
   return result;
 }
 
-export function parseHomeContentFields(value: unknown): HomeContent | null {
+export function parseHomeContentFields(
+  value: unknown,
+  fallbackExpertiseCards?: HomeContent["expertiseCards"],
+): HomeContent | null {
   const keys = [
     "title", "description", "kicker", "hero", "sub", "intro", "expertise", "expertiseCta", "talk",
+    "expertiseCards",
     "aboutKicker", "aboutTitle", "about", "about2", "discover", "aboutImage", "aboutImageAlt",
     "aboutImageCaption", "aboutImageLocation", "pillars", "expTitle", "expDesc", "methodKicker",
     "methodTitle", "methodItems", "steps", "methods", "methodsTitle", "methodsLink", "projects", "projectsTitle",
     "projectsLink", "news", "articles", "editorialKicker", "editorialTitle", "allNews", "allArticles",
     "newsKicker", "articlesKicker", "editorialLocation", "read", "projectImage",
   ] as const;
-  if (!isRecord(value) || !hasOnlyKeys(value, keys) || keys.some((key) => !(key in value))) return null;
+  if (!isRecord(value) || !hasOnlyKeys(value, keys) || keys.some((key) => key !== "expertiseCards" && !(key in value))) return null;
 
-  type TextKey = Exclude<(typeof keys)[number], "aboutImage" | "pillars" | "steps" | "methodItems">;
+  type TextKey = Exclude<(typeof keys)[number], "aboutImage" | "pillars" | "steps" | "methodItems" | "expertiseCards">;
   const text = (key: TextKey, max = 2000) =>
     textField(value[key], max, false);
   const aboutImage = textField(value.aboutImage, 2048);
   const methodItems = parseHomeRows(value.methodItems, 2, 12) as HomeContent["methodItems"] | null;
-  const textKeys = keys.filter((key) => key !== "aboutImage" && key !== "pillars" && key !== "steps" && key !== "methodItems") as TextKey[];
+  const textKeys = keys.filter((key) => key !== "aboutImage" && key !== "pillars" && key !== "steps" && key !== "methodItems" && key !== "expertiseCards") as TextKey[];
   const fields = Object.fromEntries(
     textKeys.map((key) => [key, text(key, key === "title" ? 160 : key === "description" ? 320 : key === "aboutImageAlt" ? 250 : 2000)]),
   );
   const pillars = parseHomeRows(value.pillars, 2, 8) as HomeContent["pillars"] | null;
   const steps = parseHomeRows(value.steps, 3, 12) as HomeContent["steps"] | null;
-  if (!aboutImage || !isAllowedImageSource(aboutImage) || !methodItems || !pillars || !steps ||
+  const expertiseCards = value.expertiseCards === undefined
+    ? fallbackExpertiseCards
+    : parseHomeExpertiseCards(value.expertiseCards);
+  if (!aboutImage || !isAllowedImageSource(aboutImage) || !methodItems || !pillars || !steps || !expertiseCards ||
     Object.values(fields).some((field) => field === null)) return null;
 
-  return { ...fields, aboutImage, methodItems, pillars, steps } as HomeContent;
+  return { ...fields, aboutImage, methodItems, pillars, steps, expertiseCards } as HomeContent;
+}
+
+function parseHomeExpertiseCards(value: unknown): HomeContent["expertiseCards"] | null {
+  const ids = ["mining", "env", "water"] as const;
+  if (!Array.isArray(value) || value.length !== ids.length) return null;
+  const cards: HomeContent["expertiseCards"] = [];
+  for (const card of value) {
+    if (!isRecord(card) || !hasOnlyKeys(card, ["id", "name", "summary", "image", "imageAlt", "tags"])) return null;
+    const id = card.id;
+    const name = textField(card.name, 160);
+    const summary = textField(card.summary, 700);
+    const image = textField(card.image, 2048);
+    const imageAlt = textField(card.imageAlt, 250);
+    if (typeof id !== "string" || !ids.includes(id as (typeof ids)[number]) ||
+      cards.some((item) => item.id === id) || !name || !summary || !image || !isAllowedImageSource(image) || imageAlt === null ||
+      !Array.isArray(card.tags) || card.tags.length !== 3) return null;
+    const tags = card.tags.map((tag) => textField(tag, 120));
+    if (tags.some((tag) => tag === null)) return null;
+    cards.push({ id: id as HomeContent["expertiseCards"][number]["id"], name, summary, image, imageAlt, tags: tags as [string, string, string] });
+  }
+  return ids.every((id) => cards.some((card) => card.id === id))
+    ? ids.map((id) => cards.find((card) => card.id === id)!)
+    : null;
 }
 
 export function parseBureauContentFields(value: unknown): BureauContent | null {

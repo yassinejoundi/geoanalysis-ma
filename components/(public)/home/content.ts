@@ -1,4 +1,25 @@
+import { expertises, type Expertise } from "@/lib/content/site";
 import type { Locale } from "@/lib/i18n";
+
+export type HomeExpertiseCard = {
+  id: Expertise["id"];
+  name: string;
+  summary: string;
+  image: string;
+  imageAlt: string;
+  tags: [string, string, string];
+};
+
+function expertiseCardsFor(locale: Locale): HomeExpertiseCard[] {
+  return expertises.map((expertise) => ({
+    id: expertise.id,
+    name: expertise.name[locale],
+    summary: expertise.summary[locale],
+    image: expertise.image.src,
+    imageAlt: expertise.image.alt[locale],
+    tags: expertise.subServices.slice(0, 3).map((service) => service.name[locale]) as [string, string, string],
+  }));
+}
 
 export type HomeContent = {
   title: string;
@@ -9,6 +30,7 @@ export type HomeContent = {
   intro: string;
   expertise: string;
   expertiseCta: string;
+  expertiseCards: HomeExpertiseCard[];
   talk: string;
   aboutKicker: string;
   aboutTitle: string;
@@ -57,6 +79,7 @@ export const homeContent: Record<Locale, HomeContent> = {
       "Des études scientifiques et un accompagnement technique, du terrain au rapport.",
     expertise: "Nos expertises",
     expertiseCta: "Voir nos expertises",
+    expertiseCards: expertiseCardsFor("fr"),
     talk: "Parler de votre projet",
     aboutKicker: "Notre approche",
     aboutTitle: "Des études ancrées dans le terrain",
@@ -122,6 +145,7 @@ export const homeContent: Record<Locale, HomeContent> = {
       "Scientific studies and technical support, from fieldwork to final report.",
     expertise: "Our expertise",
     expertiseCta: "Explore our expertise",
+    expertiseCards: expertiseCardsFor("en"),
     talk: "Discuss your project",
     aboutKicker: "Our approach",
     aboutTitle: "Grounded in fieldwork",

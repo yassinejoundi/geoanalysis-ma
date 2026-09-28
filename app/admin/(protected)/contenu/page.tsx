@@ -10,7 +10,7 @@ export default async function AdminHomeContentPage() {
 
   for (const record of records) {
     if (record.locale === "fr" || record.locale === "en") {
-      initialContent[record.locale] = parseHomeContentFields(record.content) ?? homeContent[record.locale];
+      initialContent[record.locale] = parseHomeContentFields(record.content, homeContent[record.locale].expertiseCards) ?? homeContent[record.locale];
     }
   }
 

@@ -3,12 +3,12 @@
 import Image from "next/image";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ImageUploadField, type UploadedImage } from "@/components/(admin)/shared/image-upload-field";
-import type { HomeContent } from "@/components/(public)/home/content";
+import type { HomeContent, HomeExpertiseCard } from "@/components/(public)/home/content";
 import { sendApiMutation } from "@/lib/api-client";
 import { locales, type Locale } from "@/lib/i18n";
 
 type Section = "hero" | "expertise" | "about" | "process" | "methods" | "projects" | "editorial";
-type TextKey = Exclude<keyof HomeContent, "pillars" | "steps" | "methodItems">;
+type TextKey = Exclude<keyof HomeContent, "pillars" | "steps" | "methodItems" | "expertiseCards">;
 
 const sections: { id: Section; label: string }[] = [
   { id: "hero", label: "En-tête et référencement" },
@@ -28,6 +28,7 @@ function cloneContent(content: HomeContent): HomeContent {
     pillars: content.pillars.map((row) => [...row] as [string, string]),
     steps: content.steps.map((row) => [...row] as [string, string, string]),
     methodItems: content.methodItems.map((row) => [...row] as [string, string]),
+    expertiseCards: content.expertiseCards.map((card) => ({ ...card, tags: [...card.tags] as [string, string, string] })),
   };
 }
 
@@ -196,6 +197,22 @@ export function HomeContentManager({ initialContent }: { initialContent: Record<
     } : current);
   }
 
+  function updateExpertiseCard(index: number, field: Exclude<keyof HomeExpertiseCard, "id" | "tags">, value: string) {
+    setDraft((current) => current ? {
+      ...current,
+      expertiseCards: current.expertiseCards.map((card, cardIndex) => cardIndex === index ? { ...card, [field]: value } : card),
+    } : current);
+  }
+
+  function updateExpertiseTag(index: number, tagIndex: number, value: string) {
+    setDraft((current) => current ? {
+      ...current,
+      expertiseCards: current.expertiseCards.map((card, cardIndex) => cardIndex === index
+        ? { ...card, tags: card.tags.map((tag, itemIndex) => itemIndex === tagIndex ? value : tag) as [string, string, string] }
+        : card),
+    } : current);
+  }
+
   function saveEditor(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!draft || !editing || saveLock.current || uploading) return;
@@ -240,7 +257,24 @@ export function HomeContentManager({ initialContent }: { initialContent: Record<
           </>
         );
       case "expertise":
-        return <><p className="home-content-kicker">{content.expertise}</p><h3>{content.expTitle}</h3><p>{content.expDesc}</p></>;
+        return <>
+          <p className="home-content-kicker">{content.expertise}</p>
+          <h3>{content.expTitle}</h3>
+          <p>{content.expDesc}</p>
+          <div className="home-content-expertise-preview">
+            {content.expertiseCards.map((card, index) => (
+              <article className="home-content-expertise-preview-card" key={card.id}>
+                <Image src={card.image} alt="" width={92} height={76} unoptimized />
+                <div>
+                  <span>{String(index + 1).padStart(2, "0")}</span>
+                  <strong>{card.name}</strong>
+                  <p>{card.summary}</p>
+                  <small>{card.tags.join(" · ")}</small>
+                </div>
+              </article>
+            ))}
+          </div>
+        </>;
       case "about":
         return (
           <div className="home-content-about-preview">
@@ -318,7 +352,35 @@ export function HomeContentManager({ initialContent }: { initialContent: Record<
           </div>
         </>;
       case "expertise":
-        return <div className="home-content-fields-grid">{field("expertise", "Titre de section")}{field("expTitle", "Titre", true)}{field("expDesc", "Description", true)}</div>;
+        return <>
+          <div className="home-content-fields-grid">{field("expertise", "Titre de section")}{field("expTitle", "Titre", true)}{field("expDesc", "Description", true)}</div>
+          <div className="home-content-list-editor">
+            <div className="home-content-editor-heading"><h3>Cartes « Nos expertises »</h3><p>Modifiez les textes, les visuels et les prestations affichés sur la page d’accueil.</p></div>
+            {draft.expertiseCards.map((card, index) => (
+              <fieldset className="home-content-row" key={card.id}>
+                <legend>{`Carte ${index + 1} · ${card.name}`}</legend>
+                <div className="home-content-fields-grid">
+                  <TextField id={`home-expertise-${card.id}-name`} label="Titre de la carte" value={card.name} maxLength={160} onChange={(value) => updateExpertiseCard(index, "name", value)} />
+                  <TextField id={`home-expertise-${card.id}-summary`} label="Description courte" value={card.summary} multiline maxLength={700} onChange={(value) => updateExpertiseCard(index, "summary", value)} />
+                </div>
+                <ImageUploadField
+                  id={`home-expertise-${card.id}-image`}
+                  label={`Image de la carte ${index + 1}`}
+                  value={card.image}
+                  uploadFolder="expertises"
+                  onUploaded={(image) => updateExpertiseCard(index, "image", image.url)}
+                  onBusyChange={setUploading}
+                />
+                <div className="home-content-fields-grid">
+                  <TextField id={`home-expertise-${card.id}-alt`} label="Texte alternatif de l’image" value={card.imageAlt} maxLength={250} onChange={(value) => updateExpertiseCard(index, "imageAlt", value)} />
+                  {card.tags.map((tag, tagIndex) => (
+                    <TextField key={tagIndex} id={`home-expertise-${card.id}-tag-${tagIndex}`} label={`Prestation ${tagIndex + 1}`} value={tag} maxLength={120} onChange={(value) => updateExpertiseTag(index, tagIndex, value)} />
+                  ))}
+                </div>
+              </fieldset>
+            ))}
+          </div>
+        </>;
       case "about":
         return <>
           <div className="home-content-fields-grid">{field("aboutKicker", "Accroche")}{field("aboutTitle", "Titre", true)}{field("about", "Texte principal", true)}{field("about2", "Texte complémentaire", true)}{field("discover", "Lien vers le bureau")}</div>

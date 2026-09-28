@@ -11,7 +11,7 @@ import {
   parsePartnerFields,
   parseTeamFields,
 } from "@/lib/server/validation";
-import type { HomeContent, HomeContentRecord } from "@/components/(public)/home/content";
+import { homeContent, type HomeContent, type HomeContentRecord } from "@/components/(public)/home/content";
 import type { BureauContent, BureauContentRecord } from "@/components/(public)/bureau/content";
 import type { ExpertisePageContent, ExpertisePageContentRecord } from "@/components/(public)/expertises/content";
 import type { Locale } from "@/lib/i18n";
@@ -88,7 +88,7 @@ export async function getPublicHomeContent(locale: Locale): Promise<HomeContent 
     ` as { record: unknown }[];
     const record = rows[0]?.record as Partial<HomeContentRecord> | undefined;
     if (record?.locale !== locale) return null;
-    return parseHomeContentFields(record.content);
+    return parseHomeContentFields(record.content, homeContent[locale].expertiseCards);
   } catch {
     return null;
   }

@@ -2,6 +2,7 @@ import { isLocale } from "@/lib/i18n";
 import { adminMutationAccess, limitedResponse, logAdminMutation, mutationFailureResponse, mutationResponse, readMutationJson } from "@/lib/server/api";
 import { saveHomeContent } from "@/lib/server/data/admin";
 import { hasOnlyKeys, isRecord, parseHomeContentFields } from "@/lib/server/validation";
+import { homeContent } from "@/components/(public)/home/content";
 
 type RouteContext = { params: Promise<{ locale: string }> };
 
@@ -19,7 +20,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     if (!isRecord(body.value) || !hasOnlyKeys(body.value, ["content"])) {
       return mutationFailureResponse(400, "Invalid request.");
     }
-    const content = parseHomeContentFields(body.value.content);
+    const content = parseHomeContentFields(body.value.content, homeContent[value].expertiseCards);
     if (!content) return mutationFailureResponse(400, "Invalid request.");
     await saveHomeContent(access.actor, value, content);
     logAdminMutation(request, access.actor, "home.update", "success");
