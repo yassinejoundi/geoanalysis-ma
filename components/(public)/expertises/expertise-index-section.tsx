@@ -1,24 +1,19 @@
 import Link from "next/link";
+import type { ExpertisePageContent } from "@/components/(public)/expertises/content";
 import type { Locale } from "@/lib/i18n";
-import { serviceAreas } from "@/components/(public)/expertises/content";
 
 export function ExpertiseIndexSection({
   locale,
-  copy,
+  content,
 }: {
   locale: Locale;
-  copy: {
-    indexNavLabel: string;
-    indexSectionKicker: string;
-    indexSectionTitle: string;
-    indexSectionLead: string;
-  };
+  content: ExpertisePageContent;
 }) {
-  const areas = serviceAreas[locale];
+  const areas = content.areas;
 
   return (
     <>
-      <nav className="services-domain-nav" aria-label={copy.indexNavLabel}>
+      <nav className="services-domain-nav" aria-label={content.indexNavLabel}>
         <ul>
           {areas.map((area) => (
             <li key={area.id}>
@@ -35,14 +30,14 @@ export function ExpertiseIndexSection({
       <section
         className="services-catalog"
         id="services-list"
-        aria-label={copy.indexSectionTitle}
+        aria-label={content.indexSectionTitle}
       >
         <div className="services-catalog-inner">
           <div className="services-catalog-heading">
-            <p className="home-kicker">{copy.indexSectionKicker}</p>
-            <h2>{copy.indexSectionTitle}</h2>
+            <p className="home-kicker">{content.indexSectionKicker}</p>
+            <h2>{content.indexSectionTitle}</h2>
           </div>
-          <p className="services-catalog-lead">{copy.indexSectionLead}</p>
+          <p className="services-catalog-lead">{content.indexSectionLead}</p>
 
           <ol className="services-area-list">
             {areas.map((area) => (

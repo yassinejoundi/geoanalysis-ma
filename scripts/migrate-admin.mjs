@@ -14,6 +14,7 @@ import { articles as publicArticles, expertises as publicExpertises, news as pub
 import { expertiseDetails } from "../lib/content/expertise-details.ts";
 import { realisationMissions } from "../components/(public)/realisations/content.ts";
 import { homeContent } from "../components/(public)/home/content.ts";
+import { expertisePageContent } from "../components/(public)/expertises/content.ts";
 
 const contentTables = {
   expertises: "cms_expertises",
@@ -135,6 +136,16 @@ try {
   `;
   await sql`
     CREATE TABLE IF NOT EXISTS cms_bureau_content (
+      id text PRIMARY KEY CHECK (id IN ('fr', 'en')),
+      record jsonb NOT NULL,
+      position integer NOT NULL DEFAULT 0,
+      updated_by text NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    )
+  `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS cms_expertise_page_content (
       id text PRIMARY KEY CHECK (id IN ('fr', 'en')),
       record jsonb NOT NULL,
       position integer NOT NULL DEFAULT 0,
@@ -390,6 +401,20 @@ try {
     `;
     // Roll back by restoring each original bare domain, then removing this marker.
     await sql`INSERT INTO cms_migrations (version) VALUES (${partnerCanonicalUrlsMigration}) ON CONFLICT (version) DO NOTHING`;
+  }
+
+  const expertisePageMigration = "009_expertise_page_content_v1";
+  const expertisePageMigrationApplied = await sql`SELECT version FROM cms_migrations WHERE version = ${expertisePageMigration}`;
+  if (expertisePageMigrationApplied.length === 0) {
+    for (const locale of ["fr", "en"]) {
+      const payload = JSON.stringify({ locale, content: expertisePageContent[locale] });
+      await sql`
+        INSERT INTO cms_expertise_page_content (id, record, position, updated_by)
+        VALUES (${locale}, ${payload}::jsonb, 0, 'system')
+        ON CONFLICT (id) DO NOTHING
+      `;
+    }
+    await sql`INSERT INTO cms_migrations (version) VALUES (${expertisePageMigration}) ON CONFLICT (version) DO NOTHING`;
   }
 
   console.log("Admin data schema is ready.");

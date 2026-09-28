@@ -11,6 +11,7 @@ export const adminRouteGroups: readonly AdminRouteGroup[] = [
     routes: [
       { href: "/admin/contenu", label: "Page d’accueil" },
       { href: "/admin/contenu/bureau", label: "Page du bureau" },
+      { href: "/admin/contenu/expertises", label: "Page des expertises" },
       { href: "/admin/expertises", label: "Expertises" },
       { href: "/admin/realisations", label: "Réalisations" },
       { href: "/admin/articles", label: "Articles" },

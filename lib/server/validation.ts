@@ -1,6 +1,7 @@
 import type { LocalizedText } from "@/lib/i18n";
 import type { HomeContent } from "@/components/(public)/home/content";
 import type { BureauContent } from "@/components/(public)/bureau/content";
+import type { ExpertisePageContent } from "@/components/(public)/expertises/content";
 import type { MessageStatus, PublicationState } from "@/lib/content/admin";
 
 export const MAX_MEDIA_BYTES = 4 * 1024 * 1024;
@@ -258,6 +259,72 @@ export function parseBureauContentFields(value: unknown): BureauContent | null {
   if (!domains || !gallery || !stages || !values) return null;
 
   return { ...fields, heroImage, domains, gallery, stages, values } as BureauContent;
+}
+
+export function parseExpertisePageContentFields(value: unknown): ExpertisePageContent | null {
+  const stringKeys = [
+    "seoTitle", "seoDescription", "heroKicker", "heroTitle", "heroLead", "exploreDomains",
+    "contactAction", "heroImage", "photoAlt", "photoCaption", "indexNavLabel",
+    "indexSectionKicker", "indexSectionTitle", "indexSectionLead", "approachKicker",
+    "approachTitle", "approachLead",
+  ] as const;
+  const keys = [...stringKeys, "areas", "approachSteps"];
+  if (!isRecord(value) || !hasOnlyKeys(value, keys) || keys.some((key) => !(key in value))) return null;
+
+  const fields = Object.fromEntries(stringKeys.map((key) => {
+    const maxLength = key === "seoTitle" ? 160
+      : key === "seoDescription" ? 320
+      : key === "heroImage" ? 2048
+      : key === "photoAlt" ? 250
+      : key === "heroTitle" || key === "indexSectionTitle" || key === "approachTitle" ? 300
+      : 2000;
+    return [key, textField(value[key], maxLength)];
+  }));
+  const heroImage = fields.heroImage;
+  const areas = parseExpertiseAreas(value.areas);
+  const approachSteps = parseExpertiseApproachSteps(value.approachSteps);
+  if (!heroImage || !isAllowedImageSource(heroImage) || Object.values(fields).some((field) => field === null) ||
+    !areas || !approachSteps) return null;
+
+  return { ...fields, heroImage, areas, approachSteps } as ExpertisePageContent;
+}
+
+function parseExpertiseAreas(value: unknown): ExpertisePageContent["areas"] | null {
+  if (!Array.isArray(value) || value.length < 1 || value.length > 8) return null;
+  const ids = new Set<string>();
+  const areas: ExpertisePageContent["areas"] = [];
+  for (const area of value) {
+    if (!isRecord(area) || !hasOnlyKeys(area, ["id", "number", "title", "summary", "services"])) return null;
+    const id = textField(area.id, 80);
+    const number = textField(area.number, 12);
+    const title = textField(area.title, 200);
+    const summary = textField(area.summary, 1200);
+    const services = parseExpertiseServices(area.services);
+    if (!id || !isIdentifier(id) || ids.has(id) || !number || !title || !summary || !services) return null;
+    ids.add(id);
+    areas.push({ id, number, title, summary, services });
+  }
+  return areas;
+}
+
+function parseExpertiseServices(value: unknown) {
+  if (!Array.isArray(value) || value.length < 1 || value.length > 16) return null;
+  const services = value.map((service) => textField(service, 500));
+  return services.every((service): service is string => service !== null) ? services : null;
+}
+
+function parseExpertiseApproachSteps(value: unknown): ExpertisePageContent["approachSteps"] | null {
+  if (!Array.isArray(value) || value.length < 1 || value.length > 12) return null;
+  const steps: ExpertisePageContent["approachSteps"] = [];
+  for (const step of value) {
+    if (!isRecord(step) || !hasOnlyKeys(step, ["label", "title", "description"])) return null;
+    const label = textField(step.label, 200);
+    const title = textField(step.title, 300);
+    const description = textField(step.description, 2000);
+    if (!label || !title || !description) return null;
+    steps.push({ label, title, description });
+  }
+  return steps;
 }
 
 function parseBureauTextList(value: unknown, maxRows: number) {

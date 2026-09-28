@@ -8097,3 +8097,38 @@ a.partner-card-link:hover {
     gap: 10px;
   }
 }
+
+.expertise-page-manager .admin-action {
+  min-height: 44px;
+}
+
+.expertise-page-area-services {
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.expertise-page-area-services .home-content-editor-heading h4 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.expertise-page-service-editor-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 12px;
+}
+
+@media (max-width: 680px) {
+  .expertise-page-manager .admin-field input,
+  .expertise-page-manager .admin-field textarea {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 420px) {
+  .expertise-page-service-editor-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

@@ -179,3 +179,110 @@ export const serviceAreas = {
   summary: string;
   services: string[];
 }[]>;
+
+export type ExpertiseServiceArea = {
+  id: string;
+  number: string;
+  title: string;
+  summary: string;
+  services: string[];
+};
+
+export type ExpertiseApproachStep = {
+  label: string;
+  title: string;
+  description: string;
+};
+
+export type ExpertisePageContent = {
+  seoTitle: string;
+  seoDescription: string;
+  heroKicker: string;
+  heroTitle: string;
+  heroLead: string;
+  exploreDomains: string;
+  contactAction: string;
+  heroImage: string;
+  photoAlt: string;
+  photoCaption: string;
+  indexNavLabel: string;
+  indexSectionKicker: string;
+  indexSectionTitle: string;
+  indexSectionLead: string;
+  areas: ExpertiseServiceArea[];
+  approachKicker: string;
+  approachTitle: string;
+  approachLead: string;
+  approachSteps: ExpertiseApproachStep[];
+};
+
+export type ExpertisePageContentRecord = {
+  locale: Locale;
+  content: ExpertisePageContent;
+};
+
+const approachPageCopy = {
+  fr: {
+    approachKicker: "Une démarche adaptée",
+    approachTitle: "Du terrain aux livrables",
+    approachLead:
+      "Selon les besoins du projet, les interventions peuvent associer observations et relevés à des études spécialisées, puis à des cartes, analyses et synthèses techniques.",
+    approachSteps: [
+      { label: "01 / Terrain", title: "Observer et recueillir", description: "Reconnaissance, levés géologiques, cartographie, prélèvements et suivi de sondages." },
+      { label: "02 / Études", title: "Analyser le contexte", description: "Études géologiques, hydrologiques ou environnementales, avec simulations hydrauliques selon le projet." },
+      { label: "03 / Restitution", title: "Structurer les résultats", description: "Cartes thématiques, rapports bibliographiques et synthèses techniques." },
+    ],
+  },
+  en: {
+    approachKicker: "A tailored approach",
+    approachTitle: "From fieldwork to deliverables",
+    approachLead:
+      "Depending on project needs, assignments can combine field observations and surveys with specialist studies, then maps, analyses and technical syntheses.",
+    approachSteps: [
+      { label: "01 / Fieldwork", title: "Observe and collect", description: "Reconnaissance, geological surveys, mapping, sampling and drilling supervision." },
+      { label: "02 / Studies", title: "Assess the context", description: "Geological, hydrological or environmental studies, with hydraulic simulations where relevant." },
+      { label: "03 / Reporting", title: "Structure the findings", description: "Thematic maps, literature reports and technical syntheses." },
+    ],
+  },
+} satisfies Record<Locale, Pick<ExpertisePageContent,
+  "approachKicker" | "approachTitle" | "approachLead" | "approachSteps"
+>>;
+
+export const expertisePageContent: Record<Locale, ExpertisePageContent> = {
+  fr: {
+    seoTitle: "Nos expertises | GEOANALYSIS",
+    seoDescription: expertisePageCopy.fr.indexLead,
+    heroKicker: expertisePageCopy.fr.heroKicker,
+    heroTitle: expertisePageCopy.fr.heroTitle,
+    heroLead: expertisePageCopy.fr.indexLead,
+    exploreDomains: expertisePageCopy.fr.exploreDomains,
+    contactAction: expertisePageCopy.fr.contactAction,
+    heroImage: "/approach-field-survey.jpg",
+    photoAlt: expertisePageCopy.fr.photoAlt,
+    photoCaption: expertisePageCopy.fr.photoCaption,
+    indexNavLabel: expertisePageCopy.fr.indexNavLabel,
+    indexSectionKicker: expertisePageCopy.fr.indexSectionKicker,
+    indexSectionTitle: expertisePageCopy.fr.indexSectionTitle,
+    indexSectionLead: expertisePageCopy.fr.indexSectionLead,
+    areas: serviceAreas.fr,
+    ...approachPageCopy.fr,
+  },
+  en: {
+    seoTitle: "Our expertise | GEOANALYSIS",
+    seoDescription: expertisePageCopy.en.indexLead,
+    heroKicker: expertisePageCopy.en.heroKicker,
+    heroTitle: expertisePageCopy.en.heroTitle,
+    heroLead: expertisePageCopy.en.indexLead,
+    exploreDomains: expertisePageCopy.en.exploreDomains,
+    contactAction: expertisePageCopy.en.contactAction,
+    heroImage: "/approach-field-survey.jpg",
+    photoAlt: expertisePageCopy.en.photoAlt,
+    photoCaption: expertisePageCopy.en.photoCaption,
+    indexNavLabel: expertisePageCopy.en.indexNavLabel,
+    indexSectionKicker: expertisePageCopy.en.indexSectionKicker,
+    indexSectionTitle: expertisePageCopy.en.indexSectionTitle,
+    indexSectionLead: expertisePageCopy.en.indexSectionLead,
+    areas: serviceAreas.en,
+    ...approachPageCopy.en,
+  },
+};

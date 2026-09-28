@@ -6,12 +6,14 @@ import { getAdminAccess, isAllowedAdminEmail, type AdminActor } from "@/lib/serv
 import {
   isRecord,
   parseBureauContentFields,
+  parseExpertisePageContentFields,
   parseHomeContentFields,
   parsePartnerFields,
   parseTeamFields,
 } from "@/lib/server/validation";
 import type { HomeContent, HomeContentRecord } from "@/components/(public)/home/content";
 import type { BureauContent, BureauContentRecord } from "@/components/(public)/bureau/content";
+import type { ExpertisePageContent, ExpertisePageContentRecord } from "@/components/(public)/expertises/content";
 import type { Locale } from "@/lib/i18n";
 
 export const adminCollections = [
@@ -25,6 +27,7 @@ export const adminCollections = [
   "media",
   "home",
   "bureau",
+  "expertisePage",
   "settings",
 ] as const;
 
@@ -51,6 +54,7 @@ const dedicatedTables = {
   team: "cms_team_members",
   home: "cms_home_content",
   bureau: "cms_bureau_content",
+  expertisePage: "cms_expertise_page_content",
 } as const;
 
 function isDedicatedCollection(collection: AdminCollection): collection is keyof typeof dedicatedTables {
@@ -100,6 +104,21 @@ export async function getPublicBureauContent(locale: Locale): Promise<BureauCont
     const record = rows[0]?.record as Partial<BureauContentRecord> | undefined;
     if (record?.locale !== locale) return null;
     return parseBureauContentFields(record.content);
+  } catch {
+    return null;
+  }
+}
+
+export async function getPublicExpertisePageContent(locale: Locale): Promise<ExpertisePageContent | null> {
+  await connection();
+  try {
+    const sql = getDatabase();
+    const rows = await sql`
+      SELECT record FROM cms_expertise_page_content WHERE id = ${locale} LIMIT 1
+    ` as { record: unknown }[];
+    const record = rows[0]?.record as Partial<ExpertisePageContentRecord> | undefined;
+    if (record?.locale !== locale) return null;
+    return parseExpertisePageContentFields(record.content);
   } catch {
     return null;
   }
@@ -183,6 +202,22 @@ export async function saveBureauContent(
   const record = JSON.stringify({ locale, content } satisfies BureauContentRecord);
   await sql`
     INSERT INTO cms_bureau_content (id, record, position, updated_by)
+    VALUES (${locale}, ${record}::jsonb, 0, ${actor.id})
+    ON CONFLICT (id) DO UPDATE
+    SET record = EXCLUDED.record, updated_by = EXCLUDED.updated_by, updated_at = now()
+  `;
+}
+
+export async function saveExpertisePageContent(
+  actor: AdminActor,
+  locale: Locale,
+  content: ExpertisePageContent,
+) {
+  authorize(actor);
+  const sql = getDatabase();
+  const record = JSON.stringify({ locale, content } satisfies ExpertisePageContentRecord);
+  await sql`
+    INSERT INTO cms_expertise_page_content (id, record, position, updated_by)
     VALUES (${locale}, ${record}::jsonb, 0, ${actor.id})
     ON CONFLICT (id) DO UPDATE
     SET record = EXCLUDED.record, updated_by = EXCLUDED.updated_by, updated_at = now()
