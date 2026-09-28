@@ -8,7 +8,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { AdminSignOutButton } from "@/components/(admin)/sign-in/admin-sign-out-button";
 import { AdminSidebarNavigation } from "./admin-navigation";
 
-export function AdminMobileNavigation({ adminEmail }: { adminEmail: string }) {
+export function AdminMobileNavigation({
+  adminEmail,
+  whiteLogoUrl,
+}: {
+  adminEmail: string;
+  whiteLogoUrl: string;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -62,11 +68,8 @@ export function AdminMobileNavigation({ adminEmail }: { adminEmail: string }) {
         <aside className="sidebar mobile-sidebar-panel" aria-label="Espace d’administration">
           <div className="mobile-sidebar-header">
             <Link className="brand" href="/admin/dashboard" aria-label="GEOANALYSIS — Tableau de bord" onClick={() => setIsOpen(false)}>
-              <Image className="brand-logo" src="/geoanalysis-logo.png" width={40} height={40} alt="" priority />
-              <div>
-                <div className="brand-name">GEO<span>ANALYSIS</span></div>
-                <div className="brand-caption">ADMINISTRATION</div>
-              </div>
+              <Image className="brand-logo brand-sidebar-logo" src={whiteLogoUrl} width={1873} height={840} alt="" priority />
+              <span className="brand-caption">administration</span>
             </Link>
             <button
               className="mobile-sidebar-close"

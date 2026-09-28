@@ -2005,9 +2005,10 @@ button:focus-visible {
 
 .brand {
   display: flex;
+  width: 100%;
   min-height: 83px;
+  flex-direction: column;
   align-items: center;
-  gap: 11px;
   padding: 18px 20px;
   border-bottom: 1px solid rgba(251, 250, 247, 0.12);
 }
@@ -2020,6 +2021,15 @@ button:focus-visible {
   object-fit: cover;
   outline: 1px solid rgba(255, 255, 255, 0.1);
   outline-offset: -1px;
+}
+
+.brand-sidebar-logo {
+  width: min(100%, 190px);
+  height: auto;
+  max-height: 86px;
+  border-radius: 0;
+  object-fit: contain;
+  outline: 0;
 }
 
 .brand-name {
@@ -2050,8 +2060,8 @@ button:focus-visible {
 .brand-caption {
   margin-top: 6px;
   color: var(--sidebar-muted);
-  font-size: 9.5px;
-  letter-spacing: 0.14em;
+  font-size: 10px;
+  letter-spacing: 0.1em;
   line-height: 1;
 }
 
@@ -3092,7 +3102,9 @@ button:focus-visible {
   }
 
   .mobile-sidebar-header .brand {
-    min-height: 72px;
+    width: auto;
+    min-height: 0;
+    flex: 1;
     padding: 14px 18px;
     border-bottom: 0;
   }
