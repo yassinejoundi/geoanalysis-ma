@@ -206,7 +206,7 @@ export function TeamManager({ initialMembers }: { initialMembers: TeamDraft[] })
                   <span className="directory-position">{String(member.order).padStart(2, "0")}</span>
                   <span className="directory-avatar" aria-hidden="true">
                     {member.image ? (
-                      <Image src={member.image} alt="" width={48} height={48} unoptimized style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+                      <Image src={member.image} alt="" width={48} height={48} sizes="48px" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
                     ) : initials(member.name)}
                   </span>
                   <div className="directory-record-copy">

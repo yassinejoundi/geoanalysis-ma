@@ -1,8 +1,14 @@
 "use client";
 
 import type { Dispatch, SetStateAction } from "react";
+import Image from "next/image";
 import type { LocalizedText } from "@/lib/i18n";
 import { ImageUploadField, type UploadedImage } from "@/components/(admin)/shared/image-upload-field";
+
+const placeholderAvatars = {
+  man: "/avatars/team-man.png",
+  woman: "/avatars/team-woman.png",
+} as const;
 
 export type TeamDraft = {
   id: string;
@@ -93,21 +99,43 @@ export function TeamEditorFields({
       </label>
 
       <div className="admin-field">
-        <span>Photo de profil</span>
+        <span>Avatar sans photo</span>
+        <div className="admin-action-group" role="group" aria-label="Choisir un avatar de remplacement">
+          <button
+            className={"admin-action" + (values.image === null ? " admin-action-primary" : "")}
+            type="button"
+            aria-pressed={values.image === null}
+            onClick={() => onChange((current) => current && ({ ...current, image: null }))}
+          >
+            Initiales
+          </button>
+          <button
+            className={"admin-action" + (values.image === placeholderAvatars.man ? " admin-action-primary" : "")}
+            type="button"
+            aria-pressed={values.image === placeholderAvatars.man}
+            onClick={() => onChange((current) => current && ({ ...current, image: placeholderAvatars.man }))}
+          >
+            <Image src={placeholderAvatars.man} alt="" width={28} height={28} />
+            Homme
+          </button>
+          <button
+            className={"admin-action" + (values.image === placeholderAvatars.woman ? " admin-action-primary" : "")}
+            type="button"
+            aria-pressed={values.image === placeholderAvatars.woman}
+            onClick={() => onChange((current) => current && ({ ...current, image: placeholderAvatars.woman }))}
+          >
+            <Image src={placeholderAvatars.woman} alt="" width={28} height={28} />
+            Femme
+          </button>
+        </div>
+        <span className="admin-field-help">Choisissez l’avatar affiché tant qu’aucune photo n’est téléversée.</span>
         <ImageUploadField
           id="team-member-image"
-          label="Choisir une photo"
+          label="Téléverser une photo (facultatif)"
           value={values.image}
           onUploaded={setImage}
           onBusyChange={onUploadBusyChange}
         />
-        {values.image ? (
-          <button className="admin-action" type="button" onClick={() => onChange((current) => current && ({ ...current, image: null }))}>
-            Retirer la photo
-          </button>
-        ) : (
-          <span className="admin-field-help">Sans photo, les initiales du membre s’affichent.</span>
-        )}
       </div>
 
       {isNew ? (
