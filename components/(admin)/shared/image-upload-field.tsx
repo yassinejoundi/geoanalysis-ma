@@ -25,6 +25,8 @@ export function ImageUploadField({
   deferUpload = false,
   onFileSelected,
   uploadFolder,
+  multiple = false,
+  maxFiles,
 }: {
   id: string;
   label: string;
@@ -35,6 +37,8 @@ export function ImageUploadField({
   deferUpload?: boolean;
   onFileSelected?: (file: File) => void;
   uploadFolder?: "home" | "bureau" | "expertises" | "logo";
+  multiple?: boolean;
+  maxFiles?: number;
 }) {
   const [preview, setPreview] = useState(value ?? null);
   const [status, setStatus] = useState("");
@@ -55,30 +59,64 @@ export function ImageUploadField({
     if (localPreview.current) URL.revokeObjectURL(localPreview.current);
   }, []);
 
-  async function upload(file: File) {
-    const previewUrl = URL.createObjectURL(file);
-    if (localPreview.current) URL.revokeObjectURL(localPreview.current);
-    localPreview.current = previewUrl;
-    setPreview(previewUrl);
+  async function upload(files: File[]) {
     setError("");
     setUploading(true);
     onBusyChange?.(true);
-    setStatus("Optimisation et envoi de l’image…");
+    let uploadedCount = 0;
+    const failures: string[] = [];
 
-    try {
-      const image = await uploadImageToCloudinary(file, uploadFolder);
-      URL.revokeObjectURL(previewUrl);
-      localPreview.current = null;
-      setPreview(image.url);
-      setStatus(`${image.name} envoyé en WebP.`);
-      onUploaded?.(image);
-    } catch (cause) {
-      const message = cause instanceof Error ? cause.message : "Envoi de l’image impossible.";
-      setError(message);
-      setStatus("");
-    } finally {
-      setUploading(false);
-      onBusyChange?.(false);
+    for (const [index, file] of files.entries()) {
+      setStatus(files.length > 1
+        ? `Optimisation et envoi de l’image ${index + 1} sur ${files.length}…`
+        : "Optimisation et envoi de l’image…");
+      const previewUrl = files.length === 1 ? URL.createObjectURL(file) : null;
+      if (previewUrl) {
+        if (localPreview.current) URL.revokeObjectURL(localPreview.current);
+        localPreview.current = previewUrl;
+        setPreview(previewUrl);
+      }
+
+      try {
+        const image = await uploadImageToCloudinary(file, uploadFolder);
+        if (previewUrl) {
+          URL.revokeObjectURL(previewUrl);
+          localPreview.current = null;
+        }
+        setPreview(image.url);
+        uploadedCount += 1;
+        onUploaded?.(image);
+      } catch (cause) {
+        const message = cause instanceof Error ? cause.message : "Envoi de l’image impossible.";
+        failures.push(`${file.name} : ${message}`);
+      }
+    }
+
+    setStatus(`${uploadedCount} image${uploadedCount === 1 ? "" : "s"} envoyée${uploadedCount === 1 ? "" : "s"} en WebP.`);
+    if (failures.length) setError(failures.join(" "));
+    setUploading(false);
+    onBusyChange?.(false);
+  }
+
+  function handleSelection(files: File[]) {
+    if (files.length === 0) return;
+    if (maxFiles !== undefined && files.length > maxFiles) {
+      setError(`Sélectionnez au maximum ${maxFiles} image${maxFiles === 1 ? "" : "s"}.`);
+      return;
+    }
+    setSelectedName(files.length === 1 ? files[0].name : `${files.length} fichiers sélectionnés`);
+    if (deferUpload) {
+      const file = files[0];
+      if (!file) return;
+      const previewUrl = URL.createObjectURL(file);
+      if (localPreview.current) URL.revokeObjectURL(localPreview.current);
+      localPreview.current = previewUrl;
+      setPreview(previewUrl);
+      setError("");
+      setStatus("Photo prête à l’enregistrement.");
+      onFileSelected?.(file);
+    } else if (files.length) {
+      void upload(files);
     }
   }
 
@@ -89,32 +127,21 @@ export function ImageUploadField({
         id={id}
         type="file"
         accept="image/jpeg,image/png,image/webp"
-        disabled={uploading || disabled}
+        multiple={multiple}
+        disabled={uploading || disabled || maxFiles === 0}
         aria-describedby={`${helpId} ${fileNameId} ${statusId}${error ? ` ${errorId}` : ""}`}
         onChange={(event) => {
-          const file = event.currentTarget.files?.[0];
+          const files = Array.from(event.currentTarget.files ?? []);
           event.currentTarget.value = "";
-          if (file) {
-            setSelectedName(file.name);
-            if (deferUpload) {
-              const previewUrl = URL.createObjectURL(file);
-              if (localPreview.current) URL.revokeObjectURL(localPreview.current);
-              localPreview.current = previewUrl;
-              setPreview(previewUrl);
-              setError("");
-              setStatus("Photo prête à l’enregistrement.");
-              onFileSelected?.(file);
-            } else {
-              void upload(file);
-            }
-          }
+          handleSelection(files);
         }}
       />
       <p className="admin-image-selected-name" id={fileNameId}>
-        {selectedName ? <>Fichier choisi : <strong>{selectedName}</strong></> : "Aucune image sélectionnée."}
+        {selectedName ? <>Sélection : <strong>{selectedName}</strong></> : "Aucune image sélectionnée."}
       </p>
       <span className="admin-field-help" id={helpId}>
         JPEG, PNG ou WebP. Conversion WebP haute qualité, dimensions conservées. 20 Mo maximum avant optimisation.
+        {maxFiles !== undefined ? ` ${maxFiles} image${maxFiles === 1 ? "" : "s"} restante${maxFiles === 1 ? "" : "s"} dans la galerie.` : ""}
       </span>
       <p className="visually-hidden" id={statusId} role="status" aria-live="polite" aria-atomic="true">
         {status}

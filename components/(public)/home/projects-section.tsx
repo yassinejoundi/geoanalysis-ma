@@ -1,17 +1,18 @@
 import Link from "next/link";
-import { projects } from "@/lib/content/site";
 import type { Locale } from "@/lib/i18n";
+import { getPublicProjects } from "@/lib/server/data/admin";
 import type { HomeContent } from "./content";
 import { ProjectCard } from "./cards";
 import { SectionHeading } from "./section-heading";
 
-export function ProjectsSection({
+export async function ProjectsSection({
   locale,
   content,
 }: {
   locale: Locale;
   content: HomeContent;
 }) {
+  const projects = await getPublicProjects();
   if (projects.length === 0) return null;
 
   return (

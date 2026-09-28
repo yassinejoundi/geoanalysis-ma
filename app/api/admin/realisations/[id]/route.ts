@@ -1,6 +1,7 @@
 import { deleteAdminRecord, getAdminRecord, updateAdminRecord, validateProjectReferences } from "@/lib/server/data/admin";
 import { adminMutationAccess, logAdminMutation, mutationFailureResponse, mutationResponse, readMutationJson } from "@/lib/server/api";
 import { hasOnlyKeys, isIdentifier, isRecord, parseProjectFields } from "@/lib/server/validation";
+import { projectSlug } from "@/lib/content/projects";
 
 type RouteContext = { params: Promise<{ id: string }> };
 const fields = ["state", "expertiseId", "subServiceId", "location", "date", "title", "context", "methodology", "results", "seoTitle", "seoDescription", "gallery"] as const;
@@ -22,7 +23,10 @@ export async function PATCH(request: Request, context: RouteContext) {
     const parsed = parseProjectFields(candidate);
     if (!parsed) return mutationFailureResponse(400, "Invalid request.");
     if (!await validateProjectReferences(access.actor, parsed.expertiseId, parsed.subServiceId, parsed.gallery.map((image) => image.id))) return mutationFailureResponse(422, "An expertise, service, or media item is unavailable.");
-    const record = { ...current, id, ...parsed };
+    const slug = typeof current.slug === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(current.slug)
+      ? current.slug
+      : projectSlug(parsed.title.fr, id);
+    const record = { ...current, id, ...parsed, slug };
     if (!await updateAdminRecord(access.actor, "projects", id, record)) return mutationFailureResponse(404, "Record not found.");
     logAdminMutation(request, access.actor, "projects.update", "success");
     return mutationResponse({ data: record });

@@ -2,32 +2,10 @@
 
 import type { Dispatch, SetStateAction } from "react";
 import Image from "next/image";
-import type { LocalizedText } from "@/lib/i18n";
-import type { AdminExpertise, PublicationState } from "@/lib/content/admin";
+import type { AdminExpertise } from "@/lib/content/admin";
+import type { ProjectDraft } from "@/lib/content/projects";
+export type { ProjectDraft, ProjectImage } from "@/lib/content/projects";
 import { ImageUploadField, type UploadedImage } from "@/components/(admin)/shared/image-upload-field";
-
-export type ProjectImage = {
-  id: string;
-  caption: string;
-  isCover: boolean;
-  url?: string;
-};
-
-export type ProjectDraft = {
-  id: string;
-  state: PublicationState;
-  expertiseId: string;
-  subServiceId: string;
-  location: string;
-  date: string;
-  title: LocalizedText;
-  context: LocalizedText;
-  methodology: LocalizedText;
-  results: LocalizedText;
-  seoTitle: LocalizedText;
-  seoDescription: LocalizedText;
-  gallery: ProjectImage[];
-};
 
 export function ProjectEditorFields({
   values,
@@ -224,7 +202,7 @@ export function ProjectEditorFields({
       <section className="project-gallery-editor" aria-labelledby="project-gallery-title">
         <div className="project-gallery-heading">
           <h3 id="project-gallery-title">Galerie du projet</h3>
-          <p>Les éléments de galerie référencent les fichiers de la médiathèque.</p>
+          <p>Sélectionnez plusieurs fichiers à la fois. Chaque image sera ajoutée à la galerie.</p>
         </div>
         {values.gallery.length === 0 ? (
           <p className="project-gallery-empty">Aucune image dans la galerie.</p>
@@ -277,7 +255,9 @@ export function ProjectEditorFields({
         )}
         <ImageUploadField
           id="project-gallery-image"
-          label="Ajouter une image"
+          label="Ajouter plusieurs images"
+          multiple
+          maxFiles={30 - values.gallery.length}
           onUploaded={addImage}
           onBusyChange={onUploadBusyChange}
         />

@@ -132,7 +132,7 @@ export const adminMedia = [
 export const adminSettings = {
   siteName: "GEOANALYSIS",
   languages: "FR, EN",
-  phone: "+212 5 24 00 00 00",
+  phone: "+212 661-778834",
   email: "contact@geoanalysis.ma",
   address: "Quartier Industriel Sidi Ghanem, Marrakech 40000, Maroc",
   hours: "Lun – Ven · 8h30 – 18h00",

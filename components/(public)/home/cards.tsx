@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import type { EditorialEntry, Project } from "@/lib/content/site";
+import type { EditorialEntry } from "@/lib/content/site";
+import type { PublicProject } from "@/lib/content/projects";
 import { localize, type Locale } from "@/lib/i18n";
 
 export function ProjectCard({
@@ -8,7 +9,7 @@ export function ProjectCard({
   locale,
   imageLabel,
 }: {
-  project: Project;
+  project: PublicProject;
   locale: Locale;
   imageLabel: string;
 }) {
@@ -16,15 +17,15 @@ export function ProjectCard({
     <Link
       className="home-project-card"
       href={`/${locale}/realisations/${project.slug}`}>
-      <span
-        className="home-placeholder home-project-placeholder"
-        aria-hidden="true">
-        {imageLabel}
+      <span className="home-placeholder home-project-placeholder" aria-hidden="true">
+        {project.coverImage ? (
+          <Image src={project.coverImage} alt="" fill sizes="(max-width: 700px) 100vw, 33vw" />
+        ) : imageLabel}
       </span>
       <span className="home-project-copy">
         <span className="home-project-meta">
           {localize(project.domain, locale)} <span aria-hidden="true">/</span>{" "}
-          {project.location}
+          {project.location}{project.date ? ` · ${project.date}` : ""}
         </span>
         <span className="home-project-title">
           {localize(project.title, locale)}

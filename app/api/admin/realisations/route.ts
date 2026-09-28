@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { adminMutationAccess, logAdminMutation, mutationFailureResponse, mutationResponse, readMutationJson } from "@/lib/server/api";
 import { createAdminRecord, listAdminRecords, validateProjectReferences } from "@/lib/server/data/admin";
 import { parseProjectFields } from "@/lib/server/validation";
+import { projectSlug } from "@/lib/content/projects";
 
 export async function POST(request: Request) {
   const access = await adminMutationAccess(request);
@@ -14,7 +15,8 @@ export async function POST(request: Request) {
   try {
     if (!await validateProjectReferences(access.actor, fields.expertiseId, fields.subServiceId, fields.gallery.map((image) => image.id))) return mutationFailureResponse(422, "An expertise, service, or media item is unavailable.");
     const current = await listAdminRecords(access.actor, "projects");
-    const record = { id: "project-" + randomUUID(), ...fields };
+    const id = "project-" + randomUUID();
+    const record = { id, ...fields, slug: projectSlug(fields.title.fr, id) };
     if (!await createAdminRecord(access.actor, "projects", record.id, record, current.length)) {
       return mutationFailureResponse(409, "A record with this value already exists.");
     }

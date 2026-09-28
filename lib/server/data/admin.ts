@@ -4,13 +4,17 @@ import { neon } from "@neondatabase/serverless";
 import { connection } from "next/server";
 import { cache } from "react";
 import { adminSettings } from "@/lib/content/admin";
+import type { ProjectDraft, PublicProject } from "@/lib/content/projects";
+import { projectSlug } from "@/lib/content/projects";
 import { getAdminAccess, isAllowedAdminEmail, type AdminActor } from "@/lib/server/auth";
 import {
   isRecord,
+  parseExpertiseFields,
   parseBureauContentFields,
   parseExpertisePageContentFields,
   parseHomeContentFields,
   parsePartnerFields,
+  parseProjectFields,
   parseSettingsFields,
   parseTeamFields,
 } from "@/lib/server/validation";
@@ -80,6 +84,115 @@ function getDatabase() {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) throw new Error("Database is not configured.");
   return neon(connectionString);
+}
+
+function normalizeProjectRecord(id: string, value: unknown): ProjectDraft | null {
+  if (!isRecord(value)) return null;
+  const emptyText = { fr: "", en: "" };
+  const project = parseProjectFields({
+    state: value.state,
+    expertiseId: value.expertiseId,
+    subServiceId: value.subServiceId ?? "",
+    location: value.location ?? "",
+    date: value.date ?? "",
+    title: value.title,
+    context: value.context ?? value.description ?? emptyText,
+    methodology: value.methodology ?? emptyText,
+    results: value.results ?? emptyText,
+    seoTitle: value.seoTitle ?? value.title,
+    seoDescription: value.seoDescription ?? value.description ?? emptyText,
+    gallery: value.gallery ?? [],
+  });
+  if (!project) return null;
+  const slug = typeof value.slug === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value.slug)
+    ? value.slug
+    : projectSlug(project.title.fr, id);
+  return { id, ...project, slug };
+}
+
+function localizedRecordText(value: unknown) {
+  if (!isRecord(value) || typeof value.fr !== "string" || typeof value.en !== "string") return null;
+  return { fr: value.fr, en: value.en };
+}
+
+function publicImageSource(value: unknown) {
+  if (typeof value !== "string") return null;
+  if (value.startsWith("/") && !value.startsWith("//")) return value;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && url.hostname === "res.cloudinary.com" ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+export const getPublicProjects = cache(async (): Promise<PublicProject[]> => {
+  await connection();
+  try {
+    const sql = getDatabase();
+    const [projectResult, expertiseResult] = await Promise.all([
+      sql`
+        SELECT id, record
+        FROM cms_realisations
+        WHERE record->>'state' = 'published'
+        ORDER BY position ASC, created_at ASC, id ASC
+      `,
+      sql`
+        SELECT id, record
+        FROM cms_expertises
+        ORDER BY position ASC, created_at ASC, id ASC
+      `,
+    ]);
+    const projectRows = projectResult as CmsRow[];
+    const expertiseRows = expertiseResult as CmsRow[];
+    const expertiseNames = new Map<string, { fr: string; en: string }>();
+    for (const { id, record } of expertiseRows) {
+      if (!isRecord(record)) continue;
+      const expertise = parseExpertiseFields({
+        state: record.state,
+        slug: record.slug,
+        name: record.name,
+        short: record.short,
+      });
+      if (expertise?.state === "published" && expertise.name) expertiseNames.set(id, expertise.name);
+    }
+
+    return projectRows.flatMap(({ id, record }) => {
+      if (!isRecord(record)) return [];
+      const project = normalizeProjectRecord(id, record);
+      if (!project || project.state !== "published") return [];
+      const domain = localizedRecordText(record.domain) ?? expertiseNames.get(project.expertiseId) ?? {
+        fr: "Réalisation",
+        en: "Project",
+      };
+      const gallery = project.gallery.filter((image) => image.url);
+      if (gallery.length === 0) {
+        const legacyImage = publicImageSource(record.image);
+        if (legacyImage) {
+          gallery.push({
+            id: `${id}-cover`,
+            url: legacyImage,
+            caption: localizedRecordText(record.alt)?.fr ?? project.title.fr,
+            isCover: true,
+          });
+        }
+      }
+      return [{
+        ...project,
+        slug: project.slug ?? projectSlug(project.title.fr, id),
+        domain,
+        teaser: project.context,
+        gallery,
+        coverImage: gallery.find((image) => image.isCover)?.url ?? gallery[0]?.url,
+      }];
+    });
+  } catch {
+    return [];
+  }
+});
+
+export async function getPublicProjectBySlug(slug: string) {
+  return (await getPublicProjects()).find((project) => project.slug === slug) ?? null;
 }
 
 export async function getPublicHomeContent(locale: Locale): Promise<HomeContent | null> {
@@ -264,7 +377,10 @@ export async function listAdminRecords<T>(actor: AdminActor, collection: AdminCo
         WHERE collection = ${collection}
         ORDER BY position ASC, created_at ASC, id ASC
       ` as CmsRow[];
-  return rows.map(({ record, image_url }) => {
+  return rows.map(({ id, record, image_url }) => {
+    if (collection === "projects") {
+      return (normalizeProjectRecord(id, record) ?? record) as T;
+    }
     if (collection === "team" && isRecord(record)) {
       return { ...record, image: image_url ?? record.image ?? null } as T;
     }

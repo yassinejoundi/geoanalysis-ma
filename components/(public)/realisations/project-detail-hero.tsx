@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { PageHero } from "@/components/site/page-hero";
-import type { Project } from "@/lib/content/site";
+import type { PublicProject } from "@/lib/content/projects";
 import { localize, localizedHref, type Locale } from "@/lib/i18n";
 
 export function ProjectDetailHero({
@@ -8,7 +8,7 @@ export function ProjectDetailHero({
   locale,
   backLabel,
 }: {
-  project: Project;
+  project: PublicProject;
   locale: Locale;
   backLabel: string;
 }) {
@@ -24,7 +24,7 @@ export function ProjectDetailHero({
         </div>
       </div>
       <PageHero
-        kicker={`${localize(project.domain, locale)} / ${project.location}`}
+        kicker={`${localize(project.domain, locale)} / ${project.location}${project.date ? ` · ${project.date}` : ""}`}
         title={localize(project.title, locale)}
         lead={localize(project.teaser, locale)}
       />

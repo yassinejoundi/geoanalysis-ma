@@ -417,8 +417,26 @@ try {
     await sql`INSERT INTO cms_migrations (version) VALUES (${expertisePageMigration}) ON CONFLICT (version) DO NOTHING`;
   }
 
+  const contactPhoneMigration = "010_contact_phone_number";
+  const contactPhoneMigrationApplied = await sql`SELECT version FROM cms_migrations WHERE version = ${contactPhoneMigration}`;
+  if (contactPhoneMigrationApplied.length === 0) {
+    await sql`
+      UPDATE cms_records
+      SET record = jsonb_set(record, '{phone}', to_jsonb(${adminSettings.phone}::text), true),
+          updated_by = 'system',
+          updated_at = now()
+      WHERE collection = 'settings'
+        AND id = 'site'
+        AND record->>'phone' = '+212 5 24 00 00 00'
+    `;
+    await sql`INSERT INTO cms_migrations (version) VALUES (${contactPhoneMigration}) ON CONFLICT (version) DO NOTHING`;
+  }
+
   console.log("Admin data schema is ready.");
-} catch {
-  console.error("Admin data migration failed. Database details were not logged.");
+} catch (error) {
+  const name = error instanceof Error ? error.name : "UnknownError";
+  const code = error && typeof error === "object" && "code" in error ? error.code : undefined;
+  const safeCode = typeof code === "string" && (/^[A-Z0-9]{5}$/.test(code) || /^E[A-Z0-9_]+$/.test(code)) ? ` ${code}` : "";
+  console.error(`Admin data migration failed (${name}${safeCode}). Database details were not logged.`);
   process.exitCode = 1;
 }

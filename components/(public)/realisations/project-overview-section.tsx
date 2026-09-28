@@ -18,26 +18,18 @@ export function ProjectOverviewSection({
 }) {
   return (
     <section className="project-overview-section">
-      <div>
-        <SectionHeading
-          kicker={copy.descriptionKicker}
-          title={copy.descriptionTitle}
-        />
-        <p className="project-description">
-          {localize(detail.description, locale)}
-        </p>
-      </div>
-      <div>
-        <SectionHeading
-          kicker={copy.methodologyKicker}
-          title={copy.methodologyTitle}
-        />
-        <ol className="project-method-list">
-          {detail.methods.map((method, index) => (
-            <li key={`${index}-${method.fr}`}>{localize(method, locale)}</li>
-          ))}
-        </ol>
-      </div>
+      {localize(detail.description, locale).trim() && (
+        <div>
+          <SectionHeading kicker={copy.descriptionKicker} title={copy.descriptionTitle} />
+          <p className="project-description">{localize(detail.description, locale)}</p>
+        </div>
+      )}
+      {localize(detail.methodology, locale).trim() && (
+        <div>
+          <SectionHeading kicker={copy.methodologyKicker} title={copy.methodologyTitle} />
+          <p className="project-description">{localize(detail.methodology, locale)}</p>
+        </div>
+      )}
     </section>
   );
 }

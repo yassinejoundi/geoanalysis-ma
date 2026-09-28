@@ -5,44 +5,47 @@ import { ProjectDetailHero } from "@/components/(public)/realisations/project-de
 import { ProjectGallerySection } from "@/components/(public)/realisations/project-gallery-section";
 import { ProjectOverviewSection } from "@/components/(public)/realisations/project-overview-section";
 import { ProjectResultsSection } from "@/components/(public)/realisations/project-results-section";
-import { projectDetails } from "@/lib/content/project-details";
-import { projects } from "@/lib/content/site";
-import { isLocale, locales, localize } from "@/lib/i18n";
+import { getPublicProjectBySlug } from "@/lib/server/data/admin";
+import { isLocale, localize } from "@/lib/i18n";
 import { notFound } from "next/navigation";
 
-export function generateStaticParams() {
-  return locales.flatMap((lang) =>
-    projects.map(({ slug }) => ({ lang, slug })),
-  );
+type ProjectPageProps = PageProps<"/[lang]/realisations/[slug]">;
+
+async function getProject(slug: string) {
+  const project = await getPublicProjectBySlug(slug);
+  if (!project) notFound();
+  return project;
 }
 
 export async function generateMetadata({
   params,
-}: {
-  params: Promise<{ lang: string; slug: string }>;
-}): Promise<Metadata> {
+}: ProjectPageProps): Promise<Metadata> {
   const { lang, slug } = await params;
   if (!isLocale(lang)) return {};
-  const project = projects.find((entry) => entry.slug === slug);
-  if (!project) notFound();
+  const project = await getProject(slug);
   return {
-    title: `${localize(project.title, lang)} | GEOANALYSIS`,
-    description: localize(project.teaser, lang),
+    title: `${localize(project.seoTitle, lang) || localize(project.title, lang)} | GEOANALYSIS`,
+    description: localize(project.seoDescription, lang) || localize(project.teaser, lang),
   };
 }
 
 export default async function ProjectPage({
   params,
-}: {
-  params: Promise<{ lang: string; slug: string }>;
-}) {
+}: ProjectPageProps) {
   const { lang, slug } = await params;
   if (!isLocale(lang)) notFound();
-  const project = projects.find((entry) => entry.slug === slug);
-  if (!project) notFound();
+  const project = await getProject(slug);
 
   const copy = projectPageCopy[lang];
-  const detail = projectDetails[project.id];
+  const detail = {
+    description: project.context,
+    methodology: project.methodology,
+    results: project.results,
+  };
+  const hasDetails = Object.values(detail).some((value) => value.fr.trim() || value.en.trim());
+  const hasOverview = [detail.description, detail.methodology].some(
+    (value) => value.fr.trim() || value.en.trim(),
+  );
 
   return (
     <main className="projects-page project-detail-page">
@@ -51,11 +54,15 @@ export default async function ProjectPage({
         locale={lang}
         backLabel={copy.detailBack}
       />
-      <ProjectGallerySection detail={detail} locale={lang} copy={copy} />
-      <div className="project-detail-inner project-detail-content">
-        <ProjectOverviewSection detail={detail} locale={lang} copy={copy} />
-        <ProjectResultsSection detail={detail} locale={lang} copy={copy} />
-      </div>
+      <ProjectGallerySection gallery={project.gallery} title={localize(project.title, lang)} copy={copy} />
+      {hasDetails && (
+        <div className="project-detail-inner project-detail-content">
+          {hasOverview && <ProjectOverviewSection detail={detail} locale={lang} copy={copy} />}
+          {detail.results.fr.trim() || detail.results.en.trim() ? (
+            <ProjectResultsSection detail={detail} locale={lang} copy={copy} />
+          ) : null}
+        </div>
+      )}
       <ProjectContactSection
         locale={lang}
         title={copy.contactTitle}

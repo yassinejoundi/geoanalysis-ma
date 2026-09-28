@@ -113,6 +113,7 @@ export function ProjectManager({ initialProjects, initialExpertises }: { initial
   async function saveEditor() {
     if (!editor) return;
     const { id, ...fields } = editorValues;
+    delete fields.slug;
     try {
       const saved = editor.mode === "create"
         ? await sendApiMutation<ManagedProject>("/api/admin/realisations", "POST", fields)

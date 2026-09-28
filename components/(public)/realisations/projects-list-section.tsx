@@ -1,9 +1,12 @@
 import Image from "next/image";
+import Link from "next/link";
 import { realisationMissions, realisationsPageCopy } from "./content";
 import { localize, type Locale } from "@/lib/i18n";
+import { getPublicProjects } from "@/lib/server/data/admin";
 
-export function RealisationsArchiveSection({ locale }: { locale: Locale }) {
+export async function RealisationsArchiveSection({ locale }: { locale: Locale }) {
   const copy = realisationsPageCopy[locale];
+  const projects = await getPublicProjects();
 
   return (
     <>
@@ -19,7 +22,32 @@ export function RealisationsArchiveSection({ locale }: { locale: Locale }) {
           <p className="realisations-section-lead">{copy.workLead}</p>
         </div>
         <ul className="realisations-grid">
-          {realisationMissions.map((mission) => (
+          {projects.length > 0 ? projects.map((project, index) => (
+            <li key={project.id}>
+              <article className="realisation-card">
+                <Link className="realisation-card-link" href={`/${locale}/realisations/${project.slug}`}>
+                  <figure className="realisation-card-image">
+                    {project.coverImage && (
+                      <Image
+                        src={project.coverImage}
+                        alt=""
+                        fill
+                        sizes="(max-width: 700px) 100vw, (max-width: 980px) 50vw, 45vw"
+                      />
+                    )}
+                    <figcaption>
+                      <span>{localize(project.domain, locale)} · {project.location}</span>
+                      <span>{project.date || String(index + 1).padStart(2, "0")}</span>
+                    </figcaption>
+                  </figure>
+                  <div className="realisation-card-copy">
+                    <h3>{localize(project.title, locale)}</h3>
+                    <p>{localize(project.teaser, locale)}</p>
+                  </div>
+                </Link>
+              </article>
+            </li>
+          )) : realisationMissions.map((mission) => (
             <li key={mission.id}>
               <article className="realisation-card">
                 <figure className="realisation-card-image">

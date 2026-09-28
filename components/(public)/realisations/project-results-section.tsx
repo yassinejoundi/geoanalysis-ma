@@ -14,14 +14,7 @@ export function ProjectResultsSection({
   return (
     <section className="project-results-section">
       <SectionHeading kicker={copy.resultsKicker} title={copy.resultsTitle} />
-      <dl className="project-results-list">
-        {detail.results.map((result) => (
-          <div key={`${result.value}-${result.label.fr}`}>
-            <dt>{result.value}</dt>
-            <dd>{localize(result.label, locale)}</dd>
-          </div>
-        ))}
-      </dl>
+      <p className="project-description">{localize(detail.results, locale)}</p>
     </section>
   );
 }
