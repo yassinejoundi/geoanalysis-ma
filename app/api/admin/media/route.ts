@@ -27,11 +27,11 @@ export async function POST(request: Request) {
     }
     const file = form.get("file");
     const folder = form.get("folder");
-    if (!(file instanceof File) || (folder !== null && folder !== "home") ||
+    if (!(file instanceof File) || (folder !== null && folder !== "home" && folder !== "bureau") ||
       [...form.keys()].some((key) => key !== "file" && key !== "folder")) {
       return mutationFailureResponse(400, "Invalid request.");
     }
-    const result = await storeMedia(file, access.actor.id, folder === "home" ? "home" : "default");
+    const result = await storeMedia(file, access.actor.id, folder === "home" || folder === "bureau" ? folder : "default");
     if ("error" in result) return mutationFailureResponse(result.error === "too-large" ? 413 : 415, "Unsupported file.");
     if (!isIdentifier(result.media.id)) return mutationFailureResponse(503, "The request could not be processed.");
     const records = await listAdminRecords(access.actor, "media");

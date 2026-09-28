@@ -36,7 +36,7 @@ function initials(name: string) {
   return name.trim().split(/\s+/).slice(0, 2).map((part) => part.charAt(0)).join("").toLocaleUpperCase("fr");
 }
 
-export function PartnersManager({ initialPartners }: { initialPartners: PartnerDraft[] }) {
+export function PartnersManager({ initialPartners, embedded = false }: { initialPartners: PartnerDraft[]; embedded?: boolean }) {
   const [partners, setPartners] = useState<PartnerDraft[]>(initialPartners);
   const [editorValues, setEditorValues] = useState<PartnerDraft | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -118,12 +118,18 @@ export function PartnersManager({ initialPartners }: { initialPartners: PartnerD
     }
   }
 
+  const Root = embedded ? "section" : "main";
+
   return (
-    <main className="admin-content-manager directory-manager partner-directory">
+    <Root
+      id={embedded ? "bureau-partners" : undefined}
+      aria-labelledby={embedded ? "bureau-partners-title" : undefined}
+      className={embedded ? "bureau-directory-embed partner-directory" : "admin-content-manager directory-manager partner-directory"}
+    >
       <header className="directory-header">
         <div className="directory-heading-copy">
-          <p className="admin-eyebrow">ORGANISATION / PARTENAIRES</p>
-          <h1>Partenaires</h1>
+          <p className="admin-eyebrow">{embedded ? "LE BUREAU / PARTENAIRES" : "ORGANISATION / PARTENAIRES"}</p>
+          {embedded ? <h2 id="bureau-partners-title">Partenaires</h2> : <h1>Partenaires</h1>}
           <p>Réunissez les organisations qui accompagnent vos projets.</p>
         </div>
         <button className="admin-action admin-action-primary directory-add-action" type="button" onClick={openCreateEditor}>
@@ -236,6 +242,6 @@ export function PartnersManager({ initialPartners }: { initialPartners: PartnerD
       />
 
       {toast && <Toast key={toast.id} message={toast.message} />}
-    </main>
+    </Root>
   );
 }

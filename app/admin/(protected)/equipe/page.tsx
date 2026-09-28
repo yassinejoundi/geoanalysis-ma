@@ -1,8 +1,5 @@
-import { TeamManager } from "@/components/(admin)/equipe/team-manager";
-import type { TeamDraft } from "@/components/(admin)/equipe/team-editor-fields";
-import { requireAdminRecords } from "@/lib/server/data/admin";
+import { redirect } from "next/navigation";
 
-export default async function AdminTeamPage() {
-  const members = await requireAdminRecords<TeamDraft>("team");
-  return <TeamManager initialMembers={members} />;
+export default function AdminTeamPage() {
+  redirect("/admin/contenu/bureau#bureau-team");
 }

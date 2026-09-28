@@ -1,5 +1,6 @@
 import type { LocalizedText } from "@/lib/i18n";
 import type { HomeContent } from "@/components/(public)/home/content";
+import type { BureauContent } from "@/components/(public)/bureau/content";
 import type { MessageStatus, PublicationState } from "@/lib/content/admin";
 
 export const MAX_MEDIA_BYTES = 4 * 1024 * 1024;
@@ -226,6 +227,69 @@ export function parseHomeContentFields(value: unknown): HomeContent | null {
     Object.values(fields).some((field) => field === null)) return null;
 
   return { ...fields, aboutImage, methodItems, pillars, steps } as HomeContent;
+}
+
+export function parseBureauContentFields(value: unknown): BureauContent | null {
+  const stringKeys = [
+    "seoTitle", "seoDescription", "heroKicker", "heroTitle", "heroLead", "heroImage", "heroImageAlt",
+    "heroImageLabel", "heroImageCaption", "fieldsLabel", "primaryAction", "secondaryAction", "aboutEyebrow",
+    "aboutTitle", "aboutLead", "aboutDetail", "aboutLocation", "aboutGalleryLabel", "teamEyebrow", "teamTitle",
+    "partnersEyebrow", "partnersTitle", "methodEyebrow", "methodTitle", "methodLead", "valuesTitle",
+  ] as const;
+  const keys = [...stringKeys, "domains", "gallery", "stages", "values"];
+  if (!isRecord(value) || !hasOnlyKeys(value, keys) || keys.some((key) => !(key in value))) return null;
+
+  const fields = Object.fromEntries(stringKeys.map((key) => {
+    const maxLength = key === "seoTitle" ? 160
+      : key === "seoDescription" ? 320
+      : key === "heroImageAlt" ? 250
+      : key.endsWith("Image") ? 2048
+      : key.endsWith("Title") ? 300
+      : 2000;
+    return [key, textField(value[key], maxLength)];
+  }));
+  const heroImage = fields.heroImage;
+  if (!heroImage || !isAllowedImageSource(heroImage) || Object.values(fields).some((field) => field === null)) return null;
+
+  const domains = parseBureauTextList(value.domains, 8);
+  const gallery = parseBureauGallery(value.gallery);
+  const stages = parseBureauTextRows(value.stages, 12);
+  const values = parseBureauTextRows(value.values, 12);
+  if (!domains || !gallery || !stages || !values) return null;
+
+  return { ...fields, heroImage, domains, gallery, stages, values } as BureauContent;
+}
+
+function parseBureauTextList(value: unknown, maxRows: number) {
+  if (!Array.isArray(value) || value.length < 1 || value.length > maxRows) return null;
+  const rows = value.map((row) => textField(row, 300, true));
+  return rows.every((row): row is string => row !== null) ? rows : null;
+}
+
+function parseBureauTextRows(value: unknown, maxRows: number) {
+  if (!Array.isArray(value) || value.length < 1 || value.length > maxRows) return null;
+  const rows: { title: string; description: string }[] = [];
+  for (const row of value) {
+    if (!isRecord(row) || !hasOnlyKeys(row, ["title", "description"])) return null;
+    const title = textField(row.title, 300);
+    const description = textField(row.description, 2000);
+    if (!title || !description) return null;
+    rows.push({ title, description });
+  }
+  return rows;
+}
+
+function parseBureauGallery(value: unknown) {
+  if (!Array.isArray(value) || value.length < 1 || value.length > 8) return null;
+  const gallery: BureauContent["gallery"] = [];
+  for (const photo of value) {
+    if (!isRecord(photo) || !hasOnlyKeys(photo, ["src", "alt"])) return null;
+    const src = textField(photo.src, 2048);
+    const alt = textField(photo.alt, 250);
+    if (!src || !alt || !isAllowedImageSource(src)) return null;
+    gallery.push({ src, alt });
+  }
+  return gallery;
 }
 
 function parseHomeRows(value: unknown, columns: 2 | 3, maxRows: number) {

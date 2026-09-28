@@ -133,6 +133,7 @@ export function TeamEditorFields({
           id="team-member-image"
           label="Téléverser une photo (facultatif)"
           value={values.image}
+          uploadFolder="bureau"
           onUploaded={setImage}
           onBusyChange={onUploadBusyChange}
         />

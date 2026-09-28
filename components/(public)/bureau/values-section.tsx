@@ -1,11 +1,10 @@
-import { firmValues } from "@/lib/content/firm";
-import { localize, type Locale } from "@/lib/i18n";
+import type { BureauContent } from "./content";
 
 export function ValuesSection({
-  locale,
+  content,
   title,
 }: {
-  locale: Locale;
+  content: BureauContent;
   title: string;
 }) {
   return (
@@ -13,11 +12,11 @@ export function ValuesSection({
       <div className="firm-values-inner">
         <h2 id="firm-values-title">{title}</h2>
         <ul>
-          {firmValues.map((value) => (
-            <li key={value.number}>
-              <span className="firm-value-number">{value.number}</span>
-              <h3>{localize(value.title, locale)}</h3>
-              <p>{localize(value.description, locale)}</p>
+          {content.values.map((value, index) => (
+            <li key={index}>
+              <span className="firm-value-number">{String(index + 1).padStart(2, "0")}</span>
+              <h3>{value.title}</h3>
+              <p>{value.description}</p>
             </li>
           ))}
         </ul>

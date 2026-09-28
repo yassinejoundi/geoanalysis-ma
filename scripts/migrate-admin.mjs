@@ -133,6 +133,16 @@ try {
       updated_at timestamptz NOT NULL DEFAULT now()
     )
   `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS cms_bureau_content (
+      id text PRIMARY KEY CHECK (id IN ('fr', 'en')),
+      record jsonb NOT NULL,
+      position integer NOT NULL DEFAULT 0,
+      updated_by text NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    )
+  `;
   for (const table of Object.values(contentTables)) {
     await sql`
       CREATE TABLE IF NOT EXISTS ${sql.unsafe(table)} (

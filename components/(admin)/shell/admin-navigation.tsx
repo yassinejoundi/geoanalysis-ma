@@ -5,16 +5,15 @@ import { usePathname } from "next/navigation";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
   faBullseye,
+  faBuilding,
   faEnvelope,
   faFileLines,
   faFolderOpen,
   faGaugeHigh,
   faGear,
-  faHandshake,
   faHouse,
   faNewspaper,
   faPhotoFilm,
-  faUsers,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useAdminMessages } from "@/components/(admin)/shared/admin-messages-provider";
@@ -23,13 +22,12 @@ import { adminRouteGroups, getAdminRoute } from "./admin-routes";
 const routeIcons: Record<string, IconDefinition> = {
   "/admin/dashboard": faGaugeHigh,
   "/admin/contenu": faHouse,
+  "/admin/contenu/bureau": faBuilding,
   "/admin/expertises": faBullseye,
   "/admin/realisations": faFolderOpen,
   "/admin/articles": faFileLines,
   "/admin/actualites": faNewspaper,
   "/admin/mediatheque": faPhotoFilm,
-  "/admin/equipe": faUsers,
-  "/admin/partenaires": faHandshake,
   "/admin/messages": faEnvelope,
   "/admin/parametres": faGear,
 };

@@ -17,7 +17,7 @@ function initials(name: string) {
   return name.trim().split(/\s+/).slice(0, 2).map((part) => part.charAt(0)).join("").toLocaleUpperCase("fr");
 }
 
-export function TeamManager({ initialMembers }: { initialMembers: TeamDraft[] }) {
+export function TeamManager({ initialMembers, embedded = false }: { initialMembers: TeamDraft[]; embedded?: boolean }) {
   const [members, setMembers] = useState<TeamDraft[]>(initialMembers);
   const [editorValues, setEditorValues] = useState<TeamDraft | null>(null);
   const [editorLanguage, setEditorLanguage] = useState<"fr" | "en">("fr");
@@ -150,12 +150,18 @@ export function TeamManager({ initialMembers }: { initialMembers: TeamDraft[] })
     }
   }
 
+  const Root = embedded ? "section" : "main";
+
   return (
-    <main className={`admin-content-manager directory-manager team-directory ${styles.teamManager}`}>
+    <Root
+      id={embedded ? "bureau-team" : undefined}
+      aria-labelledby={embedded ? "bureau-team-title" : undefined}
+      className={embedded ? `bureau-directory-embed team-directory ${styles.teamManager}` : `admin-content-manager directory-manager team-directory ${styles.teamManager}`}
+    >
       <header className="directory-header">
         <div className="directory-heading-copy">
-          <p className="admin-eyebrow">ORGANISATION / ÉQUIPE</p>
-          <h1>Équipe</h1>
+          <p className="admin-eyebrow">{embedded ? "LE BUREAU / ÉQUIPE" : "ORGANISATION / ÉQUIPE"}</p>
+          {embedded ? <h2 id="bureau-team-title">Équipe</h2> : <h1>Équipe</h1>}
           <p>Présentez les parcours et les expertises de votre bureau.</p>
         </div>
         <button className="admin-action admin-action-primary directory-add-action" type="button" onClick={openCreateEditor}>
@@ -286,6 +292,6 @@ export function TeamManager({ initialMembers }: { initialMembers: TeamDraft[] })
       />
 
       {toast && <Toast key={toast.id} message={toast.message} />}
-    </main>
+    </Root>
   );
 }

@@ -5696,7 +5696,7 @@ button:focus-visible {
   gap: 8px;
   min-width: 0;
   padding: 14px;
-  border: 1px dashed color-mix(in srgb, var(--brand) 55%, var(--border));
+  border: 1px solid var(--border);
   border-radius: 3px;
   background: var(--surface-green);
 }
@@ -5709,14 +5709,48 @@ button:focus-visible {
 
 .admin-image-upload input {
   width: 100%;
-  min-height: 40px;
+  min-height: 52px;
+  padding: 5px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface);
   color: var(--foreground);
   font: 400 12px/1.5 var(--font-body);
 }
 
+.admin-image-upload input::file-selector-button {
+  min-height: 40px;
+  margin-inline-end: 10px;
+  padding: 7px 12px;
+  border: 0;
+  border-radius: 2px;
+  background: var(--brand-hover);
+  color: var(--surface);
+  font: 500 12px/1.4 var(--font-body);
+  cursor: pointer;
+}
+
+.admin-image-upload input::file-selector-button:hover {
+  background: var(--foreground);
+}
+
 .admin-image-upload input:focus-visible {
-  outline: 3px solid var(--brand-bright);
+  outline: 3px solid var(--brand-hover);
   outline-offset: 2px;
+}
+
+.admin-image-selected-name {
+  min-width: 0;
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.admin-image-selected-name strong {
+  color: var(--foreground);
+  font-weight: 500;
 }
 
 .admin-image-upload-error {
@@ -7728,6 +7762,69 @@ a.partner-card-link:hover {
 
 .home-content-manager {
   max-width: 1120px;
+}
+
+.bureau-manager-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block: 4px 8px;
+}
+
+.bureau-manager-nav a {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface);
+  color: var(--foreground);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.bureau-manager-nav a:hover {
+  border-color: var(--brand-hover);
+  background: var(--surface-green);
+}
+
+.bureau-manager-nav a:focus-visible {
+  outline: 3px solid var(--brand-hover);
+  outline-offset: 2px;
+}
+
+.bureau-gallery-preview {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.bureau-gallery-preview img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  border: 1px solid var(--border);
+  object-fit: cover;
+}
+
+.bureau-directory-embed {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+}
+
+.bureau-directory-embed .directory-heading-copy h2 {
+  margin: 0;
+  font-size: clamp(24px, 2.5vw, 30px);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 1.2;
 }
 
 .home-content-header,

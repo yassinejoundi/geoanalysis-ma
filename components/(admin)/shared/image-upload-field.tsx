@@ -13,6 +13,7 @@ export function ImageUploadField({
   value,
   onUploaded,
   onBusyChange,
+  disabled = false,
   uploadFolder,
 }: {
   id: string;
@@ -20,14 +21,17 @@ export function ImageUploadField({
   value?: string | null;
   onUploaded: (image: UploadedImage) => void;
   onBusyChange?: (busy: boolean) => void;
-  uploadFolder?: "home";
+  disabled?: boolean;
+  uploadFolder?: "home" | "bureau";
 }) {
   const [preview, setPreview] = useState(value ?? null);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [selectedName, setSelectedName] = useState("");
   const localPreview = useRef<string | null>(null);
   const helpId = `${id}-help`;
+  const fileNameId = `${id}-file-name`;
   const statusId = `${id}-status`;
   const errorId = `${id}-error`;
 
@@ -78,14 +82,20 @@ export function ImageUploadField({
         id={id}
         type="file"
         accept="image/jpeg,image/png,image/webp"
-        disabled={uploading}
-        aria-describedby={`${helpId} ${statusId}${error ? ` ${errorId}` : ""}`}
+        disabled={uploading || disabled}
+        aria-describedby={`${helpId} ${fileNameId} ${statusId}${error ? ` ${errorId}` : ""}`}
         onChange={(event) => {
           const file = event.currentTarget.files?.[0];
           event.currentTarget.value = "";
-          if (file) void upload(file);
+          if (file) {
+            setSelectedName(file.name);
+            void upload(file);
+          }
         }}
       />
+      <p className="admin-image-selected-name" id={fileNameId}>
+        {selectedName ? <>Fichier choisi : <strong>{selectedName}</strong></> : "Aucune image sélectionnée."}
+      </p>
       <span className="admin-field-help" id={helpId}>
         JPEG, PNG ou WebP. Conversion WebP haute qualité, dimensions conservées. 20 Mo maximum avant optimisation.
       </span>

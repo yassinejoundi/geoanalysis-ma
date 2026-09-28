@@ -10,6 +10,7 @@ export const adminRouteGroups: readonly AdminRouteGroup[] = [
     label: "Contenus",
     routes: [
       { href: "/admin/contenu", label: "Page d’accueil" },
+      { href: "/admin/contenu/bureau", label: "Page du bureau" },
       { href: "/admin/expertises", label: "Expertises" },
       { href: "/admin/realisations", label: "Réalisations" },
       { href: "/admin/articles", label: "Articles" },
@@ -20,8 +21,6 @@ export const adminRouteGroups: readonly AdminRouteGroup[] = [
   {
     label: "Organisation",
     routes: [
-      { href: "/admin/equipe", label: "Équipe" },
-      { href: "/admin/partenaires", label: "Partenaires" },
       { href: "/admin/messages", label: "Messages" },
     ],
   },
@@ -34,5 +33,7 @@ export const adminRouteGroups: readonly AdminRouteGroup[] = [
 export const adminRoutes: readonly AdminRoute[] = adminRouteGroups.flatMap(({ routes }) => routes);
 
 export function getAdminRoute(pathname: string) {
-  return adminRoutes.find(({ href }) => pathname === href || pathname.startsWith(`${href}/`)) ?? adminRoutes[0];
+  return adminRoutes.find(({ href }) => pathname === href) ??
+    adminRoutes.find(({ href }) => pathname.startsWith(`${href}/`)) ??
+    adminRoutes[0];
 }

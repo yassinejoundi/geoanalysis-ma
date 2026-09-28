@@ -5,11 +5,13 @@ import { connection } from "next/server";
 import { getAdminAccess, isAllowedAdminEmail, type AdminActor } from "@/lib/server/auth";
 import {
   isRecord,
+  parseBureauContentFields,
   parseHomeContentFields,
   parsePartnerFields,
   parseTeamFields,
 } from "@/lib/server/validation";
 import type { HomeContent, HomeContentRecord } from "@/components/(public)/home/content";
+import type { BureauContent, BureauContentRecord } from "@/components/(public)/bureau/content";
 import type { Locale } from "@/lib/i18n";
 
 export const adminCollections = [
@@ -22,6 +24,7 @@ export const adminCollections = [
   "messages",
   "media",
   "home",
+  "bureau",
   "settings",
 ] as const;
 
@@ -47,6 +50,7 @@ const dedicatedTables = {
   news: "cms_actualites",
   team: "cms_team_members",
   home: "cms_home_content",
+  bureau: "cms_bureau_content",
 } as const;
 
 function isDedicatedCollection(collection: AdminCollection): collection is keyof typeof dedicatedTables {
@@ -81,6 +85,21 @@ export async function getPublicHomeContent(locale: Locale): Promise<HomeContent 
     const record = rows[0]?.record as Partial<HomeContentRecord> | undefined;
     if (record?.locale !== locale) return null;
     return parseHomeContentFields(record.content);
+  } catch {
+    return null;
+  }
+}
+
+export async function getPublicBureauContent(locale: Locale): Promise<BureauContent | null> {
+  await connection();
+  try {
+    const sql = getDatabase();
+    const rows = await sql`
+      SELECT record FROM cms_bureau_content WHERE id = ${locale} LIMIT 1
+    ` as { record: unknown }[];
+    const record = rows[0]?.record as Partial<BureauContentRecord> | undefined;
+    if (record?.locale !== locale) return null;
+    return parseBureauContentFields(record.content);
   } catch {
     return null;
   }
@@ -148,6 +167,22 @@ export async function saveHomeContent(
   const record = JSON.stringify({ locale, content } satisfies HomeContentRecord);
   await sql`
     INSERT INTO cms_home_content (id, record, position, updated_by)
+    VALUES (${locale}, ${record}::jsonb, 0, ${actor.id})
+    ON CONFLICT (id) DO UPDATE
+    SET record = EXCLUDED.record, updated_by = EXCLUDED.updated_by, updated_at = now()
+  `;
+}
+
+export async function saveBureauContent(
+  actor: AdminActor,
+  locale: Locale,
+  content: BureauContent,
+) {
+  authorize(actor);
+  const sql = getDatabase();
+  const record = JSON.stringify({ locale, content } satisfies BureauContentRecord);
+  await sql`
+    INSERT INTO cms_bureau_content (id, record, position, updated_by)
     VALUES (${locale}, ${record}::jsonb, 0, ${actor.id})
     ON CONFLICT (id) DO UPDATE
     SET record = EXCLUDED.record, updated_by = EXCLUDED.updated_by, updated_at = now()

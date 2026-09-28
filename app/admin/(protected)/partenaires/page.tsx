@@ -1,8 +1,5 @@
-import { PartnersManager } from "@/components/(admin)/partenaires/partners-manager";
-import type { PartnerDraft } from "@/components/(admin)/partenaires/partner-editor-fields";
-import { requireAdminRecords } from "@/lib/server/data/admin";
+import { redirect } from "next/navigation";
 
-export default async function AdminPartnersPage() {
-  const partners = await requireAdminRecords<PartnerDraft>("partners");
-  return <PartnersManager initialPartners={partners} />;
+export default function AdminPartnersPage() {
+  redirect("/admin/contenu/bureau#bureau-partners");
 }
