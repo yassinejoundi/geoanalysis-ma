@@ -14,6 +14,7 @@ const copy = {
       "Basé à Marrakech, GEOANALYSIS accompagne les projets en géologie, géophysique, hydrogéologie et environnement.",
     aboutDetail:
       "Les missions associent travail de terrain, études techniques et cartographie pour produire des livrables adaptés à chaque besoin.",
+    aboutGalleryLabel: "L’équipe sur le terrain",
     location: "Marrakech · Maroc",
     teamEyebrow: "Les personnes derrière les études",
     teamTitle: "Notre équipe",
@@ -27,6 +28,7 @@ const copy = {
       "Based in Marrakech, GEOANALYSIS supports projects in geology, geophysics, hydrogeology and environmental studies.",
     aboutDetail:
       "Assignments bring together fieldwork, technical studies and mapping to deliver work suited to each project’s needs.",
+    aboutGalleryLabel: "The team in the field",
     location: "Marrakech · Morocco",
     teamEyebrow: "The people behind the studies",
     teamTitle: "Our team",
@@ -34,6 +36,30 @@ const copy = {
     partnersTitle: "Our partners",
   },
 } as const;
+
+const aboutImages = [
+  {
+    src: "https://res.cloudinary.com/d7qa2cop/image/upload/v1790613173/geoanalysis-ma/bureau/about-team-geology-20260928.webp",
+    alt: {
+      fr: "Deux membres de l’équipe GEOANALYSIS en reconnaissance sur un site géologique.",
+      en: "Two GEOANALYSIS team members surveying a geological site.",
+    },
+  },
+  {
+    src: "https://res.cloudinary.com/d7qa2cop/image/upload/v1790613179/geoanalysis-ma/bureau/about-team-geophysics-20260928.webp",
+    alt: {
+      fr: "Un membre de l’équipe consulte les mesures d’un appareil de terrain.",
+      en: "A team member reviewing readings from field equipment.",
+    },
+  },
+  {
+    src: "https://res.cloudinary.com/d7qa2cop/image/upload/v1790613186/geoanalysis-ma/bureau/about-team-drilling-20260928.webp",
+    alt: {
+      fr: "Un membre de l’équipe près d’une installation de forage sur le terrain.",
+      en: "A team member beside drilling equipment in the field.",
+    },
+  },
+] as const;
 
 function initials(name: string) {
   return name.trim().split(/\s+/).slice(0, 2).map((part) => part.charAt(0)).join("").toLocaleUpperCase("fr");
@@ -65,6 +91,19 @@ export function BureauDirectorySections({
               <p className={styles.location}>{text.location}</p>
             </div>
           </div>
+          <ul className={styles.aboutGallery} aria-label={text.aboutGalleryLabel}>
+            {aboutImages.map((photo) => (
+              <li key={photo.src}>
+                <Image
+                  src={photo.src}
+                  alt={photo.alt[locale]}
+                  fill
+                  sizes="(max-width: 760px) 100vw, 33vw"
+                  className={styles.aboutImage}
+                />
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 

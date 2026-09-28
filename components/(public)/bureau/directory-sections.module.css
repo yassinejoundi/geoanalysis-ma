@@ -37,6 +37,28 @@
   text-transform: uppercase;
 }
 
+.aboutGallery {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 34px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.aboutGallery li {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+}
+
+.aboutImage {
+  display: block;
+  object-fit: cover;
+}
+
 .team {
   border-top: 1px solid var(--border);
   background: var(--surface);
@@ -192,5 +214,15 @@
   .aboutGrid {
     grid-template-columns: minmax(0, 1fr);
     gap: 24px;
+  }
+
+  .aboutGallery {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    margin-block-start: 26px;
+  }
+
+  .aboutGallery li {
+    aspect-ratio: 16 / 9;
   }
 }
