@@ -3,7 +3,12 @@ import "server-only";
 import { neon } from "@neondatabase/serverless";
 import { connection } from "next/server";
 import { getAdminAccess, isAllowedAdminEmail, type AdminActor } from "@/lib/server/auth";
-import { parseHomeContentFields } from "@/lib/server/validation";
+import {
+  isRecord,
+  parseHomeContentFields,
+  parsePartnerFields,
+  parseTeamFields,
+} from "@/lib/server/validation";
 import type { HomeContent, HomeContentRecord } from "@/components/(public)/home/content";
 import type { Locale } from "@/lib/i18n";
 
@@ -23,6 +28,16 @@ export const adminCollections = [
 export type AdminCollection = (typeof adminCollections)[number];
 
 type CmsRow = { id: string; record: unknown; position: number };
+
+export type PublicTeamMember = {
+  id: string;
+  order: number;
+  name: string;
+  role: { fr: string; en: string };
+  bio: { fr: string; en: string };
+};
+
+export type PublicPartner = { id: string; name: string; url: string };
 
 const dedicatedTables = {
   expertises: "cms_expertises",
@@ -67,6 +82,51 @@ export async function getPublicHomeContent(locale: Locale): Promise<HomeContent 
     return parseHomeContentFields(record.content);
   } catch {
     return null;
+  }
+}
+
+export async function getPublicFirmDirectory(): Promise<{
+  team: PublicTeamMember[];
+  partners: PublicPartner[];
+}> {
+  await connection();
+  try {
+    const sql = getDatabase();
+    const [teamResult, partnerResult] = await Promise.all([
+      sql`
+        SELECT id, record, position
+        FROM cms_team_members
+        ORDER BY position ASC, created_at ASC, id ASC
+      `,
+      sql`
+        SELECT id, record, position
+        FROM cms_records
+        WHERE collection = 'partners'
+        ORDER BY position ASC, created_at ASC, id ASC
+      `,
+    ]);
+    const teamRows = teamResult as CmsRow[];
+    const partnerRows = partnerResult as CmsRow[];
+
+    const team = teamRows.flatMap(({ id, record }) => {
+      if (!isRecord(record)) return [];
+      const fields = parseTeamFields({
+        order: record.order,
+        name: record.name,
+        role: record.role,
+        bio: record.bio,
+      });
+      return fields ? [{ id, ...fields }] : [];
+    });
+    const partners = partnerRows.flatMap(({ id, record }) => {
+      if (!isRecord(record)) return [];
+      const fields = parsePartnerFields({ name: record.name, url: record.url });
+      return fields ? [{ id, ...fields }] : [];
+    });
+
+    return { team, partners };
+  } catch {
+    return { team: [], partners: [] };
   }
 }
 

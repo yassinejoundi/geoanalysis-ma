@@ -1,17 +1,19 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { BureauDirectorySections } from "@/components/(public)/bureau/directory-sections";
 import { FirmStorySections } from "@/components/(public)/bureau/firm-story-sections";
 import { ValuesSection } from "@/components/(public)/bureau/values-section";
 import { firmDomains } from "@/lib/content/firm";
 import { isLocale, localize, localizedHref } from "@/lib/i18n";
+import { getPublicFirmDirectory } from "@/lib/server/data/admin";
 import { notFound } from "next/navigation";
 
 const pageCopy = {
   fr: {
     title: "Le Bureau",
     description:
-      "Découvrez les expertises de GEOANALYSIS et son bureau d’études basé à Marrakech.",
+      "Découvrez GEOANALYSIS, bureau d’études en géologie, géophysique et environnement à Marrakech.",
     heroKicker: "GEOANALYSIS · MARRAKECH, MAROC",
     heroTitle: "Lire le terrain. Éclairer vos projets.",
     heroLead:
@@ -21,13 +23,13 @@ const pageCopy = {
     imageCaption: "Reconnaissance et suivi de forage",
     fieldsLabel: "Domaines d’intervention",
     primaryAction: "Parlons de votre projet",
-    secondaryAction: "Nos domaines",
+    secondaryAction: "Notre méthode",
     valuesTitle: "Une exigence partagée, à chaque mission",
   },
   en: {
     title: "The Firm",
     description:
-      "Explore GEOANALYSIS expertise and its geology, geophysics and environmental consultancy in Marrakech.",
+      "Meet GEOANALYSIS, a geology, geophysics and environmental consultancy based in Marrakech.",
     heroKicker: "GEOANALYSIS · MARRAKECH, MOROCCO",
     heroTitle: "Read the ground. Guide what comes next.",
     heroLead:
@@ -37,7 +39,7 @@ const pageCopy = {
     imageCaption: "Site reconnaissance and drilling support",
     fieldsLabel: "Areas of expertise",
     primaryAction: "Discuss your project",
-    secondaryAction: "Explore our expertise",
+    secondaryAction: "How we work",
     valuesTitle: "One standard across every assignment",
   },
 } as const;
@@ -61,6 +63,7 @@ export default async function FirmPage({
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
   const copy = pageCopy[lang];
+  const directory = await getPublicFirmDirectory();
 
   return (
     <main className="firm-page">
@@ -77,7 +80,7 @@ export default async function FirmPage({
                 {copy.primaryAction}
                 <span aria-hidden="true">↗</span>
               </Link>
-              <Link className="firm-secondary-action" href="#firm-domains">
+              <Link className="firm-secondary-action" href="#firm-method">
                 {copy.secondaryAction}
               </Link>
             </div>
@@ -102,6 +105,11 @@ export default async function FirmPage({
           </figure>
         </div>
       </section>
+      <BureauDirectorySections
+        locale={lang}
+        team={directory.team}
+        partners={directory.partners}
+      />
       <FirmStorySections locale={lang} />
       <ValuesSection locale={lang} title={copy.valuesTitle} />
     </main>
