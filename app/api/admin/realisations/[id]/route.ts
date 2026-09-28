@@ -12,12 +12,13 @@ export async function PATCH(request: Request, context: RouteContext) {
   if (!isIdentifier(id)) return mutationFailureResponse(400, "Invalid record ID.");
   const body = await readMutationJson(request);
   if ("response" in body) return body.response;
-  if (!isRecord(body.value) || !hasOnlyKeys(body.value, fields)) return mutationFailureResponse(400, "Invalid request.");
+  const value = body.value;
+  if (!isRecord(value) || !hasOnlyKeys(value, fields)) return mutationFailureResponse(400, "Invalid request.");
 
   try {
     const current = await getAdminRecord<Record<string, unknown>>(access.actor, "projects", id);
     if (!current) return mutationFailureResponse(404, "Record not found.");
-    const candidate = Object.fromEntries(fields.map((field) => [field, Object.hasOwn(body.value, field) ? body.value[field] : current[field]]));
+    const candidate = Object.fromEntries(fields.map((field) => [field, Object.hasOwn(value, field) ? value[field] : current[field]]));
     const parsed = parseProjectFields(candidate);
     if (!parsed) return mutationFailureResponse(400, "Invalid request.");
     if (!await validateProjectReferences(access.actor, parsed.expertiseId, parsed.subServiceId, parsed.gallery.map((image) => image.id))) return mutationFailureResponse(422, "An expertise, service, or media item is unavailable.");
