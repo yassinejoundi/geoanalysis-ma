@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   const body = await readMutationJson(request);
   if ("response" in body) return body.response;
   const fields = parseTeamFields(body.value);
-  if (!fields) return mutationFailureResponse(400, "Invalid request.");
+  if (!fields) return mutationFailureResponse(400, "Profil invalide. Vérifiez le nom, la fonction, la biographie et la photo.");
   try {
     const record = { id: "team-" + randomUUID(), ...fields };
     if (!await createAdminRecord(access.actor, "team", record.id, record, fields.order - 1)) return mutationFailureResponse(409, "A record with this value already exists.");

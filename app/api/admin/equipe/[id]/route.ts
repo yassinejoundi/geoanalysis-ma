@@ -12,7 +12,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   const body = await readMutationJson(request);
   if ("response" in body) return body.response;
   const fields = parseTeamFields(body.value);
-  if (!fields) return mutationFailureResponse(400, "Invalid request.");
+  if (!fields) return mutationFailureResponse(400, "Profil invalide. Vérifiez le nom, la fonction, la biographie et la photo.");
   try {
     const record = { id, ...fields };
     if (!await updateAdminRecord(access.actor, "team", id, record, fields.order - 1)) return mutationFailureResponse(404, "Record not found.");

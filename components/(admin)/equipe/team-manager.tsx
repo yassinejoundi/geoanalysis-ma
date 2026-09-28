@@ -8,6 +8,7 @@ import { ConfirmDialog } from "@/components/(admin)/shared/confirm-dialog";
 import { EditorDrawer } from "@/components/(admin)/shared/editor-drawer";
 import { Toast } from "@/components/(admin)/shared/toast";
 import { TeamEditorFields, type TeamDraft } from "@/components/(admin)/equipe/team-editor-fields";
+import { uploadImageToCloudinary } from "@/components/(admin)/shared/image-upload-field";
 import { sendApiMutation } from "@/lib/api-client";
 import styles from "./team-manager.module.css";
 
@@ -24,6 +25,8 @@ export function TeamManager({ initialMembers, embedded = false }: { initialMembe
   const [isCreating, setIsCreating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [pendingImage, setPendingImage] = useState<File | null>(null);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [pendingDelete, setPendingDelete] = useState<TeamDraft | null>(null);
   const [toast, setToast] = useState<ToastMessage | null>(null);
@@ -42,6 +45,8 @@ export function TeamManager({ initialMembers, embedded = false }: { initialMembe
   }
 
   function openCreateEditor() {
+    setPendingImage(null);
+    setUploadedImageUrl(null);
     setIsCreating(true);
     setEditorLanguage("fr");
     setEditorValues({
@@ -55,6 +60,8 @@ export function TeamManager({ initialMembers, embedded = false }: { initialMembe
   }
 
   function openEditor(member: TeamDraft) {
+    setPendingImage(null);
+    setUploadedImageUrl(null);
     setIsCreating(false);
     setEditorLanguage("fr");
     setEditorValues({ ...member, role: { ...member.role }, bio: { ...member.bio } });
@@ -63,11 +70,18 @@ export function TeamManager({ initialMembers, embedded = false }: { initialMembe
   function closeEditor() {
     setEditorValues(null);
     setIsCreating(false);
+    setPendingImage(null);
+    setUploadedImageUrl(null);
+  }
+
+  function selectImage(file: File | null) {
+    setPendingImage(file);
+    setUploadedImageUrl(null);
   }
 
   async function saveEditor() {
     if (!editorValues || saveLock.current || isUploading) return;
-    const updatedMember = {
+    let updatedMember = {
       ...editorValues,
       order: isCreating ? members.length + 1 : editorValues.order,
       name: editorValues.name.trim(),
@@ -82,10 +96,22 @@ export function TeamManager({ initialMembers, embedded = false }: { initialMembe
       notify("Complétez la fonction et la biographie en " + (missingLanguage === "fr" ? "français." : "anglais."));
       return;
     }
+    if (!updatedMember.name) {
+      notify("Saisissez un nom avant d’enregistrer.");
+      return;
+    }
     saveLock.current = true;
     setIsSaving(true);
 
     try {
+      let imageUrl = uploadedImageUrl;
+      if (pendingImage && !imageUrl) {
+        setIsUploading(true);
+        const uploaded = await uploadImageToCloudinary(pendingImage, "bureau");
+        imageUrl = uploaded.url;
+        setUploadedImageUrl(imageUrl);
+      }
+      if (imageUrl) updatedMember = { ...updatedMember, image: imageUrl };
       const fields = {
         order: updatedMember.order,
         name: updatedMember.name,
@@ -114,6 +140,7 @@ export function TeamManager({ initialMembers, embedded = false }: { initialMembe
     } catch (error) {
       notify(error instanceof Error ? error.message : "Enregistrement impossible.");
     } finally {
+      setIsUploading(false);
       saveLock.current = false;
       setIsSaving(false);
     }
@@ -277,7 +304,10 @@ export function TeamManager({ initialMembers, embedded = false }: { initialMembe
             onLanguageChange={setEditorLanguage}
             maxOrder={members.length}
             isNew={isCreating}
-            onUploadBusyChange={setIsUploading}
+            disabled={isSaving}
+            isUploading={isUploading}
+            pendingImage={pendingImage}
+            onImageFileSelected={selectImage}
           />
         )}
       </EditorDrawer>

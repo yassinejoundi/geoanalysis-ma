@@ -16,23 +16,28 @@ export async function POST(request: Request) {
     const limited = await limitedResponse(request, "upload", access.actor.id);
     if (limited) return limited;
     const bounded = await readBoundedBody(request, MAX_MULTIPART_BYTES);
-    if (!bounded.ok) return mutationFailureResponse(bounded.status, "Invalid request.");
+    if (!bounded.ok) return mutationFailureResponse(bounded.status, bounded.status === 413
+      ? "L’image dépasse la limite de téléversement."
+      : "Le fichier image n’a pas pu être lu. Réessayez.");
     const bodyBytes = new ArrayBuffer(bounded.bytes.byteLength);
     new Uint8Array(bodyBytes).set(bounded.bytes);
     let form: FormData;
     try {
       form = await new Request(request.url, { method: "POST", headers: { "Content-Type": contentType }, body: bodyBytes }).formData();
     } catch {
-      return mutationFailureResponse(400, "Invalid request.");
+      return mutationFailureResponse(400, "Les données du fichier image sont invalides.");
     }
     const file = form.get("file");
     const folder = form.get("folder");
     if (!(file instanceof File) || (folder !== null && folder !== "home" && folder !== "bureau") ||
       [...form.keys()].some((key) => key !== "file" && key !== "folder")) {
-      return mutationFailureResponse(400, "Invalid request.");
+      return mutationFailureResponse(400, "Le fichier ou son dossier de destination est invalide.");
     }
     const result = await storeMedia(file, access.actor.id, folder === "home" || folder === "bureau" ? folder : "default");
-    if ("error" in result) return mutationFailureResponse(result.error === "too-large" ? 413 : 415, "Unsupported file.");
+    if ("error" in result) return mutationFailureResponse(
+      result.error === "too-large" ? 413 : 415,
+      result.error === "too-large" ? "L’image dépasse la limite de 4 Mo après conversion." : "Choisissez une image JPEG, PNG ou WebP valide.",
+    );
     if (!isIdentifier(result.media.id)) return mutationFailureResponse(503, "The request could not be processed.");
     const records = await listAdminRecords(access.actor, "media");
     if (!await createAdminRecord(access.actor, "media", result.media.id, { ...result.media, ownerId: access.actor.id }, records.length)) return mutationFailureResponse(409, "A record with this value already exists.");

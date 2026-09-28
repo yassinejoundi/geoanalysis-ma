@@ -7,6 +7,14 @@ import { sendApiForm } from "@/lib/api-client";
 
 export type UploadedImage = { id: string; name: string; url: string };
 
+export async function uploadImageToCloudinary(file: File, uploadFolder?: "home" | "bureau") {
+  const optimized = await compressImageToWebp(file);
+  const form = new FormData();
+  form.append("file", optimized);
+  if (uploadFolder) form.append("folder", uploadFolder);
+  return sendApiForm<UploadedImage>("/api/admin/media", form);
+}
+
 export function ImageUploadField({
   id,
   label,
@@ -14,14 +22,18 @@ export function ImageUploadField({
   onUploaded,
   onBusyChange,
   disabled = false,
+  deferUpload = false,
+  onFileSelected,
   uploadFolder,
 }: {
   id: string;
   label: string;
   value?: string | null;
-  onUploaded: (image: UploadedImage) => void;
+  onUploaded?: (image: UploadedImage) => void;
   onBusyChange?: (busy: boolean) => void;
   disabled?: boolean;
+  deferUpload?: boolean;
+  onFileSelected?: (file: File) => void;
   uploadFolder?: "home" | "bureau";
 }) {
   const [preview, setPreview] = useState(value ?? null);
@@ -51,20 +63,15 @@ export function ImageUploadField({
     setError("");
     setUploading(true);
     onBusyChange?.(true);
-    setStatus("Optimisation de l’image…");
+    setStatus("Optimisation et envoi de l’image…");
 
     try {
-      const optimized = await compressImageToWebp(file);
-      setStatus("Envoi vers Cloudinary…");
-      const form = new FormData();
-      form.append("file", optimized);
-      if (uploadFolder) form.append("folder", uploadFolder);
-      const image = await sendApiForm<UploadedImage>("/api/admin/media", form);
+      const image = await uploadImageToCloudinary(file, uploadFolder);
       URL.revokeObjectURL(previewUrl);
       localPreview.current = null;
       setPreview(image.url);
       setStatus(`${image.name} envoyé en WebP.`);
-      onUploaded(image);
+      onUploaded?.(image);
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "Envoi de l’image impossible.";
       setError(message);
@@ -89,7 +96,17 @@ export function ImageUploadField({
           event.currentTarget.value = "";
           if (file) {
             setSelectedName(file.name);
-            void upload(file);
+            if (deferUpload) {
+              const previewUrl = URL.createObjectURL(file);
+              if (localPreview.current) URL.revokeObjectURL(localPreview.current);
+              localPreview.current = previewUrl;
+              setPreview(previewUrl);
+              setError("");
+              setStatus("Photo prête à l’enregistrement.");
+              onFileSelected?.(file);
+            } else {
+              void upload(file);
+            }
           }
         }}
       />

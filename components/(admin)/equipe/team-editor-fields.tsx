@@ -1,9 +1,9 @@
 "use client";
 
-import type { Dispatch, SetStateAction } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 import Image from "next/image";
 import type { LocalizedText } from "@/lib/i18n";
-import { ImageUploadField, type UploadedImage } from "@/components/(admin)/shared/image-upload-field";
+import { ImageUploadField } from "@/components/(admin)/shared/image-upload-field";
 
 const placeholderAvatars = {
   man: "/avatars/team-man.png",
@@ -26,7 +26,10 @@ export function TeamEditorFields({
   onLanguageChange,
   maxOrder,
   isNew,
-  onUploadBusyChange,
+  disabled,
+  isUploading,
+  pendingImage,
+  onImageFileSelected,
 }: {
   values: TeamDraft;
   onChange: Dispatch<SetStateAction<TeamDraft | null>>;
@@ -34,8 +37,12 @@ export function TeamEditorFields({
   onLanguageChange: (language: "fr" | "en") => void;
   maxOrder: number;
   isNew: boolean;
-  onUploadBusyChange: (busy: boolean) => void;
+  disabled: boolean;
+  isUploading: boolean;
+  pendingImage: File | null;
+  onImageFileSelected: (file: File | null) => void;
 }) {
+  const [imageInputVersion, setImageInputVersion] = useState(0);
   const languageName = language === "fr" ? "Français" : "English";
 
   function updateLocalizedField(field: "role" | "bio", value: string) {
@@ -45,8 +52,10 @@ export function TeamEditorFields({
     }));
   }
 
-  function setImage(image: UploadedImage) {
-    onChange((current) => current && ({ ...current, image: image.url }));
+  function setAvatar(image: string | null) {
+    onImageFileSelected(null);
+    setImageInputVersion((version) => version + 1);
+    onChange((current) => current && ({ ...current, image }));
   }
 
   return (
@@ -54,10 +63,10 @@ export function TeamEditorFields({
       <div className="editor-language-switch" role="group" aria-label="Langue de saisie">
         <span>Langue du contenu</span>
         <div>
-          <button className="editor-language-button" type="button" aria-pressed={language === "fr"} onClick={() => onLanguageChange("fr")}>
+          <button className="editor-language-button" type="button" disabled={disabled} aria-pressed={language === "fr"} onClick={() => onLanguageChange("fr")}>
             FR
           </button>
-          <button className="editor-language-button" type="button" aria-pressed={language === "en"} onClick={() => onLanguageChange("en")}>
+          <button className="editor-language-button" type="button" disabled={disabled} aria-pressed={language === "en"} onClick={() => onLanguageChange("en")}>
             EN
           </button>
         </div>
@@ -68,6 +77,7 @@ export function TeamEditorFields({
         <input
           autoFocus
           required
+          disabled={disabled}
           maxLength={120}
           value={values.name}
           onChange={(event) => {
@@ -81,6 +91,7 @@ export function TeamEditorFields({
         <span>Fonction — {languageName}</span>
         <input
           required
+          disabled={disabled}
           maxLength={120}
           value={values.role[language]}
           onChange={(event) => updateLocalizedField("role", event.currentTarget.value)}
@@ -92,6 +103,7 @@ export function TeamEditorFields({
         <textarea
           rows={4}
           required
+          disabled={disabled}
           maxLength={1400}
           value={values.bio[language]}
           onChange={(event) => updateLocalizedField("bio", event.currentTarget.value)}
@@ -104,16 +116,18 @@ export function TeamEditorFields({
           <button
             className={"admin-action" + (values.image === null ? " admin-action-primary" : "")}
             type="button"
-            aria-pressed={values.image === null}
-            onClick={() => onChange((current) => current && ({ ...current, image: null }))}
+            disabled={disabled}
+            aria-pressed={!pendingImage && values.image === null}
+            onClick={() => setAvatar(null)}
           >
             Initiales
           </button>
           <button
             className={"admin-action" + (values.image === placeholderAvatars.man ? " admin-action-primary" : "")}
             type="button"
-            aria-pressed={values.image === placeholderAvatars.man}
-            onClick={() => onChange((current) => current && ({ ...current, image: placeholderAvatars.man }))}
+            disabled={disabled}
+            aria-pressed={!pendingImage && values.image === placeholderAvatars.man}
+            onClick={() => setAvatar(placeholderAvatars.man)}
           >
             <Image src={placeholderAvatars.man} alt="" width={28} height={28} />
             Homme
@@ -121,8 +135,9 @@ export function TeamEditorFields({
           <button
             className={"admin-action" + (values.image === placeholderAvatars.woman ? " admin-action-primary" : "")}
             type="button"
-            aria-pressed={values.image === placeholderAvatars.woman}
-            onClick={() => onChange((current) => current && ({ ...current, image: placeholderAvatars.woman }))}
+            disabled={disabled}
+            aria-pressed={!pendingImage && values.image === placeholderAvatars.woman}
+            onClick={() => setAvatar(placeholderAvatars.woman)}
           >
             <Image src={placeholderAvatars.woman} alt="" width={28} height={28} />
             Femme
@@ -130,12 +145,14 @@ export function TeamEditorFields({
         </div>
         <span className="admin-field-help">Choisissez l’avatar affiché tant qu’aucune photo n’est téléversée.</span>
         <ImageUploadField
+          key={imageInputVersion}
           id="team-member-image"
           label="Téléverser une photo (facultatif)"
           value={values.image}
           uploadFolder="bureau"
-          onUploaded={setImage}
-          onBusyChange={onUploadBusyChange}
+          disabled={disabled || isUploading}
+          deferUpload
+          onFileSelected={onImageFileSelected}
         />
       </div>
 
@@ -150,6 +167,7 @@ export function TeamEditorFields({
             max={maxOrder}
             step={1}
             required
+            disabled={disabled}
             value={values.order}
             onChange={(event) => {
               const order = Number(event.currentTarget.value);
