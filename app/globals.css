@@ -194,27 +194,16 @@ button:focus-visible {
   min-height: 46px;
   flex: none;
   align-items: center;
-  gap: 11px;
+  gap: 0;
 }
 
 .site-brand-image {
-  width: 46px;
-  height: 46px;
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.site-brand-name {
-  color: var(--foreground);
-  font-size: 15.5px;
-  font-weight: 600;
-  letter-spacing: 0.13em;
-  line-height: 1;
-}
-
-.site-brand-name span {
-  color: var(--brand);
+  width: clamp(126px, 13vw, 148px);
+  height: auto;
+  max-height: 66px;
+  border: 0;
+  border-radius: 0;
+  object-fit: contain;
 }
 
 .desktop-navigation {
@@ -1917,24 +1906,12 @@ button:focus-visible {
 }
 
 .brand-logo-link-compact .site-brand-image {
-  width: 40px;
-  height: 40px;
-}
-
-.brand-logo-link-compact .site-brand-name {
-  font-size: 14px;
+  width: 160px;
+  max-height: 72px;
 }
 
 .site-footer .brand-logo-link {
   color: var(--surface);
-}
-
-.site-footer .site-brand-name {
-  color: var(--surface);
-}
-
-.site-footer .site-brand-image {
-  border-color: color-mix(in srgb, var(--surface) 20%, transparent);
 }
 
 .site-footer-statement {
@@ -2946,15 +2923,6 @@ button:focus-visible {
   .site-header-inner {
     gap: 8px;
     padding-inline: 14px;
-  }
-
-  .site-brand-name {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
   }
 
   .site-header-actions {

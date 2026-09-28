@@ -99,7 +99,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
         <div className="site-footer-inner">
           <div className="site-footer-grid">
             <div className="site-footer-brand">
-              <BrandLogo locale={locale} compact />
+              <BrandLogo locale={locale} compact white />
               <p className="site-footer-statement">
                 {isFrench
                   ? "Lire le terrain. Éclairer la décision."
