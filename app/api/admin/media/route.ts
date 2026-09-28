@@ -10,8 +10,8 @@ export async function POST(request: Request) {
   const access = await adminMutationAccess(request);
   if ("response" in access) return access.response;
   if (!isSameOrigin(request)) return mutationFailureResponse(403, "Same-origin request required.");
-  const contentType = request.headers.get("content-type")?.toLowerCase() ?? "";
-  if (!contentType.startsWith("multipart/form-data;")) return mutationFailureResponse(415, "Multipart form data required.");
+  const contentType = request.headers.get("content-type") ?? "";
+  if (!contentType.toLowerCase().startsWith("multipart/form-data;")) return mutationFailureResponse(415, "Multipart form data required.");
   try {
     const limited = await limitedResponse(request, "upload", access.actor.id);
     if (limited) return limited;
