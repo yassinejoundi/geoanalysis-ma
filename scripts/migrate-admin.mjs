@@ -116,11 +116,13 @@ try {
       id text PRIMARY KEY,
       record jsonb NOT NULL,
       position integer NOT NULL DEFAULT 0,
+      image_url text,
       updated_by text NOT NULL,
       created_at timestamptz NOT NULL DEFAULT now(),
       updated_at timestamptz NOT NULL DEFAULT now()
     )
   `;
+  await sql`ALTER TABLE cms_team_members ADD COLUMN IF NOT EXISTS image_url text`;
   await sql`
     CREATE TABLE IF NOT EXISTS cms_home_content (
       id text PRIMARY KEY CHECK (id IN ('fr', 'en')),
@@ -324,6 +326,60 @@ try {
       `;
     }
     await sql`INSERT INTO cms_migrations (version) VALUES (${homeContentMigration}) ON CONFLICT (version) DO NOTHING`;
+  }
+
+  const teamImageMigration = "006_team_member_images";
+  const teamImageMigrationApplied = await sql`SELECT version FROM cms_migrations WHERE version = ${teamImageMigration}`;
+  if (teamImageMigrationApplied.length === 0) {
+    await sql`
+      UPDATE cms_team_members
+      SET image_url = record->>'image'
+      WHERE image_url IS NULL AND record ? 'image'
+    `;
+    // Roll back by copying image_url into record.image, then dropping image_url.
+    await sql`INSERT INTO cms_migrations (version) VALUES (${teamImageMigration}) ON CONFLICT (version) DO NOTHING`;
+  }
+
+  const partnerLinksMigration = "007_partner_official_urls";
+  const partnerLinksMigrationApplied = await sql`SELECT version FROM cms_migrations WHERE version = ${partnerLinksMigration}`;
+  if (partnerLinksMigrationApplied.length === 0) {
+    await sql`
+      UPDATE cms_records
+      SET record = jsonb_set(record, '{url}', to_jsonb(CASE id
+            WHEN 'pa2' THEN 'https://abht.ma/'
+            WHEN 'pa4' THEN 'https://fdim-mine.com/'
+          END), true),
+          updated_by = 'system',
+          updated_at = now()
+      WHERE collection = 'partners'
+        AND ((id = 'pa2' AND record->>'url' IN ('abh-tensift.ma', 'http://abh-tensift.ma/', 'https://abh-tensift.ma/'))
+          OR (id = 'pa4' AND record->>'url' IN ('fdim.ma', 'http://fdim.ma/', 'https://fdim.ma/')))
+    `;
+    // Roll back by setting pa2 to abh-tensift.ma and pa4 to fdim.ma, then removing this marker.
+    await sql`INSERT INTO cms_migrations (version) VALUES (${partnerLinksMigration}) ON CONFLICT (version) DO NOTHING`;
+  }
+
+  const partnerCanonicalUrlsMigration = "008_partner_canonical_urls";
+  const partnerCanonicalUrlsMigrationApplied = await sql`SELECT version FROM cms_migrations WHERE version = ${partnerCanonicalUrlsMigration}`;
+  if (partnerCanonicalUrlsMigrationApplied.length === 0) {
+    await sql`
+      UPDATE cms_records
+      SET record = jsonb_set(record, '{url}', to_jsonb(CASE id
+            WHEN 'pa1' THEN 'https://www.onhym.com/fr'
+            WHEN 'pa3' THEN 'https://www.uca.ma/fr'
+            WHEN 'pa5' THEN 'https://www.clustersolaire.ma/'
+            WHEN 'pa6' THEN 'https://www.cnrst.ma/fr/'
+          END), true),
+          updated_by = 'system',
+          updated_at = now()
+      WHERE collection = 'partners'
+        AND ((id = 'pa1' AND record->>'url' IN ('onhym.com', 'https://onhym.com/'))
+          OR (id = 'pa3' AND record->>'url' IN ('uca.ma', 'https://uca.ma/'))
+          OR (id = 'pa5' AND record->>'url' IN ('clustersolaire.ma', 'https://clustersolaire.ma/'))
+          OR (id = 'pa6' AND record->>'url' IN ('cnrst.ma', 'https://cnrst.ma/')))
+    `;
+    // Roll back by restoring each original bare domain, then removing this marker.
+    await sql`INSERT INTO cms_migrations (version) VALUES (${partnerCanonicalUrlsMigration}) ON CONFLICT (version) DO NOTHING`;
   }
 
   console.log("Admin data schema is ready.");

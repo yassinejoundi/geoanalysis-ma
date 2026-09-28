@@ -2,6 +2,7 @@
 
 import type { Dispatch, SetStateAction } from "react";
 import type { LocalizedText } from "@/lib/i18n";
+import { ImageUploadField, type UploadedImage } from "@/components/(admin)/shared/image-upload-field";
 
 export type TeamDraft = {
   id: string;
@@ -9,6 +10,7 @@ export type TeamDraft = {
   name: string;
   role: LocalizedText;
   bio: LocalizedText;
+  image: string | null;
 };
 
 export function TeamEditorFields({
@@ -18,6 +20,7 @@ export function TeamEditorFields({
   onLanguageChange,
   maxOrder,
   isNew,
+  onUploadBusyChange,
 }: {
   values: TeamDraft;
   onChange: Dispatch<SetStateAction<TeamDraft | null>>;
@@ -25,6 +28,7 @@ export function TeamEditorFields({
   onLanguageChange: (language: "fr" | "en") => void;
   maxOrder: number;
   isNew: boolean;
+  onUploadBusyChange: (busy: boolean) => void;
 }) {
   const languageName = language === "fr" ? "Français" : "English";
 
@@ -33,6 +37,10 @@ export function TeamEditorFields({
       ...current,
       [field]: { ...current[field], [language]: value },
     }));
+  }
+
+  function setImage(image: UploadedImage) {
+    onChange((current) => current && ({ ...current, image: image.url }));
   }
 
   return (
@@ -83,6 +91,24 @@ export function TeamEditorFields({
           onChange={(event) => updateLocalizedField("bio", event.currentTarget.value)}
         />
       </label>
+
+      <div className="admin-field">
+        <span>Photo de profil</span>
+        <ImageUploadField
+          id="team-member-image"
+          label="Choisir une photo"
+          value={values.image}
+          onUploaded={setImage}
+          onBusyChange={onUploadBusyChange}
+        />
+        {values.image ? (
+          <button className="admin-action" type="button" onClick={() => onChange((current) => current && ({ ...current, image: null }))}>
+            Retirer la photo
+          </button>
+        ) : (
+          <span className="admin-field-help">Sans photo, les initiales du membre s’affichent.</span>
+        )}
+      </div>
 
       {isNew ? (
         <p className="admin-field-help">Le profil sera ajouté en fin de liste. Vous pourrez ensuite modifier son ordre.</p>

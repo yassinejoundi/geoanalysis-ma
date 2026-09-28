@@ -117,9 +117,9 @@ export const adminTeam = [
 ];
 
 export const adminPartners = [
-  { id: "pa1", name: "ONHYM", url: "onhym.com" }, { id: "pa2", name: "Agence du Bassin Hydraulique", url: "abh-tensift.ma" },
-  { id: "pa3", name: "Université Cadi Ayyad", url: "uca.ma" }, { id: "pa4", name: "Fédération de l’industrie minérale", url: "fdim.ma" },
-  { id: "pa5", name: "Cluster Solaire", url: "clustersolaire.ma" }, { id: "pa6", name: "CNRST", url: "cnrst.ma" },
+  { id: "pa1", name: "ONHYM", url: "https://www.onhym.com/fr" }, { id: "pa2", name: "Agence du Bassin Hydraulique", url: "https://abht.ma/" },
+  { id: "pa3", name: "Université Cadi Ayyad", url: "https://www.uca.ma/fr" }, { id: "pa4", name: "Fédération de l’industrie minérale", url: "https://fdim-mine.com/" },
+  { id: "pa5", name: "Cluster Solaire", url: "https://www.clustersolaire.ma/" }, { id: "pa6", name: "CNRST", url: "https://www.cnrst.ma/fr/" },
 ];
 
 export const adminMedia = [

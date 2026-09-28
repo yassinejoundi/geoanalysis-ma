@@ -1,4 +1,5 @@
 import type { Locale } from "@/lib/i18n";
+import Image from "next/image";
 import type {
   PublicPartner,
   PublicTeamMember,
@@ -33,6 +34,10 @@ const copy = {
     partnersTitle: "Our partners",
   },
 } as const;
+
+function initials(name: string) {
+  return name.trim().split(/\s+/).slice(0, 2).map((part) => part.charAt(0)).join("").toLocaleUpperCase("fr");
+}
 
 export function BureauDirectorySections({
   locale,
@@ -79,8 +84,17 @@ export function BureauDirectorySections({
                     </span>
                     <span className={styles.teamRule} aria-hidden="true" />
                   </div>
-                  <h3>{member.name}</h3>
-                  <p className={styles.teamRole}>{member.role[locale]}</p>
+                  <div className={styles.teamProfile}>
+                    <div className={styles.teamAvatar} aria-hidden="true">
+                      {member.image ? (
+                        <Image src={member.image} alt="" width={72} height={72} className={styles.teamPortrait} />
+                      ) : initials(member.name)}
+                    </div>
+                    <div className={styles.teamIdentity}>
+                      <h3>{member.name}</h3>
+                      <p className={styles.teamRole}>{member.role[locale]}</p>
+                    </div>
+                  </div>
                   <p className={styles.teamBio}>{member.bio[locale]}</p>
                 </li>
               ))}
@@ -99,7 +113,7 @@ export function BureauDirectorySections({
             <ul className={styles.partnerList}>
               {partners.map((partner) => (
                 <li key={partner.id}>
-                  <a className={styles.partnerLink} href={partner.url}>
+                  <a className={styles.partnerLink} href={partner.url} target="_blank" rel="noopener noreferrer">
                     <span>{partner.name}</span>
                     <span aria-hidden="true">↗</span>
                   </a>

@@ -159,13 +159,15 @@ export function parseEditorialFields(value: unknown, kind: "articles" | "news") 
 }
 
 export function parseTeamFields(value: unknown) {
-  if (!isRecord(value) || !hasOnlyKeys(value, ["order", "name", "role", "bio"])) return null;
+  if (!isRecord(value) || !hasOnlyKeys(value, ["order", "name", "role", "bio", "image"])) return null;
   const order = value.order;
   const name = textField(value.name, 120);
   const role = localizedText(value.role, 120);
   const bio = localizedText(value.bio, 1400);
-  if (!Number.isInteger(order) || Number(order) < 1 || Number(order) > 100 || !name || !role || !bio) return null;
-  return { order: Number(order), name, role, bio };
+  const image = value.image === undefined || value.image === null ? value.image : textField(value.image, 2048);
+  if (!Number.isInteger(order) || Number(order) < 1 || Number(order) > 100 || !name || !role || !bio ||
+    (image !== undefined && image !== null && (!image || !isAllowedImageSource(image)))) return null;
+  return { order: Number(order), name, role, bio, ...(image !== undefined ? { image } : {}) };
 }
 
 export function parsePartnerFields(value: unknown) {

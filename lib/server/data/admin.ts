@@ -27,7 +27,7 @@ export const adminCollections = [
 
 export type AdminCollection = (typeof adminCollections)[number];
 
-type CmsRow = { id: string; record: unknown; position: number };
+type CmsRow = { id: string; record: unknown; position: number; image_url?: string | null };
 
 export type PublicTeamMember = {
   id: string;
@@ -35,6 +35,7 @@ export type PublicTeamMember = {
   name: string;
   role: { fr: string; en: string };
   bio: { fr: string; en: string };
+  image: string | null;
 };
 
 export type PublicPartner = { id: string; name: string; url: string };
@@ -94,7 +95,7 @@ export async function getPublicFirmDirectory(): Promise<{
     const sql = getDatabase();
     const [teamResult, partnerResult] = await Promise.all([
       sql`
-        SELECT id, record, position
+        SELECT id, record, position, image_url
         FROM cms_team_members
         ORDER BY position ASC, created_at ASC, id ASC
       `,
@@ -108,15 +109,16 @@ export async function getPublicFirmDirectory(): Promise<{
     const teamRows = teamResult as CmsRow[];
     const partnerRows = partnerResult as CmsRow[];
 
-    const team = teamRows.flatMap(({ id, record }) => {
+    const team = teamRows.flatMap(({ id, record, image_url }) => {
       if (!isRecord(record)) return [];
       const fields = parseTeamFields({
         order: record.order,
         name: record.name,
         role: record.role,
         bio: record.bio,
+        image: image_url ?? record.image ?? null,
       });
-      return fields ? [{ id, ...fields }] : [];
+      return fields ? [{ id, ...fields, image: fields.image ?? null }] : [];
     });
     const partners = partnerRows.flatMap(({ id, record }) => {
       if (!isRecord(record)) return [];
@@ -155,7 +157,13 @@ export async function saveHomeContent(
 export async function listAdminRecords<T>(actor: AdminActor, collection: AdminCollection) {
   authorize(actor);
   const sql = getDatabase();
-  const rows = isDedicatedCollection(collection)
+  const rows = collection === "team"
+    ? await sql`
+        SELECT id, record, position, image_url
+        FROM cms_team_members
+        ORDER BY position ASC, created_at ASC, id ASC
+      ` as CmsRow[]
+    : isDedicatedCollection(collection)
     ? await sql`
         SELECT id, record, position
         FROM ${sql.unsafe(dedicatedTables[collection])}
@@ -167,7 +175,10 @@ export async function listAdminRecords<T>(actor: AdminActor, collection: AdminCo
         WHERE collection = ${collection}
         ORDER BY position ASC, created_at ASC, id ASC
       ` as CmsRow[];
-  return rows.map(({ record }) => {
+  return rows.map(({ record, image_url }) => {
+    if (collection === "team" && isRecord(record)) {
+      return { ...record, image: image_url ?? record.image ?? null } as T;
+    }
     if (collection === "media" && record && typeof record === "object") {
       const safeRecord = Object.fromEntries(Object.entries(record).filter(([key]) => key !== "ownerId"));
       return safeRecord as T;
@@ -198,7 +209,14 @@ export async function validateProjectReferences(actor: AdminActor, expertiseId: 
 export async function getAdminRecord<T>(actor: AdminActor, collection: AdminCollection, id: string) {
   authorize(actor);
   const sql = getDatabase();
-  const rows = isDedicatedCollection(collection)
+  const rows = collection === "team"
+    ? await sql`
+        SELECT id, record, position, image_url
+        FROM cms_team_members
+        WHERE id = ${id}
+        LIMIT 1
+      ` as CmsRow[]
+    : isDedicatedCollection(collection)
     ? await sql`
         SELECT id, record, position
         FROM ${sql.unsafe(dedicatedTables[collection])}
@@ -211,7 +229,11 @@ export async function getAdminRecord<T>(actor: AdminActor, collection: AdminColl
         WHERE collection = ${collection} AND id = ${id}
         LIMIT 1
       ` as CmsRow[];
-  return rows[0] ? (rows[0].record as T) : null;
+  if (!rows[0]) return null;
+  if (collection === "team" && isRecord(rows[0].record)) {
+    return { ...rows[0].record, image: rows[0].image_url ?? rows[0].record.image ?? null } as T;
+  }
+  return rows[0].record as T;
 }
 
 export async function createAdminRecord(
@@ -224,7 +246,14 @@ export async function createAdminRecord(
   authorize(actor);
   const sql = getDatabase();
   const recordJson = JSON.stringify(record);
-  const rows = isDedicatedCollection(collection)
+  const rows = collection === "team" && isRecord(record)
+    ? await sql`
+        INSERT INTO cms_team_members (id, record, position, image_url, updated_by)
+        VALUES (${id}, ${recordJson}::jsonb, ${position}, ${typeof record.image === "string" ? record.image : null}, ${actor.id})
+        ON CONFLICT DO NOTHING
+        RETURNING id
+      ` as { id: string }[]
+    : isDedicatedCollection(collection)
     ? await sql`
         INSERT INTO ${sql.unsafe(dedicatedTables[collection])} (id, record, position, updated_by)
         VALUES (${id}, ${recordJson}::jsonb, ${position}, ${actor.id})
@@ -250,7 +279,18 @@ export async function updateAdminRecord(
   authorize(actor);
   const sql = getDatabase();
   const recordJson = JSON.stringify(record);
-  const rows = isDedicatedCollection(collection)
+  const rows = collection === "team" && isRecord(record)
+    ? await sql`
+        UPDATE cms_team_members
+        SET record = ${recordJson}::jsonb,
+            image_url = CASE WHEN ${"image" in record} THEN ${typeof record.image === "string" ? record.image : null} ELSE image_url END,
+            position = COALESCE(${position ?? null}, position),
+            updated_by = ${actor.id},
+            updated_at = now()
+        WHERE id = ${id}
+        RETURNING id
+      ` as { id: string }[]
+    : isDedicatedCollection(collection)
     ? await sql`
         UPDATE ${sql.unsafe(dedicatedTables[collection])}
         SET record = ${recordJson}::jsonb,

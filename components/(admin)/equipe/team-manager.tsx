@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Image from "next/image";
 import { faArrowDown, faArrowUp, faMagnifyingGlass, faPenToSquare, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ConfirmDialog } from "@/components/(admin)/shared/confirm-dialog";
@@ -21,6 +22,7 @@ export function TeamManager({ initialMembers }: { initialMembers: TeamDraft[] })
   const [editorLanguage, setEditorLanguage] = useState<"fr" | "en">("fr");
   const [isCreating, setIsCreating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [search, setSearch] = useState("");
   const [pendingDelete, setPendingDelete] = useState<TeamDraft | null>(null);
   const [toast, setToast] = useState<ToastMessage | null>(null);
@@ -47,6 +49,7 @@ export function TeamManager({ initialMembers }: { initialMembers: TeamDraft[] })
       name: "",
       role: { fr: "", en: "" },
       bio: { fr: "", en: "" },
+      image: null,
     });
   }
 
@@ -62,7 +65,7 @@ export function TeamManager({ initialMembers }: { initialMembers: TeamDraft[] })
   }
 
   async function saveEditor() {
-    if (!editorValues || saveLock.current) return;
+    if (!editorValues || saveLock.current || isUploading) return;
     const updatedMember = {
       ...editorValues,
       order: isCreating ? members.length + 1 : editorValues.order,
@@ -87,6 +90,7 @@ export function TeamManager({ initialMembers }: { initialMembers: TeamDraft[] })
         name: updatedMember.name,
         role: updatedMember.role,
         bio: updatedMember.bio,
+        image: updatedMember.image,
       };
       if (isCreating) {
         const created = await sendApiMutation<TeamDraft>("/api/admin/equipe", "POST", fields);
@@ -200,7 +204,11 @@ export function TeamManager({ initialMembers }: { initialMembers: TeamDraft[] })
               return (
                 <li className="directory-record team-record" key={member.id}>
                   <span className="directory-position">{String(member.order).padStart(2, "0")}</span>
-                  <span className="directory-avatar" aria-hidden="true">{initials(member.name)}</span>
+                  <span className="directory-avatar" aria-hidden="true">
+                    {member.image ? (
+                      <Image src={member.image} alt="" width={48} height={48} unoptimized style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+                    ) : initials(member.name)}
+                  </span>
                   <div className="directory-record-copy">
                     <div className="directory-record-heading">
                       <h2>{member.name}</h2>
@@ -253,7 +261,8 @@ export function TeamManager({ initialMembers }: { initialMembers: TeamDraft[] })
         description={isCreating ? "Renseignez son nom, sa fonction et sa biographie en français et en anglais." : "Mettez à jour son profil et son ordre d’affichage."}
         onClose={closeEditor}
         onSave={saveEditor}
-        saving={isSaving}
+        saving={isSaving || isUploading}
+        savingLabel={isUploading ? "Envoi de l’image…" : undefined}
       >
         {editorValues && (
           <TeamEditorFields
@@ -263,6 +272,7 @@ export function TeamManager({ initialMembers }: { initialMembers: TeamDraft[] })
             onLanguageChange={setEditorLanguage}
             maxOrder={members.length}
             isNew={isCreating}
+            onUploadBusyChange={setIsUploading}
           />
         )}
       </EditorDrawer>

@@ -82,8 +82,41 @@
   background: var(--border-strong);
 }
 
+.teamProfile {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-block-start: 18px;
+}
+
+.teamAvatar {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  flex: none;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--brand) 22%, var(--border));
+  border-radius: 50%;
+  background: var(--surface-green);
+  color: var(--brand-hover);
+  font-family: var(--font-data);
+  font-size: 13px;
+}
+
+.teamPortrait {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.teamIdentity {
+  min-width: 0;
+}
+
 .teamCard h3 {
-  margin: 18px 0 0;
+  margin: 0;
   color: var(--foreground);
   font-size: 18px;
   font-weight: 500;
