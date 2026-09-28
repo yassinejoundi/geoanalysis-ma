@@ -53,10 +53,10 @@ const aboutImages = [
     },
   },
   {
-    src: "https://res.cloudinary.com/d7qa2cop/image/upload/v1790613378/geoanalysis-ma/bureau/about-team-water-20260928.webp",
+    src: "https://res.cloudinary.com/d7qa2cop/image/upload/v1790613588/geoanalysis-ma/bureau/about-team-sampling-20260928.webp",
     alt: {
-      fr: "Un membre de l’équipe inspecte un puits sur le terrain.",
-      en: "A team member inspecting a well in the field.",
+      fr: "Deux membres de l’équipe prélèvent un échantillon d’eau sur le terrain.",
+      en: "Two team members collecting a water sample in the field.",
     },
   },
 ] as const;
