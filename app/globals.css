@@ -2024,9 +2024,9 @@ button:focus-visible {
 }
 
 .brand-sidebar-logo {
-  width: min(100%, 190px);
+  width: min(100%, 160px);
   height: auto;
-  max-height: 86px;
+  max-height: 72px;
   border-radius: 0;
   object-fit: contain;
   outline: 0;
