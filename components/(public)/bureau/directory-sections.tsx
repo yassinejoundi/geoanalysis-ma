@@ -53,10 +53,10 @@ const aboutImages = [
     },
   },
   {
-    src: "https://res.cloudinary.com/d7qa2cop/image/upload/v1790613186/geoanalysis-ma/bureau/about-team-drilling-20260928.webp",
+    src: "https://res.cloudinary.com/d7qa2cop/image/upload/v1790613378/geoanalysis-ma/bureau/about-team-water-20260928.webp",
     alt: {
-      fr: "Un membre de l’équipe près d’une installation de forage sur le terrain.",
-      en: "A team member beside drilling equipment in the field.",
+      fr: "Un membre de l’équipe inspecte un puits sur le terrain.",
+      en: "A team member inspecting a well in the field.",
     },
   },
 ] as const;
