@@ -1,0 +1,6 @@
+.memberHeading {
+  display: grid;
+  justify-items: start;
+  gap: 3px;
+  min-width: 0;
+}

@@ -9,6 +9,7 @@ import { EditorDrawer } from "@/components/(admin)/shared/editor-drawer";
 import { Toast } from "@/components/(admin)/shared/toast";
 import { TeamEditorFields, type TeamDraft } from "@/components/(admin)/equipe/team-editor-fields";
 import { sendApiMutation } from "@/lib/api-client";
+import styles from "./team-manager.module.css";
 
 type ToastMessage = { id: number; message: string };
 
@@ -210,7 +211,7 @@ export function TeamManager({ initialMembers }: { initialMembers: TeamDraft[] })
                     ) : initials(member.name)}
                   </span>
                   <div className="directory-record-copy">
-                    <div className="directory-record-heading">
+                    <div className={styles.memberHeading}>
                       <h2>{member.name}</h2>
                       <span className="directory-role">{member.role.fr}</span>
                     </div>
