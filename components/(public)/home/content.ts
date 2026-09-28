@@ -1,4 +1,4 @@
-import { expertises, type Expertise } from "@/lib/content/site";
+import { expertises, type Expertise } from "../../../lib/content/site.ts";
 import type { Locale } from "@/lib/i18n";
 
 export type HomeExpertiseCard = {
