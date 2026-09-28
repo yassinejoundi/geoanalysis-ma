@@ -27,7 +27,7 @@ export function EditorialSection({
             <h2 id="home-editorial-title">{content.editorialTitle}</h2>
           </div>
           <span className="home-editorial-edition" aria-hidden="true">
-            GEOANALYSIS <span>·</span> {locale === "fr" ? "MARRAKECH" : "MOROCCO"}
+            GEOANALYSIS <span>·</span> {content.editorialLocation.toLocaleUpperCase(locale)}
           </span>
         </header>
 
@@ -39,7 +39,7 @@ export function EditorialSection({
               <div className="home-editorial-column-heading">
                 <div>
                   <p className="home-kicker">
-                    {locale === "fr" ? "Sur le terrain" : "In the field"}
+                    {content.newsKicker}
                   </p>
                   <h3 id="home-news-title">{content.news}</h3>
                 </div>
@@ -80,7 +80,7 @@ export function EditorialSection({
               <div className="home-editorial-column-heading">
                 <div>
                   <p className="home-kicker">
-                    {locale === "fr" ? "Nos analyses" : "Expert insight"}
+                    {content.articlesKicker}
                   </p>
                   <h3 id="home-articles-title">{content.articles}</h3>
                 </div>

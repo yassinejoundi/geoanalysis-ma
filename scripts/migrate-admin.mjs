@@ -13,6 +13,7 @@ import {
 import { articles as publicArticles, expertises as publicExpertises, news as publicNews } from "../lib/content/site.ts";
 import { expertiseDetails } from "../lib/content/expertise-details.ts";
 import { realisationMissions } from "../components/(public)/realisations/content.ts";
+import { homeContent } from "../components/(public)/home/content.ts";
 
 const contentTables = {
   expertises: "cms_expertises",
@@ -100,7 +101,7 @@ const sql = neon(process.env.DATABASE_URL);
 try {
   await sql`
     CREATE TABLE IF NOT EXISTS cms_records (
-      collection text NOT NULL CHECK (collection IN ('expertises', 'projects', 'articles', 'news', 'team', 'partners', 'messages', 'media', 'settings')),
+      collection text NOT NULL CHECK (collection IN ('expertises', 'projects', 'articles', 'news', 'team', 'partners', 'messages', 'media', 'home', 'settings')),
       id text NOT NULL,
       record jsonb NOT NULL,
       position integer NOT NULL DEFAULT 0,
@@ -113,6 +114,16 @@ try {
   await sql`
     CREATE TABLE IF NOT EXISTS cms_team_members (
       id text PRIMARY KEY,
+      record jsonb NOT NULL,
+      position integer NOT NULL DEFAULT 0,
+      updated_by text NOT NULL,
+      created_at timestamptz NOT NULL DEFAULT now(),
+      updated_at timestamptz NOT NULL DEFAULT now()
+    )
+  `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS cms_home_content (
+      id text PRIMARY KEY CHECK (id IN ('fr', 'en')),
       record jsonb NOT NULL,
       position integer NOT NULL DEFAULT 0,
       updated_by text NOT NULL,
@@ -299,6 +310,20 @@ try {
     }
 
     await sql`INSERT INTO cms_migrations (version) VALUES (${contentTableMigration}) ON CONFLICT (version) DO NOTHING`;
+  }
+
+  const homeContentMigration = "005_home_page_content_v1";
+  const homeContentMigrationApplied = await sql`SELECT version FROM cms_migrations WHERE version = ${homeContentMigration}`;
+  if (homeContentMigrationApplied.length === 0) {
+    for (const locale of ["fr", "en"]) {
+      const payload = JSON.stringify({ locale, content: homeContent[locale] });
+      await sql`
+        INSERT INTO cms_home_content (id, record, position, updated_by)
+        VALUES (${locale}, ${payload}::jsonb, 0, 'system')
+        ON CONFLICT (id) DO NOTHING
+      `;
+    }
+    await sql`INSERT INTO cms_migrations (version) VALUES (${homeContentMigration}) ON CONFLICT (version) DO NOTHING`;
   }
 
   console.log("Admin data schema is ready.");

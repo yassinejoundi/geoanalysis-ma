@@ -26,8 +26,12 @@ export async function POST(request: Request) {
       return mutationFailureResponse(400, "Invalid request.");
     }
     const file = form.get("file");
-    if (!(file instanceof File) || [...form.keys()].some((key) => key !== "file")) return mutationFailureResponse(400, "Invalid request.");
-    const result = await storeMedia(file, access.actor.id);
+    const folder = form.get("folder");
+    if (!(file instanceof File) || (folder !== null && folder !== "home") ||
+      [...form.keys()].some((key) => key !== "file" && key !== "folder")) {
+      return mutationFailureResponse(400, "Invalid request.");
+    }
+    const result = await storeMedia(file, access.actor.id, folder === "home" ? "home" : "default");
     if ("error" in result) return mutationFailureResponse(result.error === "too-large" ? 413 : 415, "Unsupported file.");
     if (!isIdentifier(result.media.id)) return mutationFailureResponse(503, "The request could not be processed.");
     const records = await listAdminRecords(access.actor, "media");

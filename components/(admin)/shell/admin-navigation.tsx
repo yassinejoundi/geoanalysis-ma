@@ -11,6 +11,7 @@ import {
   faGaugeHigh,
   faGear,
   faHandshake,
+  faHouse,
   faNewspaper,
   faPhotoFilm,
   faUsers,
@@ -21,6 +22,7 @@ import { adminRouteGroups, getAdminRoute } from "./admin-routes";
 
 const routeIcons: Record<string, IconDefinition> = {
   "/admin/dashboard": faGaugeHigh,
+  "/admin/contenu": faHouse,
   "/admin/expertises": faBullseye,
   "/admin/realisations": faFolderOpen,
   "/admin/articles": faFileLines,

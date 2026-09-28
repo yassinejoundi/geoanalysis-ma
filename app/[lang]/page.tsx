@@ -8,7 +8,13 @@ import { MethodsSection } from "@/components/(public)/home/methods-section";
 import { ProcessSection } from "@/components/(public)/home/process-section";
 import { ProjectsSection } from "@/components/(public)/home/projects-section";
 import { isLocale } from "@/lib/i18n";
+import { getPublicHomeContent } from "@/lib/server/data/admin";
 import { notFound } from "next/navigation";
+import { cache } from "react";
+
+const getHomePageContent = cache(async (locale: "fr" | "en") =>
+  await getPublicHomeContent(locale) ?? homeContent[locale],
+);
 
 export async function generateMetadata({
   params,
@@ -17,7 +23,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang } = await params;
   if (!isLocale(lang)) return {};
-  const { title, description } = homeContent[lang];
+  const { title, description } = await getHomePageContent(lang);
   return { title, description };
 }
 
@@ -28,7 +34,7 @@ export default async function HomePage({
 }) {
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
-  const content = homeContent[lang];
+  const content = await getHomePageContent(lang);
 
   return (
     <main className="home-page">

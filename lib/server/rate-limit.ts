@@ -7,6 +7,7 @@ const policies = {
   contact: { limit: 5, windowSeconds: 60 * 60 },
   auth: { limit: 10, windowSeconds: 15 * 60 },
   upload: { limit: 20, windowSeconds: 15 * 60 },
+  content: { limit: 20, windowSeconds: 15 * 60 },
 } as const;
 
 export type RateLimitScope = keyof typeof policies;

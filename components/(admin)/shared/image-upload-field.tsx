@@ -13,12 +13,14 @@ export function ImageUploadField({
   value,
   onUploaded,
   onBusyChange,
+  uploadFolder,
 }: {
   id: string;
   label: string;
   value?: string | null;
   onUploaded: (image: UploadedImage) => void;
   onBusyChange?: (busy: boolean) => void;
+  uploadFolder?: "home";
 }) {
   const [preview, setPreview] = useState(value ?? null);
   const [status, setStatus] = useState("");
@@ -52,6 +54,7 @@ export function ImageUploadField({
       setStatus("Envoi vers Cloudinary…");
       const form = new FormData();
       form.append("file", optimized);
+      if (uploadFolder) form.append("folder", uploadFolder);
       const image = await sendApiForm<UploadedImage>("/api/admin/media", form);
       URL.revokeObjectURL(previewUrl);
       localPreview.current = null;

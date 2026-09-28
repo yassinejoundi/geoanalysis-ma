@@ -1,7 +1,11 @@
 import "server-only";
 
 import { neon } from "@neondatabase/serverless";
+import { connection } from "next/server";
 import { getAdminAccess, isAllowedAdminEmail, type AdminActor } from "@/lib/server/auth";
+import { parseHomeContentFields } from "@/lib/server/validation";
+import type { HomeContent, HomeContentRecord } from "@/components/(public)/home/content";
+import type { Locale } from "@/lib/i18n";
 
 export const adminCollections = [
   "expertises",
@@ -12,6 +16,7 @@ export const adminCollections = [
   "partners",
   "messages",
   "media",
+  "home",
   "settings",
 ] as const;
 
@@ -25,6 +30,7 @@ const dedicatedTables = {
   articles: "cms_articles",
   news: "cms_actualites",
   team: "cms_team_members",
+  home: "cms_home_content",
 } as const;
 
 function isDedicatedCollection(collection: AdminCollection): collection is keyof typeof dedicatedTables {
@@ -49,10 +55,41 @@ function getDatabase() {
   return neon(connectionString);
 }
 
+export async function getPublicHomeContent(locale: Locale): Promise<HomeContent | null> {
+  await connection();
+  try {
+    const sql = getDatabase();
+    const rows = await sql`
+      SELECT record FROM cms_home_content WHERE id = ${locale} LIMIT 1
+    ` as { record: unknown }[];
+    const record = rows[0]?.record as Partial<HomeContentRecord> | undefined;
+    if (record?.locale !== locale) return null;
+    return parseHomeContentFields(record.content);
+  } catch {
+    return null;
+  }
+}
+
 function authorize(actor: AdminActor) {
   if (!actor.id || !isAllowedAdminEmail(actor.email)) {
     throw new Error("Administrator access required.");
   }
+}
+
+export async function saveHomeContent(
+  actor: AdminActor,
+  locale: Locale,
+  content: HomeContent,
+) {
+  authorize(actor);
+  const sql = getDatabase();
+  const record = JSON.stringify({ locale, content } satisfies HomeContentRecord);
+  await sql`
+    INSERT INTO cms_home_content (id, record, position, updated_by)
+    VALUES (${locale}, ${record}::jsonb, 0, ${actor.id})
+    ON CONFLICT (id) DO UPDATE
+    SET record = EXCLUDED.record, updated_by = EXCLUDED.updated_by, updated_at = now()
+  `;
 }
 
 export async function listAdminRecords<T>(actor: AdminActor, collection: AdminCollection) {

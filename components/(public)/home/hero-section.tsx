@@ -31,8 +31,8 @@ export function HeroSection({
           <ul
             className="home-hero-specialties"
             aria-label={locale === "fr" ? "Domaines d’intervention" : "Areas of work"}>
-            {content.pillars.map(([title]) => (
-              <li key={title}>{title}</li>
+            {content.pillars.map(([title], index) => (
+              <li key={index}>{title}</li>
             ))}
           </ul>
         </div>

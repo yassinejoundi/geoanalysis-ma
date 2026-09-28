@@ -9,8 +9,8 @@ export function ProcessSection({ content }: { content: HomeContent }) {
         title={content.methodTitle}
       />
       <ol className="home-steps">
-        {content.steps.map(([number, title, body]) => (
-          <li key={number}>
+        {content.steps.map(([number, title, body], index) => (
+          <li key={index}>
             <span>{number}</span>
             <h3>{title}</h3>
             <p>{body}</p>

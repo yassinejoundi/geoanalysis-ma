@@ -1,4 +1,5 @@
 import type { LocalizedText } from "@/lib/i18n";
+import type { HomeContent } from "@/components/(public)/home/content";
 import type { MessageStatus, PublicationState } from "@/lib/content/admin";
 
 export const MAX_MEDIA_BYTES = 4 * 1024 * 1024;
@@ -195,6 +196,46 @@ export function parseSettingsFields(value: unknown) {
     result[key] = field;
   }
   return result;
+}
+
+export function parseHomeContentFields(value: unknown): HomeContent | null {
+  const keys = [
+    "title", "description", "kicker", "hero", "sub", "intro", "expertise", "expertiseCta", "talk",
+    "aboutKicker", "aboutTitle", "about", "about2", "discover", "aboutImage", "aboutImageAlt",
+    "aboutImageCaption", "aboutImageLocation", "pillars", "expTitle", "expDesc", "methodKicker",
+    "methodTitle", "methodItems", "steps", "methods", "methodsTitle", "methodsLink", "projects", "projectsTitle",
+    "projectsLink", "news", "articles", "editorialKicker", "editorialTitle", "allNews", "allArticles",
+    "newsKicker", "articlesKicker", "editorialLocation", "read", "projectImage",
+  ] as const;
+  if (!isRecord(value) || !hasOnlyKeys(value, keys) || keys.some((key) => !(key in value))) return null;
+
+  type TextKey = Exclude<(typeof keys)[number], "aboutImage" | "pillars" | "steps" | "methodItems">;
+  const text = (key: TextKey, max = 2000) =>
+    textField(value[key], max, false);
+  const aboutImage = textField(value.aboutImage, 2048);
+  const methodItems = parseHomeRows(value.methodItems, 2, 12) as HomeContent["methodItems"] | null;
+  const textKeys = keys.filter((key) => key !== "aboutImage" && key !== "pillars" && key !== "steps" && key !== "methodItems") as TextKey[];
+  const fields = Object.fromEntries(
+    textKeys.map((key) => [key, text(key, key === "title" ? 160 : key === "description" ? 320 : key === "aboutImageAlt" ? 250 : 2000)]),
+  );
+  const pillars = parseHomeRows(value.pillars, 2, 8) as HomeContent["pillars"] | null;
+  const steps = parseHomeRows(value.steps, 3, 12) as HomeContent["steps"] | null;
+  if (!aboutImage || !isAllowedImageSource(aboutImage) || !methodItems || !pillars || !steps ||
+    Object.values(fields).some((field) => field === null)) return null;
+
+  return { ...fields, aboutImage, methodItems, pillars, steps } as HomeContent;
+}
+
+function parseHomeRows(value: unknown, columns: 2 | 3, maxRows: number) {
+  if (!Array.isArray(value) || value.length < 1 || value.length > maxRows) return null;
+  const rows: string[][] = [];
+  for (const row of value) {
+    if (!Array.isArray(row) || row.length !== columns) return null;
+    const cells = row.map((cell) => textField(cell, 2000, true));
+    if (cells.some((cell) => cell === null)) return null;
+    rows.push(cells as string[]);
+  }
+  return rows as [string, string][] | [string, string, string][];
 }
 
 const formats: Record<string, { extension: string[]; magic: (bytes: Uint8Array) => boolean }> = {

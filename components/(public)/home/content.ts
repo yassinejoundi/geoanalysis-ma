@@ -1,6 +1,51 @@
 import type { Locale } from "@/lib/i18n";
 
-export const homeContent = {
+export type HomeContent = {
+  title: string;
+  description: string;
+  kicker: string;
+  hero: string;
+  sub: string;
+  intro: string;
+  expertise: string;
+  expertiseCta: string;
+  talk: string;
+  aboutKicker: string;
+  aboutTitle: string;
+  about: string;
+  about2: string;
+  discover: string;
+  aboutImage: string;
+  aboutImageAlt: string;
+  aboutImageCaption: string;
+  aboutImageLocation: string;
+  pillars: [string, string][];
+  expTitle: string;
+  expDesc: string;
+  methodKicker: string;
+  methodTitle: string;
+  methodItems: [string, string][];
+  steps: [string, string, string][];
+  methods: string;
+  methodsTitle: string;
+  methodsLink: string;
+  projects: string;
+  projectsTitle: string;
+  projectsLink: string;
+  news: string;
+  articles: string;
+  editorialKicker: string;
+  editorialTitle: string;
+  newsKicker: string;
+  articlesKicker: string;
+  editorialLocation: string;
+  allNews: string;
+  allArticles: string;
+  read: string;
+  projectImage: string;
+};
+
+export const homeContent: Record<Locale, HomeContent> = {
   fr: {
     title: "GEOANALYSIS — Géologie, géophysique & environnement",
     description:
@@ -20,6 +65,10 @@ export const homeContent = {
     about2:
       "Reconnaissances, analyses et cartographie transforment les données terrain en livrables utiles à la décision.",
     discover: "Découvrir le bureau",
+    aboutImage: "/approach-field-survey.jpg",
+    aboutImageAlt: "Équipe GEOANALYSIS en reconnaissance sur un versant aride",
+    aboutImageCaption: "Reconnaissance de terrain",
+    aboutImageLocation: "Maroc",
     pillars: [
       ["Géologie & mines", "Exploration, études, cartographie et accompagnement minier."],
       ["Eau", "Études hydrologiques, hydrogéologiques et hydro-géophysiques."],
@@ -30,6 +79,14 @@ export const homeContent = {
       "Une même exigence de terrain pour les ressources minérales, l’eau et l’environnement.",
     methodKicker: "Notre méthode",
     methodTitle: "Du repérage aux livrables, chaque étape compte",
+    methodItems: [
+      ["Cartographie géologique", "Géologie et mines"],
+      ["Échantillonnage", "Géologie et mines"],
+      ["Études hydrologiques et hydrogéologiques", "Hydrologie et environnement"],
+      ["Analyse de l’eau", "Hydrologie et environnement"],
+      ["Cartographie thématique", "SIG et télédétection"],
+      ["Rapports et synthèses", "SIG et télédétection"],
+    ],
     steps: [
       ["01", "Études documentaires", "Synthèses à partir de recherches documentaires."],
       ["02", "Reconnaissance terrain", "Planification, levés géologiques et échantillonnage."],
@@ -46,11 +103,13 @@ export const homeContent = {
     articles: "Articles",
     editorialKicker: "Le journal du terrain",
     editorialTitle: "Actualités et éclairages géoscientifiques",
+    newsKicker: "Sur le terrain",
+    articlesKicker: "Nos analyses",
+    editorialLocation: "Marrakech",
     allNews: "Toutes les actualités",
     allArticles: "Tous les articles",
     read: "de lecture",
     projectImage: "MISSION GÉOSCIENTIFIQUE",
-    expertiseImage: "DOMAINE D’EXPERTISE",
   },
   en: {
     title: "GEOANALYSIS — Geology, geophysics & environment",
@@ -71,6 +130,10 @@ export const homeContent = {
     about2:
       "Field surveys, analysis and mapping turn field data into useful decision-making reports.",
     discover: "Discover the firm",
+    aboutImage: "/approach-field-survey.jpg",
+    aboutImageAlt: "GEOANALYSIS team surveying an arid hillside",
+    aboutImageCaption: "Field survey",
+    aboutImageLocation: "Morocco",
     pillars: [
       ["Geology & mining", "Exploration, studies, mapping and mining support."],
       ["Water", "Hydrological, hydrogeological and hydrogeophysical studies."],
@@ -81,6 +144,14 @@ export const homeContent = {
       "One field-based approach across mineral resources, water and the environment.",
     methodKicker: "Our method",
     methodTitle: "From first survey to final deliverable",
+    methodItems: [
+      ["Geological mapping", "Geology and mining"],
+      ["Sampling", "Geology and mining"],
+      ["Hydrological and hydrogeological studies", "Water and environment"],
+      ["Water analysis", "Water and environment"],
+      ["Thematic mapping", "GIS and remote sensing"],
+      ["Reports and syntheses", "GIS and remote sensing"],
+    ],
     steps: [
       ["01", "Desk studies", "Research and documentary summaries."],
       ["02", "Field reconnaissance", "Planning, geological surveys and sampling."],
@@ -97,12 +168,14 @@ export const homeContent = {
     articles: "Articles",
     editorialKicker: "Field journal",
     editorialTitle: "News and geoscientific insight",
+    newsKicker: "In the field",
+    articlesKicker: "Expert insight",
+    editorialLocation: "Morocco",
     allNews: "All news",
     allArticles: "All articles",
     read: "read",
     projectImage: "GEOSCIENTIFIC ASSIGNMENT",
-    expertiseImage: "AREA OF EXPERTISE",
   },
-} as const;
+};
 
-export type HomeContent = (typeof homeContent)[Locale];
+export type HomeContentRecord = { locale: Locale; content: HomeContent };

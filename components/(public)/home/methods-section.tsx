@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { methodGroups } from "@/lib/content/site";
-import { localize, type Locale } from "@/lib/i18n";
+import type { Locale } from "@/lib/i18n";
 import type { HomeContent } from "./content";
 import { SectionHeading } from "./section-heading";
 
@@ -26,15 +25,13 @@ export function MethodsSection({
           </Link>
         </div>
         <div className="home-method-grid">
-          {methodGroups.flatMap((group) =>
-            group.items.slice(0, 2).map((method) => (
-              <div key={`${group.id}-${method.name.fr}`}>
+          {content.methodItems.map(([name, category], index) => (
+              <div key={`${index}-${name}`}>
                 <span aria-hidden="true" />
-                <h3>{localize(method.name, locale)}</h3>
-                <p>{localize(group.title, locale)}</p>
+                <h3>{name}</h3>
+                <p>{category}</p>
               </div>
-            )),
-          )}
+          ))}
         </div>
       </div>
     </section>

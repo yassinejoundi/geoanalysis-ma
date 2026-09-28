@@ -26,18 +26,14 @@ export function AboutSection({
       </div>
       <figure className="home-about-visual">
         <Image
-          src="/approach-field-survey.jpg"
-          alt={
-            locale === "fr"
-              ? "Équipe GEOANALYSIS en reconnaissance sur un versant aride"
-              : "GEOANALYSIS team surveying an arid hillside"
-          }
+          src={content.aboutImage}
+          alt={content.aboutImageAlt}
           fill
           sizes="(max-width: 760px) calc(100vw - 40px), (max-width: 1360px) 48vw, 640px"
         />
         <figcaption>
-          <span>{locale === "fr" ? "Reconnaissance de terrain" : "Field survey"}</span>
-          <span>{locale === "fr" ? "Maroc" : "Morocco"}</span>
+          <span>{content.aboutImageCaption}</span>
+          <span>{content.aboutImageLocation}</span>
         </figcaption>
       </figure>
     </section>
