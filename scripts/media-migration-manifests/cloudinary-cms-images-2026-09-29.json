@@ -1,0 +1,254 @@
+{
+  "version": 1,
+  "createdAt": "2026-09-29T08:47:52.838Z",
+  "changes": [
+    {
+      "table": "cms_articles",
+      "id": "sentinel-2",
+      "field": [
+        "image",
+        "src"
+      ],
+      "from": "/articles/sentinel-2-landscape.webp",
+      "to": "https://res.cloudinary.com/d7qa2cop/image/upload/v1790675181/geoanalysis/articles/sentinel-2-landscape.webp",
+      "file": "articles/sentinel-2-landscape.webp",
+      "publicId": "geoanalysis/articles/sentinel-2-landscape"
+    },
+    {
+      "table": "cms_articles",
+      "id": "sentinel-1",
+      "field": [
+        "image",
+        "src"
+      ],
+      "from": "/articles/relief-radar.webp",
+      "to": "https://res.cloudinary.com/d7qa2cop/image/upload/v1790675184/geoanalysis/articles/relief-radar.webp",
+      "file": "articles/relief-radar.webp",
+      "publicId": "geoanalysis/articles/relief-radar"
+    },
+    {
+      "table": "cms_articles",
+      "id": "geologic-maps",
+      "field": [
+        "image",
+        "src"
+      ],
+      "from": "/articles/echantillon-geologique.webp",
+      "to": "https://res.cloudinary.com/d7qa2cop/image/upload/v1790675187/geoanalysis/articles/echantillon-geologique.webp",
+      "file": "articles/echantillon-geologique.webp",
+      "publicId": "geoanalysis/articles/echantillon-geologique"
+    },
+    {
+      "table": "cms_articles",
+      "id": "electrical-resistivity",
+      "field": [
+        "image",
+        "src"
+      ],
+      "from": "/articles/mesure-resistivite.webp",
+      "to": "https://res.cloudinary.com/d7qa2cop/image/upload/v1790675191/geoanalysis/articles/mesure-resistivite.webp",
+      "file": "articles/mesure-resistivite.webp",
+      "publicId": "geoanalysis/articles/mesure-resistivite"
+    },
+    {
+      "table": "cms_articles",
+      "id": "groundwater",
+      "field": [
+        "image",
+        "src"
+      ],
+      "from": "/articles/terrain-aquifere.webp",
+      "to": "https://res.cloudinary.com/d7qa2cop/image/upload/v1790675200/geoanalysis/articles/terrain-aquifere.webp",
+      "file": "articles/terrain-aquifere.webp",
+      "publicId": "geoanalysis/articles/terrain-aquifere"
+    },
+    {
+      "table": "cms_articles",
+      "id": "environmental-assessment",
+      "field": [
+        "image",
+        "src"
+      ],
+      "from": "/articles/affleurement-environnement.webp",
+      "to": "https://res.cloudinary.com/d7qa2cop/image/upload/v1790675208/geoanalysis/articles/affleurement-environnement.webp",
+      "file": "articles/affleurement-environnement.webp",
+      "publicId": "geoanalysis/articles/affleurement-environnement"
+    },
+    {
+      "table": "cms_actualites",
+      "id": "reconnaissance-terrain",
+      "field": [
+        "image",
+        "src"
+      ],
+      "from": "/actualites/reconnaissance-terrain.webp",
+      "to": "https://res.cloudinary.com/d7qa2cop/image/upload/v1790675224/geoanalysis/actualites/reconnaissance-terrain.webp",
+      "file": "actualites/reconnaissance-terrain.webp",
+      "publicId": "geoanalysis/actualites/reconnaissance-terrain"
+    },
+    {
+      "table": "cms_actualites",
+      "id": "echantillons-roches",
+      "field": [
+        "image",
+        "src"
+      ],
+      "from": "/actualites/echantillons-roche.webp",
+      "to": "https://res.cloudinary.com/d7qa2cop/image/upload/v1790675235/geoanalysis/actualites/echantillons-roche.webp",
+      "file": "actualites/echantillons-roche.webp",
+      "publicId": "geoanalysis/actualites/echantillons-roche"
+    },
+    {
+      "table": "cms_actualites",
+      "id": "affleurements-geologiques",
+      "field": [
+        "image",
+        "src"
+      ],
+      "from": "/actualites/affleurement-geologique.webp",
+      "to": "https://res.cloudinary.com/d7qa2cop/image/upload/v1790675240/geoanalysis/actualites/affleurement-geologique.webp",
+      "file": "actualites/affleurement-geologique.webp",
+      "publicId": "geoanalysis/actualites/affleurement-geologique"
+    },
+    {
+      "table": "cms_realisations",
+      "id": "reconnaissance",
+      "field": [
+        "image"
+      ],
+      "from": "/realisations/geological-survey.webp",
+      "to": "https://res.cloudinary.com/d7qa2cop/image/upload/v1790675243/geoanalysis/realisations/geological-survey.webp",
+      "file": "realisations/geological-survey.webp",
+      "publicId": "geoanalysis/realisations/geological-survey"
+    },
+    {
+      "table": "cms_realisations",
+      "id": "sondages",
+      "field": [
+        "image"
+      ],
+      "from": "/realisations/drilling-follow-up.webp",
+      "to": "https://res.cloudinary.com/d7qa2cop/image/upload/v1790675249/geoanalysis/realisations/drilling-follow-up.webp",
+      "file": "realisations/drilling-follow-up.webp",
+      "publicId": "geoanalysis/realisations/drilling-follow-up"
+    },
+    {
+      "table": "cms_realisations",
+      "id": "echantillonnage",
+      "field": [
+        "image"
+      ],
+      "from": "/realisations/mineral-sample.webp",
+      "to": "https://res.cloudinary.com/d7qa2cop/image/upload/v1790675252/geoanalysis/realisations/mineral-sample.webp",
+      "file": "realisations/mineral-sample.webp",
+      "publicId": "geoanalysis/realisations/mineral-sample"
+    },
+    {
+      "table": "cms_realisations",
+      "id": "eau",
+      "field": [
+        "image"
+      ],
+      "from": "/realisations/water-sampling.webp",
+      "to": "https://res.cloudinary.com/d7qa2cop/image/upload/v1790675256/geoanalysis/realisations/water-sampling.webp",
+      "file": "realisations/water-sampling.webp",
+      "publicId": "geoanalysis/realisations/water-sampling"
+    },
+    {
+      "table": "cms_home_content",
+      "id": "en",
+      "field": [
+        "content",
+        "aboutImage"
+      ],
+      "from": "/approach-field-survey.jpg",
+      "to": "https://res.cloudinary.com/d7qa2cop/image/upload/v1790675261/geoanalysis/accueil/approach-field-survey.jpg",
+      "file": "approach-field-survey.jpg",
+      "publicId": "geoanalysis/accueil/approach-field-survey"
+    },
+    {
+      "table": "cms_home_content",
+      "id": "fr",
+      "field": [
+        "content",
+        "aboutImage"
+      ],
+      "from": "/approach-field-survey.jpg",
+      "to": "https://res.cloudinary.com/d7qa2cop/image/upload/v1790675261/geoanalysis/accueil/approach-field-survey.jpg",
+      "file": "approach-field-survey.jpg",
+      "publicId": "geoanalysis/accueil/approach-field-survey"
+    },
+    {
+      "table": "cms_bureau_content",
+      "id": "fr",
+      "field": [
+        "content",
+        "heroImage"
+      ],
+      "from": "/firm-fieldwork.jpg",
+      "to": "https://res.cloudinary.com/d7qa2cop/image/upload/v1790675264/geoanalysis/bureau/firm-fieldwork.jpg",
+      "file": "firm-fieldwork.jpg",
+      "publicId": "geoanalysis/bureau/firm-fieldwork"
+    },
+    {
+      "table": "cms_expertise_page_content",
+      "id": "fr",
+      "field": [
+        "content",
+        "heroImage"
+      ],
+      "from": "/approach-field-survey.jpg",
+      "to": "https://res.cloudinary.com/d7qa2cop/image/upload/v1790675268/geoanalysis/expertises/approach-field-survey.jpg",
+      "file": "approach-field-survey.jpg",
+      "publicId": "geoanalysis/expertises/approach-field-survey"
+    },
+    {
+      "table": "cms_expertise_page_content",
+      "id": "en",
+      "field": [
+        "content",
+        "heroImage"
+      ],
+      "from": "/approach-field-survey.jpg",
+      "to": "https://res.cloudinary.com/d7qa2cop/image/upload/v1790675268/geoanalysis/expertises/approach-field-survey.jpg",
+      "file": "approach-field-survey.jpg",
+      "publicId": "geoanalysis/expertises/approach-field-survey"
+    },
+    {
+      "table": "cms_expertises",
+      "id": "mining",
+      "field": [
+        "image",
+        "src"
+      ],
+      "from": "/expertises/geology-outcrop.jpg",
+      "to": "https://res.cloudinary.com/d7qa2cop/image/upload/v1790675272/geoanalysis/expertises/geology-outcrop.jpg",
+      "file": "expertises/geology-outcrop.jpg",
+      "publicId": "geoanalysis/expertises/geology-outcrop"
+    },
+    {
+      "table": "cms_expertises",
+      "id": "env",
+      "field": [
+        "image",
+        "src"
+      ],
+      "from": "/expertises/environment-landscape.jpg",
+      "to": "https://res.cloudinary.com/d7qa2cop/image/upload/v1790675277/geoanalysis/expertises/environment-landscape.jpg",
+      "file": "expertises/environment-landscape.jpg",
+      "publicId": "geoanalysis/expertises/environment-landscape"
+    },
+    {
+      "table": "cms_expertises",
+      "id": "water",
+      "field": [
+        "image",
+        "src"
+      ],
+      "from": "/expertises/hydrogeology-well.jpg",
+      "to": "https://res.cloudinary.com/d7qa2cop/image/upload/v1790675281/geoanalysis/expertises/hydrogeology-well.jpg",
+      "file": "expertises/hydrogeology-well.jpg",
+      "publicId": "geoanalysis/expertises/hydrogeology-well"
+    }
+  ]
+}
