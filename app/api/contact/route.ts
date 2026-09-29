@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { mutationFailureResponse, mutationResponse, limitedResponse } from "@/lib/server/api";
 import { isSameOrigin, readJsonBody } from "@/lib/server/http";
 import { saveContactMessage } from "@/lib/server/data/admin";
+import { sendContactNotification } from "@/lib/server/email";
 import { parseContactSubmission } from "@/lib/server/validation";
 
 const projectTypes = {
@@ -40,6 +41,11 @@ export async function POST(request: Request) {
       message: submission.message,
     };
     await saveContactMessage(record);
+    try {
+      await sendContactNotification(record);
+    } catch {
+      console.error("Contact notification email failed.");
+    }
     return mutationResponse({ data: { accepted: true } }, 201);
   } catch {
     return mutationFailureResponse(503, "The request could not be processed.");
