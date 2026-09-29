@@ -4,8 +4,9 @@ import { createHash, randomUUID } from "node:crypto";
 import { basename } from "node:path";
 import { v2 as cloudinary } from "cloudinary";
 import { validateMediaFile } from "@/lib/server/validation";
+import type { AdminMediaFolder } from "@/lib/media";
 
-export async function storeMedia(file: File, actorId: string, folder: "default" | "home" | "bureau" | "expertises" | "logo" = "default") {
+export async function storeMedia(file: File, actorId: string, folder?: AdminMediaFolder) {
   const bytes = new Uint8Array(await file.arrayBuffer());
   const validation = validateMediaFile(file, bytes);
   if (validation !== "valid") return { error: validation } as const;
@@ -30,7 +31,7 @@ export async function storeMedia(file: File, actorId: string, folder: "default" 
   const uploaded = await new Promise<{ secure_url: string; bytes: number; format: string }>((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       {
-        folder: folder === "home" || folder === "bureau" || folder === "expertises" || folder === "logo" ? `geoanalysis/${folder}` : "geoanalysis/" + actorFolder,
+        folder: folder ? `geoanalysis/${folder}` : "geoanalysis/" + actorFolder,
         public_id: publicId,
         resource_type: resourceType,
         overwrite: false,

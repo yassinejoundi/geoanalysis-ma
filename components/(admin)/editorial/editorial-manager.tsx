@@ -155,7 +155,7 @@ export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; 
       let image = editorValues.image;
       if (pendingImage && image) {
         setImageBusy(true);
-        const uploaded = await uploadImageToCloudinary(pendingImage);
+        const uploaded = await uploadImageToCloudinary(pendingImage, isArticle ? "articles" : "actualites");
         image = { ...image, src: uploaded.url };
         setEditorValues((current) => ({ ...current, image }));
         setPendingImage(null);

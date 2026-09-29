@@ -388,7 +388,7 @@ export function HomeContentManager({ initialContent }: { initialContent: Record<
             id={`home-about-image-${locale}`}
             label="Image de la section"
             value={draft.aboutImage}
-            uploadFolder="home"
+            uploadFolder="accueil"
             onUploaded={imageUploaded}
             onBusyChange={setUploading}
           />

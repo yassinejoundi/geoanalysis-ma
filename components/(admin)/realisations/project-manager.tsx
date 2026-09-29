@@ -133,7 +133,7 @@ export function ProjectManager({ initialProjects, initialExpertises }: { initial
       const uploadedImages: ManagedProject["gallery"] = [];
       for (const file of pendingImages) {
         setImageBusy(true);
-        const image = await uploadImageToCloudinary(file);
+        const image = await uploadImageToCloudinary(file, "realisations");
         const entry = {
           id: image.id,
           url: image.url,

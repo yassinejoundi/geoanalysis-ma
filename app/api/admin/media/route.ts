@@ -3,6 +3,7 @@ import { createAdminRecord, listAdminRecords } from "@/lib/server/data/admin";
 import { readBoundedBody, isSameOrigin } from "@/lib/server/http";
 import { MAX_MEDIA_BYTES, isIdentifier } from "@/lib/server/validation";
 import { storeMedia } from "@/lib/server/cloudinary";
+import { isAdminMediaFolder } from "@/lib/media";
 
 const MAX_MULTIPART_BYTES = MAX_MEDIA_BYTES + 16 * 1024;
 
@@ -29,11 +30,11 @@ export async function POST(request: Request) {
     }
     const file = form.get("file");
     const folder = form.get("folder");
-    if (!(file instanceof File) || (folder !== null && folder !== "home" && folder !== "bureau" && folder !== "expertises" && folder !== "logo") ||
+    if (!(file instanceof File) || (folder !== null && !isAdminMediaFolder(folder)) ||
       [...form.keys()].some((key) => key !== "file" && key !== "folder")) {
       return mutationFailureResponse(400, "Le fichier ou son dossier de destination est invalide.");
     }
-    const result = await storeMedia(file, access.actor.id, folder === "home" || folder === "bureau" || folder === "expertises" || folder === "logo" ? folder : "default");
+    const result = await storeMedia(file, access.actor.id, isAdminMediaFolder(folder) ? folder : undefined);
     if ("error" in result) return mutationFailureResponse(
       result.error === "too-large" ? 413 : 415,
       result.error === "too-large" ? "L’image dépasse la limite de 4 Mo après conversion." : "Choisissez une image JPEG, PNG ou WebP valide.",

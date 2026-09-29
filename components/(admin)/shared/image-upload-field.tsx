@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { uploadImageToCloudinary, type UploadedImage } from "@/lib/upload-image";
+import type { AdminMediaFolder } from "@/lib/media";
 export type { UploadedImage } from "@/lib/upload-image";
 
 export function ImageUploadField({
@@ -28,7 +29,7 @@ export function ImageUploadField({
   deferUpload?: boolean;
   onFileSelected?: (file: File) => void;
   onFilesSelected?: (files: File[]) => void;
-  uploadFolder?: "home" | "bureau" | "expertises" | "logo";
+  uploadFolder?: AdminMediaFolder;
   multiple?: boolean;
   maxFiles?: number;
 }) {
