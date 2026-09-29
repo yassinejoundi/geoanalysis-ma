@@ -6554,28 +6554,29 @@ a.partner-card-link:hover {
   min-height: 42px;
 }
 
-.message-status-control {
+.admin-select-control {
   position: relative;
   display: block;
 }
 
-.message-preview .admin-field .message-status-select {
+.admin-field .admin-select {
+  min-height: 42px;
   padding-right: 44px;
   appearance: none;
   cursor: pointer;
 }
 
-.message-status-select option {
+.admin-select option {
   background-color: var(--surface);
   color: var(--foreground);
 }
 
-.message-status-select option:checked {
+.admin-select option:checked {
   background-color: var(--surface-green);
   color: var(--brand-hover);
 }
 
-.message-status-chevron {
+.admin-select-chevron {
   position: absolute;
   top: 50%;
   right: 16px;
@@ -6588,13 +6589,13 @@ a.partner-card-link:hover {
   transition: transform 180ms ease, border-color 150ms ease;
 }
 
-.message-status-select:open + .message-status-chevron {
+.admin-select:open + .admin-select-chevron {
   transform: translateY(-65%) rotate(225deg);
   border-color: var(--brand-hover);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .message-status-chevron {
+  .admin-select-chevron {
     transition: none;
   }
 }
@@ -6728,7 +6729,7 @@ a.partner-card-link:hover {
   }
 
   .message-search input,
-  .message-preview .admin-field select,
+  .admin-field .admin-select,
   .message-preview-actions .admin-action {
     min-height: 44px;
   }

@@ -83,33 +83,41 @@ export function ProjectEditorFields({
         <>
           <label className="admin-field">
             <span>Expertise associée</span>
-            <select
-              id="project-expertise"
-              required
-              value={values.expertiseId}
-              onChange={(event) => {
-                const expertiseId = event.currentTarget.value;
-                onChange((current) => ({ ...current, expertiseId, subServiceId: "" }));
-              }}
-            >
-              <option value="">Choisir une expertise</option>
-              {expertises.map((expertise) => (
-                <option key={expertise.id} value={expertise.id}>{expertise.name.fr}</option>
-              ))}
-            </select>
+            <span className="admin-select-control">
+              <select
+                id="project-expertise"
+                className="admin-select"
+                required
+                value={values.expertiseId}
+                onChange={(event) => {
+                  const expertiseId = event.currentTarget.value;
+                  onChange((current) => ({ ...current, expertiseId, subServiceId: "" }));
+                }}
+              >
+                <option value="">Choisir une expertise</option>
+                {expertises.map((expertise) => (
+                  <option key={expertise.id} value={expertise.id}>{expertise.name.fr}</option>
+                ))}
+              </select>
+              <span className="admin-select-chevron" aria-hidden="true" />
+            </span>
           </label>
 
           <label className="admin-field">
             <span>Sous-service (optionnel)</span>
-            <select
-              value={values.subServiceId}
-              onChange={(event) => onChange((current) => ({ ...current, subServiceId: event.currentTarget.value }))}
-            >
-              <option value="">—</option>
-              {selectedExpertise?.subServices.map((service) => (
-                <option key={service.id} value={service.id}>{service.name.fr}</option>
-              ))}
-            </select>
+            <span className="admin-select-control">
+              <select
+                className="admin-select"
+                value={values.subServiceId}
+                onChange={(event) => onChange((current) => ({ ...current, subServiceId: event.currentTarget.value }))}
+              >
+                <option value="">—</option>
+                {selectedExpertise?.subServices.map((service) => (
+                  <option key={service.id} value={service.id}>{service.name.fr}</option>
+                ))}
+              </select>
+              <span className="admin-select-chevron" aria-hidden="true" />
+            </span>
           </label>
 
           <div className="admin-fields-grid">

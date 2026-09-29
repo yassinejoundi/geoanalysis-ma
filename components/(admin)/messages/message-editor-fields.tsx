@@ -25,9 +25,9 @@ export function MessageEditorFields({
 
       <label className="admin-field">
         <span>Statut</span>
-        <span className="message-status-control">
+        <span className="admin-select-control">
           <select
-            className="message-status-select"
+            className="admin-select"
             value={message.status}
             disabled={updating}
             onChange={(event) => onStatusChange(event.currentTarget.value as MessageStatus)}
@@ -36,7 +36,7 @@ export function MessageEditorFields({
               <option key={id} value={id}>{label.fr}</option>
             ))}
           </select>
-          <span className="message-status-chevron" aria-hidden="true" />
+          <span className="admin-select-chevron" aria-hidden="true" />
         </span>
       </label>
 

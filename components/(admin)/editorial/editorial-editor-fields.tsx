@@ -73,28 +73,32 @@ export function EditorialEditorFields({
         <>
           <label className="admin-field">
             <span>Catégorie</span>
-            <select
-              id="editorial-category-fr"
-              required
-              value={customCategory ? "__new__" : values.category.fr}
-              onChange={(event) => {
-                if (event.currentTarget.value === "__new__") {
-                  setCustomCategory(true);
-                  onChange((current) => ({ ...current, category: { fr: "", en: "" } }));
-                  return;
-                }
-                const category = categories.find((item) => item.fr === event.currentTarget.value);
-                if (category) {
-                  setCustomCategory(false);
-                  onChange((current) => ({ ...current, category }));
-                }
-              }}
-            >
-              <option value="__new__">Nouvelle catégorie</option>
-              {categories.map((category) => (
-                <option key={category.fr} value={category.fr}>{category.fr}</option>
-              ))}
-            </select>
+            <span className="admin-select-control">
+              <select
+                id="editorial-category-fr"
+                className="admin-select"
+                required
+                value={customCategory ? "__new__" : values.category.fr}
+                onChange={(event) => {
+                  if (event.currentTarget.value === "__new__") {
+                    setCustomCategory(true);
+                    onChange((current) => ({ ...current, category: { fr: "", en: "" } }));
+                    return;
+                  }
+                  const category = categories.find((item) => item.fr === event.currentTarget.value);
+                  if (category) {
+                    setCustomCategory(false);
+                    onChange((current) => ({ ...current, category }));
+                  }
+                }}
+              >
+                <option value="__new__">Nouvelle catégorie</option>
+                {categories.map((category) => (
+                  <option key={category.fr} value={category.fr}>{category.fr}</option>
+                ))}
+              </select>
+              <span className="admin-select-chevron" aria-hidden="true" />
+            </span>
           </label>
           <label className="admin-field">
             <span>Tags (séparés par des virgules)</span>
