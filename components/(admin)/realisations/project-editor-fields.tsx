@@ -155,6 +155,7 @@ export function ProjectEditorFields({
         <label className="admin-field">
           <span>Localisation</span>
           <input
+            required
             value={values.location}
             onChange={(event) =>
               onChange((current) => ({ ...current, location: event.currentTarget.value }))
@@ -164,6 +165,7 @@ export function ProjectEditorFields({
         <label className="admin-field">
           <span>Date</span>
           <input
+            required
             value={values.date}
             onChange={(event) =>
               onChange((current) => ({ ...current, date: event.currentTarget.value }))

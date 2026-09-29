@@ -2,18 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { compressImageToWebp } from "@/lib/client-image";
-import { sendApiForm } from "@/lib/api-client";
-
-export type UploadedImage = { id: string; name: string; url: string };
-
-export async function uploadImageToCloudinary(file: File, uploadFolder?: "home" | "bureau" | "expertises" | "logo") {
-  const optimized = await compressImageToWebp(file);
-  const form = new FormData();
-  form.append("file", optimized);
-  if (uploadFolder) form.append("folder", uploadFolder);
-  return sendApiForm<UploadedImage>("/api/admin/media", form);
-}
+import { uploadImageToCloudinary, type UploadedImage } from "@/lib/upload-image";
+export type { UploadedImage } from "@/lib/upload-image";
 
 export function ImageUploadField({
   id,

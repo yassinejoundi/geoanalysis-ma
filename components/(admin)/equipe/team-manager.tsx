@@ -8,7 +8,7 @@ import { ConfirmDialog } from "@/components/(admin)/shared/confirm-dialog";
 import { EditorDrawer } from "@/components/(admin)/shared/editor-drawer";
 import { Toast } from "@/components/(admin)/shared/toast";
 import { TeamEditorFields, type TeamDraft } from "@/components/(admin)/equipe/team-editor-fields";
-import { uploadImageToCloudinary } from "@/components/(admin)/shared/image-upload-field";
+import { uploadImageToCloudinary } from "@/lib/upload-image";
 import { sendApiMutation } from "@/lib/api-client";
 import styles from "./team-manager.module.css";
 

@@ -92,7 +92,10 @@ export function ProjectManager({ initialProjects, initialExpertises }: { initial
   const [editor, setEditor] = useState<{ mode: "create" | "edit" } | null>(null);
   const [editorValues, setEditorValues] = useState<ManagedProject>(emptyProject);
   const [editorLanguage, setEditorLanguage] = useState<"fr" | "en">("fr");
+  const [editorVersion, setEditorVersion] = useState(0);
   const [imageBusy, setImageBusy] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const saveLock = useRef(false);
   const [pendingDelete, setPendingDelete] = useState<ManagedProject | null>(null);
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastSequence = useRef(0);
@@ -105,15 +108,24 @@ export function ProjectManager({ initialProjects, initialExpertises }: { initial
   }
 
   function openEditor(project?: ManagedProject) {
+    setEditorVersion((version) => version + 1);
     setEditorLanguage("fr");
     setEditorValues(project ? { ...project, gallery: project.gallery.map((image) => ({ ...image })) } : emptyProject());
     setEditor({ mode: project ? "edit" : "create" });
   }
 
   async function saveEditor() {
-    if (!editor) return;
+    if (!editor || saveLock.current || imageBusy) return;
+    const missingLanguage = (["fr", "en"] as const).find((language) => !editorValues.title[language].trim());
+    if (missingLanguage) {
+      setEditorLanguage(missingLanguage);
+      notify(`Complétez le titre en ${missingLanguage === "fr" ? "français" : "anglais"}.`);
+      return;
+    }
     const { id, ...fields } = editorValues;
     delete fields.slug;
+    saveLock.current = true;
+    setSaving(true);
     try {
       const saved = editor.mode === "create"
         ? await sendApiMutation<ManagedProject>("/api/admin/realisations", "POST", fields)
@@ -121,8 +133,10 @@ export function ProjectManager({ initialProjects, initialExpertises }: { initial
       if (editor.mode === "create") setProjects((current) => [...current, saved]);
       else setProjects((current) => current.map((project) => project.id === saved.id ? saved : project));
       notify(`${saved.title.fr || "Réalisation"} ${editor.mode === "create" ? "ajoutée." : "mise à jour."}`);
+      if (editor.mode === "create") setEditorValues(emptyProject());
       setEditor(null);
     } catch (error) { notify(error instanceof Error ? error.message : "Enregistrement impossible."); }
+    finally { saveLock.current = false; setSaving(false); }
   }
 
   async function togglePublication(project: ManagedProject) {
@@ -320,10 +334,10 @@ export function ProjectManager({ initialProjects, initialExpertises }: { initial
         description="Renseignez le contenu, la méthodologie et les résultats du projet."
         onClose={() => setEditor(null)}
         onSave={saveEditor}
-        saving={imageBusy}
-        savingLabel="Envoi de l’image…"
+        saving={imageBusy || saving}
+        savingLabel={imageBusy ? "Envoi de l’image…" : "Enregistrement…"}
       >
-        <ProjectEditorFields values={editorValues} onChange={setEditorValues} expertises={initialExpertises} language={editorLanguage} onLanguageChange={setEditorLanguage} onUploadBusyChange={setImageBusy} />
+        <ProjectEditorFields key={editorVersion} values={editorValues} onChange={setEditorValues} expertises={initialExpertises} language={editorLanguage} onLanguageChange={setEditorLanguage} onUploadBusyChange={setImageBusy} />
       </EditorDrawer>
 
       <ConfirmDialog

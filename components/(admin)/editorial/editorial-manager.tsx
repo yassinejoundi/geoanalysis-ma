@@ -97,7 +97,10 @@ export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; 
   const [editor, setEditor] = useState<{ mode: "create" | "edit" } | null>(null);
   const [editorValues, setEditorValues] = useState<EditorialDraft>(() => emptyItem(kind, []));
   const [editorLanguage, setEditorLanguage] = useState<"fr" | "en">("fr");
+  const [editorVersion, setEditorVersion] = useState(0);
   const [imageBusy, setImageBusy] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const saveLock = useRef(false);
   const [pendingDelete, setPendingDelete] = useState<EditorialDraft | null>(null);
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastSequence = useRef(0);
@@ -122,6 +125,7 @@ export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; 
   }
 
   function openEditor(item?: EditorialDraft) {
+    setEditorVersion((version) => version + 1);
     setEditorLanguage("fr");
     setEditorValues(
       item
@@ -132,7 +136,15 @@ export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; 
   }
 
   async function saveEditor() {
-    if (!editor) return;
+    if (!editor || saveLock.current || imageBusy) return;
+    const missingLanguage = (["fr", "en"] as const).find((language) =>
+      !editorValues.title[language].trim() || (editorValues.image && !editorValues.image.alt[language].trim()),
+    );
+    if (missingLanguage) {
+      setEditorLanguage(missingLanguage);
+      notify(`Complétez le titre et le texte alternatif en ${missingLanguage === "fr" ? "français" : "anglais"}.`);
+      return;
+    }
     const draft = {
       ...editorValues,
       date: editorValues.date || new Date().toLocaleDateString("fr-FR"),
@@ -140,6 +152,8 @@ export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; 
     };
     const { id, ...fields } = draft;
     const endpoint = isArticle ? "/api/admin/articles" : "/api/admin/actualites";
+    saveLock.current = true;
+    setSaving(true);
     try {
       const saved = editor.mode === "create"
         ? await sendApiMutation<EditorialDraft>(endpoint, "POST", fields)
@@ -147,8 +161,10 @@ export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; 
       if (editor.mode === "create") setItems((current) => [...current, saved]);
       else setItems((current) => current.map((item) => item.id === saved.id ? saved : item));
       notify(`${entityTitle} ${editor.mode === "create" ? (isArticle ? "ajouté." : "ajoutée.") : (isArticle ? "mis à jour." : "mise à jour.")}`);
+      if (editor.mode === "create") setEditorValues(emptyItem(kind, categories));
       setEditor(null);
     } catch (error) { notify(error instanceof Error ? error.message : "Enregistrement impossible."); }
+    finally { saveLock.current = false; setSaving(false); }
   }
 
   async function togglePublication(item: EditorialDraft) {
@@ -411,10 +427,10 @@ export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; 
         description={`Renseignez le contenu et les métadonnées de ${entityLabel}.`}
         onClose={() => setEditor(null)}
         onSave={saveEditor}
-        saving={imageBusy}
-        savingLabel="Envoi de l’image…"
+        saving={imageBusy || saving}
+        savingLabel={imageBusy ? "Envoi de l’image…" : "Enregistrement…"}
       >
-        <EditorialEditorFields values={editorValues} onChange={setEditorValues} language={editorLanguage} onLanguageChange={setEditorLanguage} categories={categories} onUploadBusyChange={setImageBusy} />
+        <EditorialEditorFields key={editorVersion} values={editorValues} onChange={setEditorValues} language={editorLanguage} onLanguageChange={setEditorLanguage} categories={categories} onUploadBusyChange={setImageBusy} />
       </EditorDrawer>
 
       <ConfirmDialog

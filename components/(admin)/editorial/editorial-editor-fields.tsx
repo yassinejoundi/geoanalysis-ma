@@ -1,6 +1,6 @@
 "use client";
 
-import type { Dispatch, SetStateAction } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 import type { LocalizedText } from "@/lib/i18n";
 import type { PublicationState } from "@/lib/content/admin";
 import { ImageUploadField, type UploadedImage } from "@/components/(admin)/shared/image-upload-field";
@@ -38,6 +38,7 @@ export function EditorialEditorFields({
   onUploadBusyChange: (busy: boolean) => void;
 }) {
   const languageName = language === "fr" ? "Français" : "English";
+  const [customCategory, setCustomCategory] = useState(!categories.some((category) => category.fr === values.category.fr));
 
   function updateLocalizedField(
     field: "title" | "content" | "seoTitle" | "seoDescription",
@@ -94,13 +95,21 @@ export function EditorialEditorFields({
         <span>Catégorie</span>
         <select
           required
-          value={values.category.fr}
+          value={customCategory ? "__new__" : values.category.fr}
           onChange={(event) => {
+            if (event.currentTarget.value === "__new__") {
+              setCustomCategory(true);
+              onChange((current) => ({ ...current, category: { fr: "", en: "" } }));
+              return;
+            }
             const category = categories.find((item) => item.fr === event.currentTarget.value);
-            if (category) onChange((current) => ({ ...current, category }));
+            if (category) {
+              setCustomCategory(false);
+              onChange((current) => ({ ...current, category }));
+            }
           }}
         >
-          <option value="">Choisir une catégorie</option>
+          <option value="__new__">Nouvelle catégorie</option>
           {categories.map((category) => (
             <option key={category.fr} value={category.fr}>
               {category.fr}
@@ -108,6 +117,19 @@ export function EditorialEditorFields({
           ))}
         </select>
       </label>
+      {customCategory && (
+        <div className="admin-fields-grid">
+          {(["fr", "en"] as const).map((locale) => (
+            <label className="admin-field" key={locale}>
+              <span>Catégorie — {locale === "fr" ? "Français" : "English"}</span>
+              <input required maxLength={100} value={values.category[locale]} onChange={(event) => {
+                const category = event.currentTarget.value;
+                onChange((current) => ({ ...current, category: { ...current.category, [locale]: category } }));
+              }} />
+            </label>
+          ))}
+        </div>
+      )}
 
       <label className="admin-field">
         <span>Tags (séparés par des virgules)</span>
