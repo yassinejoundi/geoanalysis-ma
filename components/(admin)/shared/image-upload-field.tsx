@@ -14,6 +14,7 @@ export function ImageUploadField({
   disabled = false,
   deferUpload = false,
   onFileSelected,
+  onFilesSelected,
   uploadFolder,
   multiple = false,
   maxFiles,
@@ -26,6 +27,7 @@ export function ImageUploadField({
   disabled?: boolean;
   deferUpload?: boolean;
   onFileSelected?: (file: File) => void;
+  onFilesSelected?: (files: File[]) => void;
   uploadFolder?: "home" | "bureau" | "expertises" | "logo";
   multiple?: boolean;
   maxFiles?: number;
@@ -103,8 +105,9 @@ export function ImageUploadField({
       localPreview.current = previewUrl;
       setPreview(previewUrl);
       setError("");
-      setStatus("Photo prête à l’enregistrement.");
+      setStatus(`${files.length} image${files.length === 1 ? "" : "s"} prête${files.length === 1 ? "" : "s"} à l’enregistrement.`);
       onFileSelected?.(file);
+      onFilesSelected?.(files);
     } else if (files.length) {
       void upload(files);
     }

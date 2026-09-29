@@ -29,6 +29,7 @@ import { useAdminSearch } from "@/components/(admin)/shell/admin-search";
 import type { AdminExpertise, PublicationState } from "@/lib/content/admin";
 import type { LocalizedText } from "@/lib/i18n";
 import { sendApiMutation } from "@/lib/api-client";
+import { uploadImageToCloudinary } from "@/lib/upload-image";
 
 type ManagedProject = ProjectDraft;
 type ToastMessage = { id: number; message: string };
@@ -94,6 +95,7 @@ export function ProjectManager({ initialProjects, initialExpertises }: { initial
   const [editorLanguage, setEditorLanguage] = useState<"fr" | "en">("fr");
   const [editorVersion, setEditorVersion] = useState(0);
   const [imageBusy, setImageBusy] = useState(false);
+  const [pendingImages, setPendingImages] = useState<File[]>([]);
   const [saving, setSaving] = useState(false);
   const saveLock = useRef(false);
   const [pendingDelete, setPendingDelete] = useState<ManagedProject | null>(null);
@@ -108,6 +110,7 @@ export function ProjectManager({ initialProjects, initialExpertises }: { initial
   }
 
   function openEditor(project?: ManagedProject) {
+    setPendingImages([]);
     setEditorVersion((version) => version + 1);
     setEditorLanguage("fr");
     setEditorValues(project ? { ...project, gallery: project.gallery.map((image) => ({ ...image })) } : emptyProject());
@@ -127,6 +130,22 @@ export function ProjectManager({ initialProjects, initialExpertises }: { initial
     saveLock.current = true;
     setSaving(true);
     try {
+      const uploadedImages: ManagedProject["gallery"] = [];
+      for (const file of pendingImages) {
+        setImageBusy(true);
+        const image = await uploadImageToCloudinary(file);
+        const entry = {
+          id: image.id,
+          url: image.url,
+          caption: "",
+          isCover: fields.gallery.length + uploadedImages.length === 0,
+        };
+        uploadedImages.push(entry);
+        setEditorValues((current) => ({ ...current, gallery: [...current.gallery, entry] }));
+        setPendingImages((current) => current.slice(1));
+      }
+      fields.gallery = [...fields.gallery, ...uploadedImages];
+      setImageBusy(false);
       const saved = editor.mode === "create"
         ? await sendApiMutation<ManagedProject>("/api/admin/realisations", "POST", fields)
         : await sendApiMutation<ManagedProject>(`/api/admin/realisations/${id}`, "PATCH", fields);
@@ -136,7 +155,7 @@ export function ProjectManager({ initialProjects, initialExpertises }: { initial
       if (editor.mode === "create") setEditorValues(emptyProject());
       setEditor(null);
     } catch (error) { notify(error instanceof Error ? error.message : "Enregistrement impossible."); }
-    finally { saveLock.current = false; setSaving(false); }
+    finally { saveLock.current = false; setSaving(false); setImageBusy(false); }
   }
 
   async function togglePublication(project: ManagedProject) {
@@ -337,7 +356,7 @@ export function ProjectManager({ initialProjects, initialExpertises }: { initial
         saving={imageBusy || saving}
         savingLabel={imageBusy ? "Envoi de l’image…" : "Enregistrement…"}
       >
-        <ProjectEditorFields key={editorVersion} values={editorValues} onChange={setEditorValues} expertises={initialExpertises} language={editorLanguage} onLanguageChange={setEditorLanguage} onUploadBusyChange={setImageBusy} />
+        <ProjectEditorFields key={editorVersion} values={editorValues} onChange={setEditorValues} expertises={initialExpertises} language={editorLanguage} onLanguageChange={setEditorLanguage} pendingImages={pendingImages} onPendingImagesChange={setPendingImages} />
       </EditorDrawer>
 
       <ConfirmDialog

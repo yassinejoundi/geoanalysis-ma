@@ -1,11 +1,11 @@
 "use client";
 
-import type { Dispatch, SetStateAction } from "react";
+import { useState, type Dispatch, type SetStateAction } from "react";
 import Image from "next/image";
 import type { AdminExpertise } from "@/lib/content/admin";
 import type { ProjectDraft } from "@/lib/content/projects";
 export type { ProjectDraft, ProjectImage } from "@/lib/content/projects";
-import { ImageUploadField, type UploadedImage } from "@/components/(admin)/shared/image-upload-field";
+import { ImageUploadField } from "@/components/(admin)/shared/image-upload-field";
 
 export function ProjectEditorFields({
   values,
@@ -13,15 +13,18 @@ export function ProjectEditorFields({
   expertises,
   language,
   onLanguageChange,
-  onUploadBusyChange,
+  pendingImages,
+  onPendingImagesChange,
 }: {
   values: ProjectDraft;
   onChange: Dispatch<SetStateAction<ProjectDraft>>;
   expertises: AdminExpertise[];
   language: "fr" | "en";
   onLanguageChange: (language: "fr" | "en") => void;
-  onUploadBusyChange: (busy: boolean) => void;
+  pendingImages: File[];
+  onPendingImagesChange: Dispatch<SetStateAction<File[]>>;
 }) {
+  const [imageInputVersion, setImageInputVersion] = useState(0);
   const selectedExpertise = expertises.find(
     (expertise) => expertise.id === values.expertiseId,
   );
@@ -66,18 +69,6 @@ export function ProjectEditorFields({
     });
   }
 
-  function addImage(image: UploadedImage) {
-    onChange((current) => ({
-      ...current,
-      gallery: [...current.gallery, {
-        id: image.id,
-        url: image.url,
-        caption: "",
-        isCover: current.gallery.length === 0,
-      }],
-    }));
-  }
-
   return (
     <>
       <div className="editor-language-switch" role="group" aria-label="Langue de saisie">
@@ -117,13 +108,14 @@ export function ProjectEditorFields({
         <select
           required
           value={values.expertiseId}
-          onChange={(event) =>
+          onChange={(event) => {
+            const expertiseId = event.currentTarget.value;
             onChange((current) => ({
               ...current,
-              expertiseId: event.currentTarget.value,
+              expertiseId,
               subServiceId: "",
-            }))
-          }
+            }));
+          }}
         >
           <option value="">Choisir une expertise</option>
           {expertises.map((expertise) => (
@@ -138,9 +130,10 @@ export function ProjectEditorFields({
         <span>Sous-service (optionnel)</span>
         <select
           value={values.subServiceId}
-          onChange={(event) =>
-            onChange((current) => ({ ...current, subServiceId: event.currentTarget.value }))
-          }
+          onChange={(event) => {
+            const subServiceId = event.currentTarget.value;
+            onChange((current) => ({ ...current, subServiceId }));
+          }}
         >
           <option value="">—</option>
           {selectedExpertise?.subServices.map((service) => (
@@ -157,9 +150,10 @@ export function ProjectEditorFields({
           <input
             required
             value={values.location}
-            onChange={(event) =>
-              onChange((current) => ({ ...current, location: event.currentTarget.value }))
-            }
+            onChange={(event) => {
+              const location = event.currentTarget.value;
+              onChange((current) => ({ ...current, location }));
+            }}
           />
         </label>
         <label className="admin-field">
@@ -167,9 +161,10 @@ export function ProjectEditorFields({
           <input
             required
             value={values.date}
-            onChange={(event) =>
-              onChange((current) => ({ ...current, date: event.currentTarget.value }))
-            }
+            onChange={(event) => {
+              const date = event.currentTarget.value;
+              onChange((current) => ({ ...current, date }));
+            }}
           />
         </label>
       </div>
@@ -255,13 +250,29 @@ export function ProjectEditorFields({
             ))}
           </ul>
         )}
+        {pendingImages.length > 0 && (
+          <ul aria-label="Images prêtes à l’enregistrement">
+            {pendingImages.map((file, index) => (
+              <li key={`${file.name}-${index}`}>
+                {file.name}
+                <button className="admin-action" type="button" onClick={() => {
+                  onPendingImagesChange((current) => current.filter((_, item) => item !== index));
+                  setImageInputVersion((version) => version + 1);
+                }}>
+                  Retirer
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
         <ImageUploadField
+          key={imageInputVersion}
           id="project-gallery-image"
           label="Ajouter plusieurs images"
           multiple
-          maxFiles={30 - values.gallery.length}
-          onUploaded={addImage}
-          onBusyChange={onUploadBusyChange}
+          deferUpload
+          maxFiles={30 - values.gallery.length - pendingImages.length}
+          onFilesSelected={(files) => onPendingImagesChange((current) => [...current, ...files])}
         />
       </section>
 

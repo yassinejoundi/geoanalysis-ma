@@ -3,7 +3,7 @@
 import { useState, type Dispatch, type SetStateAction } from "react";
 import type { LocalizedText } from "@/lib/i18n";
 import type { PublicationState } from "@/lib/content/admin";
-import { ImageUploadField, type UploadedImage } from "@/components/(admin)/shared/image-upload-field";
+import { ImageUploadField } from "@/components/(admin)/shared/image-upload-field";
 
 export type EditorialKind = "article" | "news";
 export type EditorialImage = { src: string; alt: LocalizedText };
@@ -28,17 +28,18 @@ export function EditorialEditorFields({
   language,
   onLanguageChange,
   categories,
-  onUploadBusyChange,
+  onImageSelected,
 }: {
   values: EditorialDraft;
   onChange: Dispatch<SetStateAction<EditorialDraft>>;
   language: "fr" | "en";
   onLanguageChange: (language: "fr" | "en") => void;
   categories: LocalizedText[];
-  onUploadBusyChange: (busy: boolean) => void;
+  onImageSelected: (file: File | null) => void;
 }) {
   const languageName = language === "fr" ? "Français" : "English";
   const [customCategory, setCustomCategory] = useState(!categories.some((category) => category.fr === values.category.fr));
+  const [imageInputVersion, setImageInputVersion] = useState(0);
 
   function updateLocalizedField(
     field: "title" | "content" | "seoTitle" | "seoDescription",
@@ -50,10 +51,11 @@ export function EditorialEditorFields({
     }));
   }
 
-  function setImage(image: UploadedImage) {
+  function selectImage(file: File) {
+    onImageSelected(file);
     onChange((current) => ({
       ...current,
-      image: { src: image.url, alt: { fr: current.title.fr, en: current.title.en } },
+      image: { src: current.image?.src ?? "", alt: current.image?.alt ?? { fr: current.title.fr, en: current.title.en } },
     }));
   }
 
@@ -135,23 +137,25 @@ export function EditorialEditorFields({
         <span>Tags (séparés par des virgules)</span>
         <input
           value={values.tags.join(", ")}
-          onChange={(event) =>
+          onChange={(event) => {
+            const tags = event.currentTarget.value.split(",").map((tag) => tag.trim()).filter(Boolean);
             onChange((current) => ({
               ...current,
-              tags: event.currentTarget.value.split(",").map((tag) => tag.trim()).filter(Boolean),
-            }))
-          }
+              tags,
+            }));
+          }}
         />
       </label>
 
       <div className="admin-field">
         <span>Image principale</span>
         <ImageUploadField
+          key={imageInputVersion}
           id="editorial-image"
           label="Choisir une image"
           value={values.image?.src}
-          onUploaded={setImage}
-          onBusyChange={onUploadBusyChange}
+          deferUpload
+          onFileSelected={selectImage}
         />
         {values.image && (
           <>
@@ -160,13 +164,20 @@ export function EditorialEditorFields({
               <input
                 required
                 value={values.image.alt[language]}
-                onChange={(event) => onChange((current) => current.image ? ({
-                  ...current,
-                  image: { ...current.image, alt: { ...current.image.alt, [language]: event.currentTarget.value } },
-                }) : current)}
+                onChange={(event) => {
+                  const alt = event.currentTarget.value;
+                  onChange((current) => current.image ? ({
+                    ...current,
+                    image: { ...current.image, alt: { ...current.image.alt, [language]: alt } },
+                  }) : current);
+                }}
               />
             </label>
-            <button className="admin-action" type="button" onClick={() => onChange((current) => ({ ...current, image: null }))}>
+            <button className="admin-action" type="button" onClick={() => {
+              onImageSelected(null);
+              setImageInputVersion((version) => version + 1);
+              onChange((current) => ({ ...current, image: null }));
+            }}>
               Retirer l’image
             </button>
           </>

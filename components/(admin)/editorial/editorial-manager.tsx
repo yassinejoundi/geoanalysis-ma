@@ -33,6 +33,7 @@ import { useAdminSearch } from "@/components/(admin)/shell/admin-search";
 import type { PublicationState } from "@/lib/content/admin";
 import type { LocalizedText } from "@/lib/i18n";
 import { sendApiMutation } from "@/lib/api-client";
+import { uploadImageToCloudinary } from "@/lib/upload-image";
 
 type ToastMessage = { id: number; message: string };
 type EditorialFilter = "all" | "published" | "draft";
@@ -99,6 +100,7 @@ export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; 
   const [editorLanguage, setEditorLanguage] = useState<"fr" | "en">("fr");
   const [editorVersion, setEditorVersion] = useState(0);
   const [imageBusy, setImageBusy] = useState(false);
+  const [pendingImage, setPendingImage] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const saveLock = useRef(false);
   const [pendingDelete, setPendingDelete] = useState<EditorialDraft | null>(null);
@@ -125,6 +127,7 @@ export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; 
   }
 
   function openEditor(item?: EditorialDraft) {
+    setPendingImage(null);
     setEditorVersion((version) => version + 1);
     setEditorLanguage("fr");
     setEditorValues(
@@ -145,16 +148,26 @@ export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; 
       notify(`Complétez le titre et le texte alternatif en ${missingLanguage === "fr" ? "français" : "anglais"}.`);
       return;
     }
-    const draft = {
-      ...editorValues,
-      date: editorValues.date || new Date().toLocaleDateString("fr-FR"),
-      ...(isArticle && !editorValues.readingTime ? { readingTime: "5 min" } : {}),
-    };
-    const { id, ...fields } = draft;
     const endpoint = isArticle ? "/api/admin/articles" : "/api/admin/actualites";
     saveLock.current = true;
     setSaving(true);
     try {
+      let image = editorValues.image;
+      if (pendingImage && image) {
+        setImageBusy(true);
+        const uploaded = await uploadImageToCloudinary(pendingImage);
+        image = { ...image, src: uploaded.url };
+        setEditorValues((current) => ({ ...current, image }));
+        setPendingImage(null);
+        setImageBusy(false);
+      }
+      const draft = {
+        ...editorValues,
+        image,
+        date: editorValues.date || new Date().toLocaleDateString("fr-FR"),
+        ...(isArticle && !editorValues.readingTime ? { readingTime: "5 min" } : {}),
+      };
+      const { id, ...fields } = draft;
       const saved = editor.mode === "create"
         ? await sendApiMutation<EditorialDraft>(endpoint, "POST", fields)
         : await sendApiMutation<EditorialDraft>(`${endpoint}/${id}`, "PATCH", fields);
@@ -164,7 +177,7 @@ export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; 
       if (editor.mode === "create") setEditorValues(emptyItem(kind, categories));
       setEditor(null);
     } catch (error) { notify(error instanceof Error ? error.message : "Enregistrement impossible."); }
-    finally { saveLock.current = false; setSaving(false); }
+    finally { saveLock.current = false; setSaving(false); setImageBusy(false); }
   }
 
   async function togglePublication(item: EditorialDraft) {
@@ -430,7 +443,7 @@ export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; 
         saving={imageBusy || saving}
         savingLabel={imageBusy ? "Envoi de l’image…" : "Enregistrement…"}
       >
-        <EditorialEditorFields key={editorVersion} values={editorValues} onChange={setEditorValues} language={editorLanguage} onLanguageChange={setEditorLanguage} categories={categories} onUploadBusyChange={setImageBusy} />
+        <EditorialEditorFields key={editorVersion} values={editorValues} onChange={setEditorValues} language={editorLanguage} onLanguageChange={setEditorLanguage} categories={categories} onImageSelected={setPendingImage} />
       </EditorDrawer>
 
       <ConfirmDialog
