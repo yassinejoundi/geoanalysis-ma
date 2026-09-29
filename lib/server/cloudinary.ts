@@ -16,6 +16,13 @@ export async function storeMedia(file: File, actorId: string, folder: "default" 
   if (!cloudName || !apiKey || !apiSecret) throw new Error("Media storage is not configured.");
 
   cloudinary.config({ cloud_name: cloudName, api_key: apiKey, api_secret: apiSecret, secure: true });
+  const serverDate = (await fetch("https://api.cloudinary.com/", {
+    method: "HEAD",
+    cache: "no-store",
+    signal: AbortSignal.timeout(5000),
+  })).headers.get("date");
+  const timestamp = Math.floor(Date.parse(serverDate ?? "") / 1000);
+  if (!Number.isFinite(timestamp)) throw new Error("Media storage time is unavailable.");
   const actorFolder = createHash("sha256").update(actorId).digest("hex").slice(0, 16);
   const publicId = randomUUID();
   const resourceType = file.type.startsWith("image/") ? "image" : "raw";
@@ -29,6 +36,7 @@ export async function storeMedia(file: File, actorId: string, folder: "default" 
         overwrite: false,
         unique_filename: false,
         allowed_formats: ["jpg", "jpeg", "png", "webp", "gif", "avif", "pdf"],
+        timestamp,
       },
       (error, result) => {
         if (error || !result) reject(new Error("Media storage failed."));
