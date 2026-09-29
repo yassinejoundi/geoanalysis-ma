@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { contentSecurityPolicy } from "../lib/server/content-security-policy.ts";
+import { defaultGoogleMapsEmbedUrl, getGoogleMapsEmbedUrl } from "../lib/content/google-maps.ts";
 import { errorResponse, isSameOrigin, jsonResponse, readJsonBody, tooManyRequestsResponse } from "../lib/server/http.ts";
 import { parseContactSubmission, parseExpertiseFields, parseSettingsFields, validateMediaFile } from "../lib/server/validation.ts";
 
@@ -10,6 +11,12 @@ test("static CSP permits Next.js hydration without weakening production eval", (
   assert.match(production, /frame-src https:\/\/www\.google\.com https:\/\/maps\.google\.com/);
   assert.doesNotMatch(production, /nonce-|strict-dynamic|'unsafe-eval'/);
   assert.match(contentSecurityPolicy(true), /'unsafe-eval'/);
+});
+
+test("Google Maps uses embed URLs rather than share links", () => {
+  assert.equal(getGoogleMapsEmbedUrl(defaultGoogleMapsEmbedUrl), defaultGoogleMapsEmbedUrl);
+  assert.equal(getGoogleMapsEmbedUrl("https://maps.app.goo.gl/TjJP3w6pBb2xiPA66"), defaultGoogleMapsEmbedUrl);
+  assert.equal(getGoogleMapsEmbedUrl("https://example.com/maps/embed"), defaultGoogleMapsEmbedUrl);
 });
 
 test("JSON boundary rejects malformed, oversized, and non-JSON requests", async () => {

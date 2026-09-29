@@ -16,7 +16,7 @@ const contactFields: { key: SettingKey; label: string; type: "email" | "tel" | "
   { key: "email", label: "E-mail", type: "email" },
   { key: "address", label: "Adresse", type: "text" },
   { key: "hours", label: "Horaires", type: "text" },
-  { key: "googleMaps", label: "Lien Google Maps", type: "url", optional: true },
+  { key: "googleMaps", label: "URL d’intégration Google Maps", type: "url", optional: true },
   { key: "linkedin", label: "LinkedIn", type: "url", optional: true },
   { key: "facebook", label: "Facebook", type: "url", optional: true },
   { key: "instagram", label: "Instagram", type: "url", optional: true },
@@ -79,7 +79,7 @@ export function SettingsForm({ initialSettings }: { initialSettings: SettingsVal
               <span aria-hidden="true">01</span>
               <div>
                 <h2 id="settings-contact-title">Coordonnées</h2>
-                <p>Coordonnées, carte et réseaux sociaux. Les liens vides restent masqués sur le site.</p>
+                <p>Coordonnées, carte et réseaux sociaux du site.</p>
               </div>
             </header>
             <div className="settings-fields settings-fields-grid">
@@ -101,7 +101,7 @@ export function SettingsForm({ initialSettings }: { initialSettings: SettingsVal
                 </label>
               ))}
               <p className="admin-field-help settings-links-help">
-                Les liens Google Maps et réseaux sociaux sont facultatifs. Les liens vides sont masqués sur le site.
+                Collez l’URL src de Google Maps via Partager → Intégrer une carte pour afficher le repère exact. Sinon, la carte affiche l’emplacement GEOANALYSIS. Les liens sociaux vides restent masqués.
               </p>
             </div>
           </section>

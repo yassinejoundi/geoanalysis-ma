@@ -1,4 +1,5 @@
 import type { LocalizedText } from "@/lib/i18n";
+import { defaultGoogleMapsEmbedUrl } from "./google-maps";
 
 // CMS changes remain in-memory prototype behavior until backend work is approved.
 export const cmsDataNotice = "Demo data resets when the page refreshes.";
@@ -136,7 +137,7 @@ export const adminSettings = {
   email: "contact@geoanalysis.ma",
   address: "Quartier Industriel Sidi Ghanem, Marrakech 40000, Maroc",
   hours: "Lun – Ven · 8h30 – 18h00",
-  googleMaps: "",
+  googleMaps: defaultGoogleMapsEmbedUrl,
   linkedin: "https://linkedin.com/company/geoanalysis",
   facebook: "",
   instagram: "",

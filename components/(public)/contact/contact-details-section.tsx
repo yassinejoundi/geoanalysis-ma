@@ -1,14 +1,14 @@
 import { contactPageCopy } from "./content";
 import { SocialLinks } from "@/components/site/social-links";
 import type { adminSettings } from "@/lib/content/admin";
+import { getGoogleMapsEmbedUrl } from "@/lib/content/google-maps";
 import type { Locale } from "@/lib/i18n";
 
-type ContactSettings = Pick<typeof adminSettings, "address" | "email" | "phone" | "hours" | "linkedin" | "facebook" | "instagram">;
+type ContactSettings = Pick<typeof adminSettings, "address" | "email" | "phone" | "hours" | "googleMaps" | "linkedin" | "facebook" | "instagram">;
 
 export function ContactDetailsSection({ locale, settings }: { locale: Locale; settings: ContactSettings }) {
   const copy = contactPageCopy[locale];
   const phoneHref = settings.phone.replace(/[^\d+]/g, "");
-  const mapQuery = encodeURIComponent(settings.address);
   const details = [
     { label: copy.addressLabel, value: settings.address },
     {
@@ -30,8 +30,8 @@ export function ContactDetailsSection({ locale, settings }: { locale: Locale; se
       <h2>{copy.detailsTitle}</h2>
       <div className="contact-map">
         <iframe
-          src={`https://maps.google.com/maps?q=${mapQuery}&output=embed`}
-          title={locale === "fr" ? `Carte de ${settings.address}` : `Map of ${settings.address}`}
+          src={getGoogleMapsEmbedUrl(settings.googleMaps)}
+          title={locale === "fr" ? "Carte du bureau GEOANALYSIS à Marrakech" : "Map of the GEOANALYSIS office in Marrakech"}
           loading="lazy"
           allowFullScreen
           referrerPolicy="strict-origin-when-cross-origin"
