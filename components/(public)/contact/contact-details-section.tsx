@@ -1,13 +1,13 @@
 import { contactPageCopy } from "./content";
+import { SocialLinks } from "@/components/site/social-links";
 import type { adminSettings } from "@/lib/content/admin";
 import type { Locale } from "@/lib/i18n";
 
-type ContactSettings = Pick<typeof adminSettings, "address" | "email" | "phone" | "hours" | "linkedin">;
+type ContactSettings = Pick<typeof adminSettings, "address" | "email" | "phone" | "hours" | "googleMaps" | "linkedin" | "facebook" | "instagram">;
 
 export function ContactDetailsSection({ locale, settings }: { locale: Locale; settings: ContactSettings }) {
   const copy = contactPageCopy[locale];
   const phoneHref = settings.phone.replace(/[^\d+]/g, "");
-  const linkedinHref = /^https?:\/\//i.test(settings.linkedin) ? settings.linkedin : `https://${settings.linkedin}`;
   const details = [
     { label: copy.addressLabel, value: settings.address },
     {
@@ -19,7 +19,6 @@ export function ContactDetailsSection({ locale, settings }: { locale: Locale; se
       value: <a href={`tel:${phoneHref}`}>{settings.phone}</a>,
     },
     { label: copy.hoursLabel, value: settings.hours },
-    { label: copy.linkedinLabel, value: <a href={linkedinHref} target="_blank" rel="noopener noreferrer">LinkedIn</a> },
   ];
 
   return (
@@ -28,6 +27,11 @@ export function ContactDetailsSection({ locale, settings }: { locale: Locale; se
       aria-label={locale === "fr" ? "Coordonnées" : "Contact details"}>
       <p className="contact-panel-kicker">02 / {copy.detailsKicker}</p>
       <h2>{copy.detailsTitle}</h2>
+      <SocialLinks
+        locale={locale}
+        settings={settings}
+        className="contact-social-links"
+      />
       <div className="contact-map">
         <iframe
           src={`https://maps.google.com/maps?q=${encodeURIComponent(settings.address)}&output=embed`}
@@ -37,7 +41,14 @@ export function ContactDetailsSection({ locale, settings }: { locale: Locale; se
           referrerPolicy="strict-origin-when-cross-origin"
         />
       </div>
-      <p className="contact-map-caption">{settings.address}</p>
+      <p className="contact-map-caption">
+        <span>{settings.address}</span>
+        {settings.googleMaps.trim() && (
+          <a href={settings.googleMaps} target="_blank" rel="noopener noreferrer">
+            {copy.googleMapsLabel}
+          </a>
+        )}
+      </p>
       <dl className="contact-details-list">
         {details.map((detail) => (
           <div key={detail.label}>

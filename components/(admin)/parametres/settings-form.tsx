@@ -10,17 +10,29 @@ export type SettingsValues = typeof adminSettings;
 type SettingKey = keyof SettingsValues;
 type ToastMessage = { id: number; message: string };
 
-const contactFields: { key: SettingKey; label: string; type: "email" | "tel" | "url" | "text" }[] = [
+const optionalLinkKeys = ["googleMaps", "linkedin", "facebook", "instagram"] as const;
+const contactFields: { key: SettingKey; label: string; type: "email" | "tel" | "url" | "text"; optional?: boolean }[] = [
   { key: "phone", label: "Téléphone", type: "tel" },
   { key: "email", label: "E-mail", type: "email" },
   { key: "address", label: "Adresse", type: "text" },
   { key: "hours", label: "Horaires", type: "text" },
+  { key: "googleMaps", label: "Lien Google Maps", type: "url", optional: true },
+  { key: "linkedin", label: "LinkedIn", type: "url", optional: true },
+  { key: "facebook", label: "Facebook", type: "url", optional: true },
+  { key: "instagram", label: "Instagram", type: "url", optional: true },
 ];
+
+function addUrlProtocol(value: string) {
+  return value && !/^https?:\/\//i.test(value) ? `https://${value}` : value;
+}
 
 export function SettingsForm({ initialSettings }: { initialSettings: SettingsValues }) {
   const [values, setValues] = useState<SettingsValues>(() => ({
     ...initialSettings,
-    linkedin: /^https?:\/\//i.test(initialSettings.linkedin) ? initialSettings.linkedin : `https://${initialSettings.linkedin}`,
+    googleMaps: addUrlProtocol(initialSettings.googleMaps),
+    linkedin: addUrlProtocol(initialSettings.linkedin),
+    facebook: addUrlProtocol(initialSettings.facebook),
+    instagram: addUrlProtocol(initialSettings.instagram),
   }));
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const [saving, setSaving] = useState(false);
@@ -67,22 +79,30 @@ export function SettingsForm({ initialSettings }: { initialSettings: SettingsVal
               <span aria-hidden="true">01</span>
               <div>
                 <h2 id="settings-contact-title">Coordonnées</h2>
-                <p>Informations affichées sur la page Contact.</p>
+                <p>Coordonnées, carte et réseaux sociaux. Les liens vides restent masqués sur le site.</p>
               </div>
             </header>
             <div className="settings-fields settings-fields-grid">
-              {contactFields.map(({ key, label, type }) => (
+              {contactFields.map(({ key, label, type, optional }) => (
                 <label className="admin-field" key={key} data-field={key}>
                   <span>{label}</span>
                   <input
                     type={type}
-                    maxLength={key === "address" ? 500 : key === "linkedin" ? 2048 : 180}
-                    required
+                    maxLength={key === "address" ? 500 : optional ? 2048 : 180}
+                    required={!optional}
                     value={values[key]}
                     onChange={(event) => updateSetting(key, event.currentTarget.value)}
+                    onBlur={(event) => {
+                      if (optionalLinkKeys.includes(key as (typeof optionalLinkKeys)[number])) {
+                        updateSetting(key, addUrlProtocol(event.currentTarget.value.trim()));
+                      }
+                    }}
                   />
                 </label>
               ))}
+              <p className="admin-field-help settings-links-help">
+                Les liens Google Maps et réseaux sociaux sont facultatifs. Les liens vides sont masqués sur le site.
+              </p>
             </div>
           </section>
 

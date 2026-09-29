@@ -186,17 +186,24 @@ export function parsePartnerFields(value: unknown) {
   }
 }
 
+const settingsLinkKeys = new Set(["googleMaps", "linkedin", "facebook", "instagram"]);
+
 export function parseSettingsFields(value: unknown) {
-  const keys = ["siteName", "languages", "phone", "email", "address", "hours", "linkedin", "seoTitle", "seoDescription", "logo", "logoInverse"];
+  const keys = ["siteName", "languages", "phone", "email", "address", "hours", ...settingsLinkKeys, "seoTitle", "seoDescription", "logo", "logoInverse"];
   if (!isRecord(value) || !hasOnlyKeys(value, keys) || !Object.keys(value).length) return null;
   const result: Record<string, string> = {};
   for (const key of keys) {
     if (!(key in value)) continue;
-    const max = key === "seoDescription" ? 320 : key === "linkedin" || key === "logo" || key === "logoInverse" ? 2048 : key === "address" ? 500 : 180;
-    const field = textField(value[key], max);
-    if (!field) return null;
+    const max = key === "seoDescription" ? 320 : settingsLinkKeys.has(key) || key === "logo" || key === "logoInverse" ? 2048 : key === "address" ? 500 : 180;
+    const field = textField(value[key], max, !settingsLinkKeys.has(key));
+    if (field === null) return null;
     if (key === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(field)) return null;
-    if (key === "linkedin" && !parsePartnerFields({ name: "LinkedIn", url: field })) return null;
+    if (settingsLinkKeys.has(key) && field) {
+      const parsed = parsePartnerFields({ name: key, url: field });
+      if (!parsed) return null;
+      result[key] = parsed.url;
+      continue;
+    }
     if ((key === "logo" || key === "logoInverse") && !isAllowedImageSource(field)) return null;
     result[key] = field;
   }

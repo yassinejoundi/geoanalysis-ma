@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { contentSecurityPolicy } from "../lib/server/content-security-policy.ts";
 import { errorResponse, isSameOrigin, jsonResponse, readJsonBody, tooManyRequestsResponse } from "../lib/server/http.ts";
-import { parseContactSubmission, parseExpertiseFields, validateMediaFile } from "../lib/server/validation.ts";
+import { parseContactSubmission, parseExpertiseFields, parseSettingsFields, validateMediaFile } from "../lib/server/validation.ts";
 
 test("static CSP permits Next.js hydration without weakening production eval", () => {
   const production = contentSecurityPolicy(false);
@@ -71,6 +71,25 @@ test("request parsers reject extra contact and admin fields", () => {
   assert.ok(parseContactSubmission(contact));
   assert.equal(parseContactSubmission({ ...contact, isAdmin: true }), null);
   assert.equal(parseExpertiseFields({ state: "published", slug: "valid-slug", name: { fr: "Titre", en: "Title" }, short: { fr: "Court", en: "Short" }, ownerId: "other" }), null);
+});
+
+test("site settings accept empty optional links and normalize safe social URLs", () => {
+  const settings = {
+    siteName: "GEOANALYSIS", languages: "FR, EN", phone: "+212 600000000",
+    email: "contact@example.ma", address: "Marrakech", hours: "Weekdays",
+    googleMaps: "", linkedin: "linkedin.com/company/geoanalysis",
+    facebook: "https://facebook.com/geoanalysis", instagram: "",
+    seoTitle: "GEOANALYSIS", seoDescription: "Consulting firm",
+    logo: "https://res.cloudinary.com/demo/image/upload/logo.png",
+    logoInverse: "https://res.cloudinary.com/demo/image/upload/logo-white.png",
+  };
+  const parsed = parseSettingsFields(settings);
+
+  assert.equal(parsed?.googleMaps, "");
+  assert.equal(parsed?.linkedin, "https://linkedin.com/company/geoanalysis");
+  assert.equal(parsed?.facebook, "https://facebook.com/geoanalysis");
+  assert.equal(parsed?.instagram, "");
+  assert.equal(parseSettingsFields({ ...settings, instagram: "javascript:alert(1)" }), null);
 });
 
 test("file validation checks declared size, type, extension, and file signature", () => {

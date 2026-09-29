@@ -1997,6 +1997,68 @@ button:focus-visible {
   color: var(--surface);
 }
 
+.site-footer-social-links {
+  margin-top: 18px;
+}
+
+.social-links-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.social-links-list > li + li,
+.site-footer .social-links-list > li + li {
+  margin-top: 0;
+}
+
+.social-links-list .social-link {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--surface);
+  font-size: 17px;
+}
+
+.social-links-list .social-link svg {
+  width: 18px;
+  height: 18px;
+}
+
+.social-links-list .social-link:focus-visible,
+.contact-map-caption a:focus-visible {
+  outline: 2px solid var(--brand-pale);
+  outline-offset: 3px;
+}
+
+@media (hover: hover) {
+  .social-links-list .social-link:hover {
+    border-color: var(--brand);
+    background: var(--brand);
+    color: var(--surface);
+  }
+}
+
+@media (hover: hover) {
+  .contact-map-caption a:hover {
+    color: var(--brand-pale);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .social-links-list .social-link,
+  .contact-map-caption a {
+    transition: color 140ms ease, background-color 140ms ease, border-color 140ms ease;
+  }
+}
+
 .admin-shell {
   display: grid;
   grid-template-columns: 252px minmax(0, 1fr);
@@ -3644,11 +3706,32 @@ button:focus-visible {
 }
 
 .contact-map-caption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 14px;
   margin: 10px 0 0;
   color: var(--sidebar-muted);
   font-family: var(--font-data);
   font-size: 11px;
   line-height: 1.5;
+}
+
+.contact-map-caption a {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  color: var(--surface);
+  font-family: var(--font-body);
+  font-size: 12px;
+  text-decoration: underline;
+  text-decoration-color: var(--brand-bright);
+  text-underline-offset: 3px;
+}
+
+.contact-social-links {
+  margin-top: 18px;
 }
 
 .contact-details-list {
@@ -8264,8 +8347,13 @@ a.partner-card-link:hover {
 }
 
 .settings-fields-grid [data-field="address"],
-.settings-fields-grid [data-field="hours"] {
+.settings-fields-grid [data-field="hours"],
+.settings-links-help {
   grid-column: 1 / -1;
+}
+
+.settings-links-help {
+  margin: 0;
 }
 
 .settings-logo-preview {
