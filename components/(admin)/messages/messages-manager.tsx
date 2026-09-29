@@ -26,6 +26,12 @@ function matchesFilter(message: AdminMessage, filter: MessageFilter) {
   return true;
 }
 
+function messageTimestamp(date: string) {
+  const dayFirst = date.match(/^(\d{1,2})[./](\d{1,2})[./](\d{4})$/);
+  if (dayFirst) return Date.UTC(Number(dayFirst[3]), Number(dayFirst[2]) - 1, Number(dayFirst[1]));
+  return Date.parse(date) || 0;
+}
+
 export function MessagesManager() {
   const { messages, setMessages } = useAdminMessages();
   const [filter, setFilter] = useState<MessageFilter>("all");
@@ -47,7 +53,7 @@ export function MessagesManager() {
       .join(" ")
       .toLocaleLowerCase("fr");
     return matchesFilter(message, filter) && (!normalizedQuery || searchableText.includes(normalizedQuery));
-  });
+  }).sort((a, b) => messageTimestamp(b.date) - messageTimestamp(a.date));
   const selectedMessage = visibleMessages.find((message) => message.id === selectedId) ?? visibleMessages[0] ?? null;
   const resultCount = visibleMessages.length === 1
     ? "1 message affiché"
