@@ -3,11 +3,13 @@ import { SocialLinks } from "@/components/site/social-links";
 import type { adminSettings } from "@/lib/content/admin";
 import type { Locale } from "@/lib/i18n";
 
-type ContactSettings = Pick<typeof adminSettings, "address" | "email" | "phone" | "hours" | "googleMaps" | "linkedin" | "facebook" | "instagram">;
+type ContactSettings = Pick<typeof adminSettings, "address" | "email" | "phone" | "hours" | "linkedin" | "facebook" | "instagram">;
 
 export function ContactDetailsSection({ locale, settings }: { locale: Locale; settings: ContactSettings }) {
   const copy = contactPageCopy[locale];
   const phoneHref = settings.phone.replace(/[^\d+]/g, "");
+  const mapQuery = encodeURIComponent(settings.address);
+  const mapLink = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
   const details = [
     { label: copy.addressLabel, value: settings.address },
     {
@@ -29,7 +31,7 @@ export function ContactDetailsSection({ locale, settings }: { locale: Locale; se
       <h2>{copy.detailsTitle}</h2>
       <div className="contact-map">
         <iframe
-          src={`https://maps.google.com/maps?q=${encodeURIComponent(settings.address)}&output=embed`}
+          src={`https://maps.google.com/maps?q=${mapQuery}&output=embed`}
           title={locale === "fr" ? `Carte de ${settings.address}` : `Map of ${settings.address}`}
           loading="lazy"
           allowFullScreen
@@ -38,11 +40,9 @@ export function ContactDetailsSection({ locale, settings }: { locale: Locale; se
       </div>
       <p className="contact-map-caption">
         <span>{settings.address}</span>
-        {settings.googleMaps.trim() && (
-          <a href={settings.googleMaps} target="_blank" rel="noopener noreferrer">
-            {copy.googleMapsLabel}
-          </a>
-        )}
+        <a href={mapLink} target="_blank" rel="noopener noreferrer">
+          {copy.googleMapsLabel}
+        </a>
       </p>
       <dl className="contact-details-list">
         {details.map((detail) => (
