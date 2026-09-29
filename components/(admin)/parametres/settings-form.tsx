@@ -21,6 +21,9 @@ const contactFields: { key: SettingKey; label: string; type: "email" | "tel" | "
   { key: "facebook", label: "Facebook", type: "url", optional: true },
   { key: "instagram", label: "Instagram", type: "url", optional: true },
 ];
+const contactKeys = contactFields.map(({ key }) => key);
+const seoKeys = ["siteName", "seoTitle", "seoDescription"] as const;
+const logoKeys = ["logo", "logoInverse"] as const;
 
 function addUrlProtocol(value: string) {
   return value && !/^https?:\/\//i.test(value) ? `https://${value}` : value;
@@ -34,6 +37,7 @@ export function SettingsForm({ initialSettings }: { initialSettings: SettingsVal
     facebook: addUrlProtocol(initialSettings.facebook),
     instagram: addUrlProtocol(initialSettings.instagram),
   }));
+  const [savedValues, setSavedValues] = useState(values);
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -43,13 +47,15 @@ export function SettingsForm({ initialSettings }: { initialSettings: SettingsVal
     setValues((current) => ({ ...current, [key]: value }));
   }
 
-  async function saveSettings(event: FormEvent<HTMLFormElement>) {
+  async function saveSettings(event: FormEvent<HTMLFormElement>, keys: readonly SettingKey[]) {
     event.preventDefault();
     if (saving || uploading) return;
     setSaving(true);
     toastSequence.current += 1;
+    const updates = Object.fromEntries(keys.map((key) => [key, values[key]]));
     try {
-      await sendApiMutation("/api/admin/parametres", "PATCH", values);
+      await sendApiMutation("/api/admin/parametres", "PATCH", updates);
+      setSavedValues((current) => ({ ...current, ...updates }));
       setToast({ id: toastSequence.current, message: "Paramètres enregistrés." });
     } catch (error) {
       const message = error instanceof Error ? error.message : "Enregistrement impossible.";
@@ -57,6 +63,10 @@ export function SettingsForm({ initialSettings }: { initialSettings: SettingsVal
     } finally {
       setSaving(false);
     }
+  }
+
+  function hasChanges(keys: readonly SettingKey[]) {
+    return keys.some((key) => values[key] !== savedValues[key]);
   }
 
   return (
@@ -67,14 +77,11 @@ export function SettingsForm({ initialSettings }: { initialSettings: SettingsVal
           <h1>Paramètres du site</h1>
           <p>Coordonnées, référencement et identité visuelle de GEOANALYSIS.</p>
         </div>
-        <button className="admin-action admin-action-primary settings-save-top" type="submit" form="settings-form" disabled={saving || uploading}>
-          {saving ? "Enregistrement…" : uploading ? "Envoi de l’image…" : "Enregistrer"}
-        </button>
       </header>
 
-      <form className="settings-form" id="settings-form" onSubmit={saveSettings}>
+      <div className="settings-form">
         <div className="settings-grid">
-          <section className="settings-panel" aria-labelledby="settings-contact-title">
+          <form className="settings-panel" onSubmit={(event) => saveSettings(event, contactKeys)} aria-labelledby="settings-contact-title">
             <header className="settings-panel-heading">
               <span aria-hidden="true">01</span>
               <div>
@@ -104,9 +111,16 @@ export function SettingsForm({ initialSettings }: { initialSettings: SettingsVal
                 Collez l’URL src de Google Maps via Partager → Intégrer une carte pour afficher le repère exact. Sinon, la carte affiche l’emplacement GEOANALYSIS. Les liens sociaux vides restent masqués.
               </p>
             </div>
-          </section>
+            {hasChanges(contactKeys) && (
+              <div className="settings-panel-actions">
+                <button className="admin-action admin-action-primary settings-panel-save" type="submit" disabled={saving || uploading}>
+                  {saving ? "Enregistrement…" : "Enregistrer"}
+                </button>
+              </div>
+            )}
+          </form>
 
-          <section className="settings-panel" aria-labelledby="settings-seo-title">
+          <form className="settings-panel" onSubmit={(event) => saveSettings(event, seoKeys)} aria-labelledby="settings-seo-title">
             <header className="settings-panel-heading">
               <span aria-hidden="true">02</span>
               <div>
@@ -130,9 +144,16 @@ export function SettingsForm({ initialSettings }: { initialSettings: SettingsVal
                 <span className="admin-field-help">{values.seoDescription.length} / 320 caractères</span>
               </label>
             </div>
-          </section>
+            {hasChanges(seoKeys) && (
+              <div className="settings-panel-actions">
+                <button className="admin-action admin-action-primary settings-panel-save" type="submit" disabled={saving || uploading}>
+                  {saving ? "Enregistrement…" : "Enregistrer"}
+                </button>
+              </div>
+            )}
+          </form>
 
-          <section className="settings-panel" aria-labelledby="settings-logo-title">
+          <form className="settings-panel" onSubmit={(event) => saveSettings(event, logoKeys)} aria-labelledby="settings-logo-title">
             <header className="settings-panel-heading">
               <span aria-hidden="true">03</span>
               <div>
@@ -164,9 +185,16 @@ export function SettingsForm({ initialSettings }: { initialSettings: SettingsVal
                 />
               </div>
             </div>
-          </section>
+            {hasChanges(logoKeys) && (
+              <div className="settings-panel-actions">
+                <button className="admin-action admin-action-primary settings-panel-save" type="submit" disabled={saving || uploading}>
+                  {saving ? "Enregistrement…" : "Enregistrer"}
+                </button>
+              </div>
+            )}
+          </form>
         </div>
-      </form>
+      </div>
 
       {toast && <Toast key={toast.id} message={toast.message} />}
     </main>

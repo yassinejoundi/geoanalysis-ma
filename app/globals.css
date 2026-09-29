@@ -8247,7 +8247,14 @@ a.partner-card-link:hover {
   line-height: 1.55;
 }
 
-.settings-save-top {
+.settings-panel-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 14px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.settings-panel-save {
   min-width: 132px;
   min-height: 44px;
   border-color: var(--brand-hover);
@@ -8255,7 +8262,7 @@ a.partner-card-link:hover {
   color: var(--surface);
 }
 
-.settings-save-top:hover:not(:disabled) {
+.settings-panel-save:hover:not(:disabled) {
   border-color: var(--brand-hover);
   background: var(--brand-hover);
   color: var(--surface);
@@ -8374,7 +8381,11 @@ a.partner-card-link:hover {
     flex-direction: column;
   }
 
-  .settings-save-top {
+  .settings-panel-actions {
+    padding-inline: 14px;
+  }
+
+  .settings-panel-save {
     width: 100%;
   }
 
