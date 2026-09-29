@@ -7,6 +7,7 @@ import { parseContactSubmission, parseExpertiseFields, parseSettingsFields, vali
 test("static CSP permits Next.js hydration without weakening production eval", () => {
   const production = contentSecurityPolicy(false);
   assert.match(production, /script-src 'self' 'unsafe-inline'/);
+  assert.match(production, /frame-src https:\/\/www\.google\.com https:\/\/maps\.google\.com/);
   assert.doesNotMatch(production, /nonce-|strict-dynamic|'unsafe-eval'/);
   assert.match(contentSecurityPolicy(true), /'unsafe-eval'/);
 });

@@ -4,7 +4,7 @@ export function contentSecurityPolicy(isDev: boolean) {
     `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' https://res.cloudinary.com data: blob:",
-    "frame-src https://www.google.com",
+    "frame-src https://www.google.com https://maps.google.com",
     "font-src 'self'",
     "connect-src 'self'",
     "object-src 'none'",

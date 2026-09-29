@@ -2027,8 +2027,7 @@ button:focus-visible {
   height: 18px;
 }
 
-.social-links-list .social-link:focus-visible,
-.contact-map-caption a:focus-visible {
+.social-links-list .social-link:focus-visible {
   outline: 2px solid var(--brand-pale);
   outline-offset: 3px;
 }
@@ -2041,15 +2040,8 @@ button:focus-visible {
   }
 }
 
-@media (hover: hover) {
-  .contact-map-caption a:hover {
-    color: var(--brand-pale);
-  }
-}
-
 @media (prefers-reduced-motion: no-preference) {
-  .social-links-list .social-link,
-  .contact-map-caption a {
+  .social-links-list .social-link {
     transition: color 140ms ease, background-color 140ms ease, border-color 140ms ease;
   }
 }
@@ -3701,28 +3693,11 @@ button:focus-visible {
 }
 
 .contact-map-caption {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px 14px;
   margin: 10px 0 0;
   color: var(--sidebar-muted);
   font-family: var(--font-data);
   font-size: 11px;
   line-height: 1.5;
-}
-
-.contact-map-caption a {
-  display: inline-flex;
-  min-height: 44px;
-  align-items: center;
-  color: var(--surface);
-  font-family: var(--font-body);
-  font-size: 12px;
-  text-decoration: underline;
-  text-decoration-color: var(--brand-bright);
-  text-underline-offset: 3px;
 }
 
 .contact-social-links {

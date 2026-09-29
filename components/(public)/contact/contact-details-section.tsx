@@ -9,7 +9,6 @@ export function ContactDetailsSection({ locale, settings }: { locale: Locale; se
   const copy = contactPageCopy[locale];
   const phoneHref = settings.phone.replace(/[^\d+]/g, "");
   const mapQuery = encodeURIComponent(settings.address);
-  const mapLink = `https://www.google.com/maps/search/?api=1&query=${mapQuery}`;
   const details = [
     { label: copy.addressLabel, value: settings.address },
     {
@@ -40,9 +39,6 @@ export function ContactDetailsSection({ locale, settings }: { locale: Locale; se
       </div>
       <p className="contact-map-caption">
         <span>{settings.address}</span>
-        <a href={mapLink} target="_blank" rel="noopener noreferrer">
-          {copy.googleMapsLabel}
-        </a>
       </p>
       <dl className="contact-details-list">
         {details.map((detail) => (
