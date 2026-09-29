@@ -1,11 +1,10 @@
 import { BrandLogo } from "@/components/shared/brand-logo";
-import { SocialLinks } from "@/components/site/social-links";
 import { expertises } from "@/lib/content/site";
 import type { adminSettings } from "@/lib/content/admin";
 import { localize, type Locale } from "@/lib/i18n";
 import Link from "next/link";
 
-type SiteSettings = Pick<typeof adminSettings, "siteName" | "address" | "logo" | "logoInverse" | "linkedin" | "facebook" | "instagram">;
+type SiteSettings = Pick<typeof adminSettings, "siteName" | "address" | "logo" | "logoInverse">;
 
 export function SiteFooter({ locale, settings }: { locale: Locale; settings: SiteSettings }) {
   const isFrench = locale === "fr";
@@ -114,11 +113,6 @@ export function SiteFooter({ locale, settings }: { locale: Locale; settings: Sit
                   ? `Bureau d’études en géologie, géophysique et environnement. ${settings.address}.`
                   : `Consulting firm in geology, geophysics and environment. ${settings.address}.`}
               </p>
-              <SocialLinks
-                locale={locale}
-                settings={settings}
-                className="site-footer-social-links"
-              />
             </div>
             {columns.map((column) => (
               <nav key={column.title} aria-label={column.title}>

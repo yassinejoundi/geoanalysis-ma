@@ -27,11 +27,6 @@ export function ContactDetailsSection({ locale, settings }: { locale: Locale; se
       aria-label={locale === "fr" ? "Coordonnées" : "Contact details"}>
       <p className="contact-panel-kicker">02 / {copy.detailsKicker}</p>
       <h2>{copy.detailsTitle}</h2>
-      <SocialLinks
-        locale={locale}
-        settings={settings}
-        className="contact-social-links"
-      />
       <div className="contact-map">
         <iframe
           src={`https://maps.google.com/maps?q=${encodeURIComponent(settings.address)}&output=embed`}
@@ -57,6 +52,11 @@ export function ContactDetailsSection({ locale, settings }: { locale: Locale; se
           </div>
         ))}
       </dl>
+      <SocialLinks
+        locale={locale}
+        settings={settings}
+        className="contact-social-links"
+      />
     </aside>
   );
 }

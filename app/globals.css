@@ -1997,10 +1997,6 @@ button:focus-visible {
   color: var(--surface);
 }
 
-.site-footer-social-links {
-  margin-top: 18px;
-}
-
 .social-links-list {
   display: flex;
   flex-wrap: wrap;
@@ -2010,8 +2006,7 @@ button:focus-visible {
   list-style: none;
 }
 
-.social-links-list > li + li,
-.site-footer .social-links-list > li + li {
+.social-links-list > li + li {
   margin-top: 0;
 }
 
