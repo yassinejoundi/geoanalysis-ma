@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
   faBullseye,
@@ -17,40 +18,17 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ConfirmDialog } from "@/components/(admin)/shared/confirm-dialog";
-import { EditorDrawer } from "@/components/(admin)/shared/editor-drawer";
 import { StatusBadge } from "@/components/(admin)/shared/status-badge";
 import { StatCard } from "@/components/(admin)/dashboard/stat-card";
 import { Toast } from "@/components/(admin)/shared/toast";
-import {
-  ProjectEditorFields,
-  type ProjectDraft,
-} from "@/components/(admin)/realisations/project-editor-fields";
+import type { ProjectDraft } from "@/lib/content/projects";
 import { useAdminSearch } from "@/components/(admin)/shell/admin-search";
 import type { AdminExpertise, PublicationState } from "@/lib/content/admin";
 import type { LocalizedText } from "@/lib/i18n";
 import { sendApiMutation } from "@/lib/api-client";
-import { uploadImageToCloudinary } from "@/lib/upload-image";
 
 type ManagedProject = ProjectDraft;
 type ToastMessage = { id: number; message: string };
-
-function emptyProject(): ManagedProject {
-  return {
-    id: "",
-    state: "draft",
-    expertiseId: "",
-    subServiceId: "",
-    location: "",
-    date: "",
-    title: { fr: "", en: "" },
-    context: { fr: "", en: "" },
-    methodology: { fr: "", en: "" },
-    results: { fr: "", en: "" },
-    seoTitle: { fr: "", en: "" },
-    seoDescription: { fr: "", en: "" },
-    gallery: [],
-  };
-}
 
 function nextPublicationState(state: PublicationState): PublicationState {
   return state === "published" ? "draft" : "published";
@@ -87,17 +65,17 @@ function ProjectActionButton({
   );
 }
 
+function ProjectActionLink({ icon, label, href }: { icon: IconDefinition; label: string; href: string }) {
+  return (
+    <Link className="project-action-button" href={href} aria-label={label} title={label}>
+      <FontAwesomeIcon icon={icon} aria-hidden="true" />
+    </Link>
+  );
+}
+
 export function ProjectManager({ initialProjects, initialExpertises }: { initialProjects: ManagedProject[]; initialExpertises: AdminExpertise[] }) {
   const [projects, setProjects] = useState<ManagedProject[]>(initialProjects);
   const [expertiseFilter, setExpertiseFilter] = useState("all");
-  const [editor, setEditor] = useState<{ mode: "create" | "edit" } | null>(null);
-  const [editorValues, setEditorValues] = useState<ManagedProject>(emptyProject);
-  const [editorLanguage, setEditorLanguage] = useState<"fr" | "en">("fr");
-  const [editorVersion, setEditorVersion] = useState(0);
-  const [imageBusy, setImageBusy] = useState(false);
-  const [pendingImages, setPendingImages] = useState<File[]>([]);
-  const [saving, setSaving] = useState(false);
-  const saveLock = useRef(false);
   const [pendingDelete, setPendingDelete] = useState<ManagedProject | null>(null);
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastSequence = useRef(0);
@@ -107,55 +85,6 @@ export function ProjectManager({ initialProjects, initialExpertises }: { initial
   function notify(message: string) {
     toastSequence.current += 1;
     setToast({ id: toastSequence.current, message });
-  }
-
-  function openEditor(project?: ManagedProject) {
-    setPendingImages([]);
-    setEditorVersion((version) => version + 1);
-    setEditorLanguage("fr");
-    setEditorValues(project ? { ...project, gallery: project.gallery.map((image) => ({ ...image })) } : emptyProject());
-    setEditor({ mode: project ? "edit" : "create" });
-  }
-
-  async function saveEditor() {
-    if (!editor || saveLock.current || imageBusy) return;
-    const missingLanguage = (["fr", "en"] as const).find((language) => !editorValues.title[language].trim());
-    if (missingLanguage) {
-      setEditorLanguage(missingLanguage);
-      notify(`Complétez le titre en ${missingLanguage === "fr" ? "français" : "anglais"}.`);
-      return;
-    }
-    const { id, ...fields } = editorValues;
-    delete fields.slug;
-    saveLock.current = true;
-    setSaving(true);
-    try {
-      const uploadedImages: ManagedProject["gallery"] = [];
-      for (const file of pendingImages) {
-        setImageBusy(true);
-        const image = await uploadImageToCloudinary(file, "realisations");
-        const entry = {
-          id: image.id,
-          url: image.url,
-          caption: "",
-          isCover: fields.gallery.length + uploadedImages.length === 0,
-        };
-        uploadedImages.push(entry);
-        setEditorValues((current) => ({ ...current, gallery: [...current.gallery, entry] }));
-        setPendingImages((current) => current.slice(1));
-      }
-      fields.gallery = [...fields.gallery, ...uploadedImages];
-      setImageBusy(false);
-      const saved = editor.mode === "create"
-        ? await sendApiMutation<ManagedProject>("/api/admin/realisations", "POST", fields)
-        : await sendApiMutation<ManagedProject>(`/api/admin/realisations/${id}`, "PATCH", fields);
-      if (editor.mode === "create") setProjects((current) => [...current, saved]);
-      else setProjects((current) => current.map((project) => project.id === saved.id ? saved : project));
-      notify(`${saved.title.fr || "Réalisation"} ${editor.mode === "create" ? "ajoutée." : "mise à jour."}`);
-      if (editor.mode === "create") setEditorValues(emptyProject());
-      setEditor(null);
-    } catch (error) { notify(error instanceof Error ? error.message : "Enregistrement impossible."); }
-    finally { saveLock.current = false; setSaving(false); setImageBusy(false); }
   }
 
   async function togglePublication(project: ManagedProject) {
@@ -204,8 +133,6 @@ export function ProjectManager({ initialProjects, initialExpertises }: { initial
   ).size;
   const hasActiveFilters = expertiseFilter !== "all" || searchTerm.length > 0;
 
-  const editorHeading = editor?.mode === "create" ? "Nouvelle réalisation" : "Modifier la réalisation";
-
   return (
     <main className="admin-content-manager project-manager">
       <header className="admin-manager-header">
@@ -214,10 +141,10 @@ export function ProjectManager({ initialProjects, initialExpertises }: { initial
           <h1>Réalisations</h1>
           <p>Suivez vos projets et les études présentées sur le site.</p>
         </div>
-        <button className="admin-action admin-action-primary project-create-action" type="button" onClick={() => openEditor()}>
+        <Link className="admin-action admin-action-primary project-create-action" href="/admin/realisations/nouvelle">
           <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
           Nouvelle réalisation
-        </button>
+        </Link>
       </header>
 
       <section className="project-overview-grid" aria-label="Résumé des réalisations">
@@ -327,10 +254,10 @@ export function ProjectManager({ initialProjects, initialExpertises }: { initial
                         label={`${project.state === "published" ? "Dépublier" : "Publier"} « ${project.title.fr} »`}
                         onClick={() => togglePublication(project)}
                       />
-                      <ProjectActionButton
+                      <ProjectActionLink
                         icon={faPen}
                         label={`Modifier « ${project.title.fr} »`}
-                        onClick={() => openEditor(project)}
+                        href={`/admin/realisations/${encodeURIComponent(project.slug ?? project.id)}`}
                       />
                       <ProjectActionButton
                         icon={faTrash}
@@ -346,18 +273,6 @@ export function ProjectManager({ initialProjects, initialExpertises }: { initial
           })}
         </ul>
       )}
-
-      <EditorDrawer
-        open={editor !== null}
-        heading={editorHeading}
-        description="Renseignez le contenu, la méthodologie et les résultats du projet."
-        onClose={() => setEditor(null)}
-        onSave={saveEditor}
-        saving={imageBusy || saving}
-        savingLabel={imageBusy ? "Envoi de l’image…" : "Enregistrement…"}
-      >
-        <ProjectEditorFields key={editorVersion} values={editorValues} onChange={setEditorValues} expertises={initialExpertises} language={editorLanguage} onLanguageChange={setEditorLanguage} pendingImages={pendingImages} onPendingImagesChange={setPendingImages} />
-      </EditorDrawer>
 
       <ConfirmDialog
         open={pendingDelete !== null}

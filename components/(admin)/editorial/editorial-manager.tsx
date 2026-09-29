@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import Link from "next/link";
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
   faBookOpen,
@@ -20,12 +21,10 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ConfirmDialog } from "@/components/(admin)/shared/confirm-dialog";
-import { EditorDrawer } from "@/components/(admin)/shared/editor-drawer";
 import { StatusBadge } from "@/components/(admin)/shared/status-badge";
 import { Toast } from "@/components/(admin)/shared/toast";
 import { StatCard } from "@/components/(admin)/dashboard/stat-card";
 import {
-  EditorialEditorFields,
   type EditorialDraft,
   type EditorialKind,
 } from "@/components/(admin)/editorial/editorial-editor-fields";
@@ -33,27 +32,9 @@ import { useAdminSearch } from "@/components/(admin)/shell/admin-search";
 import type { PublicationState } from "@/lib/content/admin";
 import type { LocalizedText } from "@/lib/i18n";
 import { sendApiMutation } from "@/lib/api-client";
-import { uploadImageToCloudinary } from "@/lib/upload-image";
 
 type ToastMessage = { id: number; message: string };
 type EditorialFilter = "all" | "published" | "draft";
-
-function emptyItem(kind: EditorialKind, categories: LocalizedText[]): EditorialDraft {
-  const category = categories[0] ?? { fr: "", en: "" };
-  return {
-    id: "",
-    state: "draft",
-    category: { ...category },
-    tags: [],
-    date: "",
-    ...(kind === "article" ? { readingTime: "" } : {}),
-    title: { fr: "", en: "" },
-    image: null,
-    content: { fr: "", en: "" },
-    seoTitle: { fr: "", en: "" },
-    seoDescription: { fr: "", en: "" },
-  };
-}
 
 function nextPublicationState(state: PublicationState): PublicationState {
   return state === "published" ? "draft" : "published";
@@ -91,18 +72,18 @@ function EditorialActionButton({
   );
 }
 
+function EditorialActionLink({ icon, label, href }: { icon: IconDefinition; label: string; href: string }) {
+  return (
+    <Link className="editorial-action-button" href={href} aria-label={label} title={label}>
+      <FontAwesomeIcon icon={icon} aria-hidden="true" />
+    </Link>
+  );
+}
+
 export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; initialItems: EditorialDraft[] }) {
   const [items, setItems] = useState<EditorialDraft[]>(initialItems);
   const [publicationFilter, setPublicationFilter] = useState<EditorialFilter>("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [editor, setEditor] = useState<{ mode: "create" | "edit" } | null>(null);
-  const [editorValues, setEditorValues] = useState<EditorialDraft>(() => emptyItem(kind, []));
-  const [editorLanguage, setEditorLanguage] = useState<"fr" | "en">("fr");
-  const [editorVersion, setEditorVersion] = useState(0);
-  const [imageBusy, setImageBusy] = useState(false);
-  const [pendingImage, setPendingImage] = useState<File | null>(null);
-  const [saving, setSaving] = useState(false);
-  const saveLock = useRef(false);
   const [pendingDelete, setPendingDelete] = useState<EditorialDraft | null>(null);
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastSequence = useRef(0);
@@ -115,6 +96,7 @@ export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; 
   const entityTitle = isArticle ? "Article" : "Actualité";
   const pageTitle = isArticle ? "Articles" : "Actualités";
   const newItemLabel = isArticle ? "Nouvel article" : "Nouvelle actualité";
+  const newItemHref = isArticle ? "/admin/articles/nouveau" : "/admin/actualites/nouvelle";
 
   const categories = items.reduce<LocalizedText[]>((result, item) => {
     if (!result.some((category) => category.fr === item.category.fr)) result.push(item.category);
@@ -124,60 +106,6 @@ export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; 
   function notify(message: string) {
     toastSequence.current += 1;
     setToast({ id: toastSequence.current, message });
-  }
-
-  function openEditor(item?: EditorialDraft) {
-    setPendingImage(null);
-    setEditorVersion((version) => version + 1);
-    setEditorLanguage("fr");
-    setEditorValues(
-      item
-        ? { ...item, category: { ...item.category }, tags: [...item.tags] }
-        : emptyItem(kind, categories),
-    );
-    setEditor({ mode: item ? "edit" : "create" });
-  }
-
-  async function saveEditor() {
-    if (!editor || saveLock.current || imageBusy) return;
-    const missingLanguage = (["fr", "en"] as const).find((language) =>
-      !editorValues.title[language].trim() || (editorValues.image && !editorValues.image.alt[language].trim()),
-    );
-    if (missingLanguage) {
-      setEditorLanguage(missingLanguage);
-      notify(`Complétez le titre et le texte alternatif en ${missingLanguage === "fr" ? "français" : "anglais"}.`);
-      return;
-    }
-    const endpoint = isArticle ? "/api/admin/articles" : "/api/admin/actualites";
-    saveLock.current = true;
-    setSaving(true);
-    try {
-      let image = editorValues.image;
-      if (pendingImage && image) {
-        setImageBusy(true);
-        const uploaded = await uploadImageToCloudinary(pendingImage, isArticle ? "articles" : "actualites");
-        image = { ...image, src: uploaded.url };
-        setEditorValues((current) => ({ ...current, image }));
-        setPendingImage(null);
-        setImageBusy(false);
-      }
-      const draft = {
-        ...editorValues,
-        image,
-        date: editorValues.date || new Date().toLocaleDateString("fr-FR"),
-        ...(isArticle && !editorValues.readingTime ? { readingTime: "5 min" } : {}),
-      };
-      const { id, ...fields } = draft;
-      const saved = editor.mode === "create"
-        ? await sendApiMutation<EditorialDraft>(endpoint, "POST", fields)
-        : await sendApiMutation<EditorialDraft>(`${endpoint}/${id}`, "PATCH", fields);
-      if (editor.mode === "create") setItems((current) => [...current, saved]);
-      else setItems((current) => current.map((item) => item.id === saved.id ? saved : item));
-      notify(`${entityTitle} ${editor.mode === "create" ? (isArticle ? "ajouté." : "ajoutée.") : (isArticle ? "mis à jour." : "mise à jour.")}`);
-      if (editor.mode === "create") setEditorValues(emptyItem(kind, categories));
-      setEditor(null);
-    } catch (error) { notify(error instanceof Error ? error.message : "Enregistrement impossible."); }
-    finally { saveLock.current = false; setSaving(false); setImageBusy(false); }
   }
 
   async function togglePublication(item: EditorialDraft) {
@@ -218,7 +146,6 @@ export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; 
   const usedTagCount = new Set(items.flatMap((item) => item.tags)).size;
   const hasActiveFilters = publicationFilter !== "all" || categoryFilter !== "all" || searchTerm.length > 0;
 
-  const editorHeading = editor?.mode === "create" ? newItemLabel : `Modifier ${entityLabel}`;
   const filterOptions: { id: EditorialFilter; label: string }[] = [
     { id: "all", label: "Tous" },
     { id: "published", label: isArticle ? "Publiés" : "Publiées" },
@@ -233,10 +160,10 @@ export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; 
           <h1>{pageTitle}</h1>
           <p>{isArticle ? "Structurez vos articles, leurs thèmes et leur rythme de lecture." : "Partagez les annonces, événements et nouvelles du cabinet."}</p>
         </div>
-        <button className="admin-action admin-action-primary editorial-create-action" type="button" onClick={() => openEditor()}>
+        <Link className="admin-action admin-action-primary editorial-create-action" href={newItemHref}>
           <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
           {newItemLabel}
-        </button>
+        </Link>
       </header>
 
       {isArticle && (
@@ -376,10 +303,10 @@ export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; 
                         label={`${item.state === "published" ? "Dépublier" : "Publier"} « ${item.title.fr || "Sans titre"} »`}
                         onClick={() => togglePublication(item)}
                       />
-                      <EditorialActionButton
+                      <EditorialActionLink
                         icon={faPen}
                         label={`Modifier « ${item.title.fr || "Sans titre"} »`}
-                        onClick={() => openEditor(item)}
+                        href={`/admin/${isArticle ? "articles" : "actualites"}/${encodeURIComponent(item.id)}`}
                       />
                       <EditorialActionButton
                         icon={faTrash}
@@ -414,10 +341,10 @@ export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; 
                         label={`${item.state === "published" ? "Dépublier" : "Publier"} « ${item.title.fr || "Sans titre"} »`}
                         onClick={() => togglePublication(item)}
                       />
-                      <EditorialActionButton
+                      <EditorialActionLink
                         icon={faPen}
                         label={`Modifier « ${item.title.fr || "Sans titre"} »`}
-                        onClick={() => openEditor(item)}
+                        href={`/admin/${isArticle ? "articles" : "actualites"}/${encodeURIComponent(item.id)}`}
                       />
                       <EditorialActionButton
                         icon={faTrash}
@@ -433,18 +360,6 @@ export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; 
           ))}
         </ul>
       )}
-
-      <EditorDrawer
-        open={editor !== null}
-        heading={editorHeading}
-        description={`Renseignez le contenu et les métadonnées de ${entityLabel}.`}
-        onClose={() => setEditor(null)}
-        onSave={saveEditor}
-        saving={imageBusy || saving}
-        savingLabel={imageBusy ? "Envoi de l’image…" : "Enregistrement…"}
-      >
-        <EditorialEditorFields key={editorVersion} values={editorValues} onChange={setEditorValues} language={editorLanguage} onLanguageChange={setEditorLanguage} categories={categories} onImageSelected={setPendingImage} />
-      </EditorDrawer>
 
       <ConfirmDialog
         open={pendingDelete !== null}

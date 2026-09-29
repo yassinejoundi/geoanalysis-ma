@@ -12,7 +12,6 @@ export function ProjectEditorFields({
   onChange,
   expertises,
   language,
-  onLanguageChange,
   pendingImages,
   onPendingImagesChange,
 }: {
@@ -20,7 +19,6 @@ export function ProjectEditorFields({
   onChange: Dispatch<SetStateAction<ProjectDraft>>;
   expertises: AdminExpertise[];
   language: "fr" | "en";
-  onLanguageChange: (language: "fr" | "en") => void;
   pendingImages: File[];
   onPendingImagesChange: Dispatch<SetStateAction<File[]>>;
 }) {
@@ -28,7 +26,7 @@ export function ProjectEditorFields({
   const selectedExpertise = expertises.find(
     (expertise) => expertise.id === values.expertiseId,
   );
-  const languageName = language === "fr" ? "Français" : "English";
+  const languageName = language === "fr" ? "Français" : "Anglais";
 
   function updateLocalizedField(field: keyof Pick<
     ProjectDraft,
@@ -71,103 +69,71 @@ export function ProjectEditorFields({
 
   return (
     <>
-      <div className="editor-language-switch" role="group" aria-label="Langue de saisie">
-        <span>Langue du contenu</span>
-        <div>
-          <button
-            className="editor-language-button"
-            type="button"
-            aria-pressed={language === "fr"}
-            onClick={() => onLanguageChange("fr")}
-          >
-            FR
-          </button>
-          <button
-            className="editor-language-button"
-            type="button"
-            aria-pressed={language === "en"}
-            onClick={() => onLanguageChange("en")}
-          >
-            EN
-          </button>
-        </div>
-      </div>
-
       <label className="admin-field">
         <span>Titre — {languageName}</span>
         <input
-          autoFocus
+          id={`project-title-${language}`}
           required
           value={values.title[language]}
           onChange={(event) => updateLocalizedField("title", event.currentTarget.value)}
         />
       </label>
 
-      <label className="admin-field">
-        <span>Expertise associée</span>
-        <select
-          required
-          value={values.expertiseId}
-          onChange={(event) => {
-            const expertiseId = event.currentTarget.value;
-            onChange((current) => ({
-              ...current,
-              expertiseId,
-              subServiceId: "",
-            }));
-          }}
-        >
-          <option value="">Choisir une expertise</option>
-          {expertises.map((expertise) => (
-            <option key={expertise.id} value={expertise.id}>
-              {expertise.name.fr}
-            </option>
-          ))}
-        </select>
-      </label>
+      {language === "fr" && (
+        <>
+          <label className="admin-field">
+            <span>Expertise associée</span>
+            <select
+              id="project-expertise"
+              required
+              value={values.expertiseId}
+              onChange={(event) => {
+                const expertiseId = event.currentTarget.value;
+                onChange((current) => ({ ...current, expertiseId, subServiceId: "" }));
+              }}
+            >
+              <option value="">Choisir une expertise</option>
+              {expertises.map((expertise) => (
+                <option key={expertise.id} value={expertise.id}>{expertise.name.fr}</option>
+              ))}
+            </select>
+          </label>
 
-      <label className="admin-field">
-        <span>Sous-service (optionnel)</span>
-        <select
-          value={values.subServiceId}
-          onChange={(event) => {
-            const subServiceId = event.currentTarget.value;
-            onChange((current) => ({ ...current, subServiceId }));
-          }}
-        >
-          <option value="">—</option>
-          {selectedExpertise?.subServices.map((service) => (
-            <option key={service.id} value={service.id}>
-              {service.name.fr}
-            </option>
-          ))}
-        </select>
-      </label>
+          <label className="admin-field">
+            <span>Sous-service (optionnel)</span>
+            <select
+              value={values.subServiceId}
+              onChange={(event) => onChange((current) => ({ ...current, subServiceId: event.currentTarget.value }))}
+            >
+              <option value="">—</option>
+              {selectedExpertise?.subServices.map((service) => (
+                <option key={service.id} value={service.id}>{service.name.fr}</option>
+              ))}
+            </select>
+          </label>
 
-      <div className="admin-fields-grid">
-        <label className="admin-field">
-          <span>Localisation</span>
-          <input
-            required
-            value={values.location}
-            onChange={(event) => {
-              const location = event.currentTarget.value;
-              onChange((current) => ({ ...current, location }));
-            }}
-          />
-        </label>
-        <label className="admin-field">
-          <span>Date</span>
-          <input
-            required
-            value={values.date}
-            onChange={(event) => {
-              const date = event.currentTarget.value;
-              onChange((current) => ({ ...current, date }));
-            }}
-          />
-        </label>
-      </div>
+          <div className="admin-fields-grid">
+            <label className="admin-field">
+              <span>Localisation</span>
+              <input
+                id="project-location"
+                required
+                value={values.location}
+                onChange={(event) => onChange((current) => ({ ...current, location: event.currentTarget.value }))}
+              />
+            </label>
+            <label className="admin-field">
+              <span>Date</span>
+              <input
+                id="project-date"
+                required
+                value={values.date}
+                onChange={(event) => onChange((current) => ({ ...current, date: event.currentTarget.value }))}
+              />
+            </label>
+          </div>
+        </>
+      )}
 
       <label className="admin-field">
         <span>Contexte — {languageName}</span>
@@ -196,12 +162,28 @@ export function ProjectEditorFields({
         />
       </label>
 
-      <section className="project-gallery-editor" aria-labelledby="project-gallery-title">
+      {language === "fr" && <section className="project-gallery-editor" aria-labelledby="project-gallery-title">
         <div className="project-gallery-heading">
           <h3 id="project-gallery-title">Galerie du projet</h3>
           <p>Sélectionnez plusieurs fichiers à la fois. Chaque image sera ajoutée à la galerie.</p>
         </div>
-        {values.gallery.length === 0 ? (
+        {values.gallery.length === 0 && values.legacyImage ? (
+          <figure className="project-gallery-card">
+            <div className="project-gallery-placeholder">
+              <Image
+                className="project-gallery-preview-image"
+                src={values.legacyImage}
+                alt="Image de couverture actuelle"
+                width={420}
+                height={236}
+                unoptimized
+              />
+            </div>
+            <figcaption className="project-gallery-empty">
+              Image de couverture actuelle. Les images ajoutées à la galerie la remplaceront sur le site.
+            </figcaption>
+          </figure>
+        ) : values.gallery.length === 0 ? (
           <p className="project-gallery-empty">Aucune image dans la galerie.</p>
         ) : (
           <ul className="project-gallery-grid">
@@ -274,7 +256,7 @@ export function ProjectEditorFields({
           maxFiles={30 - values.gallery.length - pendingImages.length}
           onFilesSelected={(files) => onPendingImagesChange((current) => [...current, ...files])}
         />
-      </section>
+      </section>}
 
       <section className="project-seo-editor" aria-labelledby="project-seo-title">
         <h3 id="project-seo-title">SEO</h3>

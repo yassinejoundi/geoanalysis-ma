@@ -26,18 +26,16 @@ export function EditorialEditorFields({
   values,
   onChange,
   language,
-  onLanguageChange,
   categories,
   onImageSelected,
 }: {
   values: EditorialDraft;
   onChange: Dispatch<SetStateAction<EditorialDraft>>;
   language: "fr" | "en";
-  onLanguageChange: (language: "fr" | "en") => void;
   categories: LocalizedText[];
   onImageSelected: (file: File | null) => void;
 }) {
-  const languageName = language === "fr" ? "Français" : "English";
+  const languageName = language === "fr" ? "Français" : "Anglais";
   const [customCategory, setCustomCategory] = useState(!categories.some((category) => category.fr === values.category.fr));
   const [imageInputVersion, setImageInputVersion] = useState(0);
 
@@ -61,93 +59,85 @@ export function EditorialEditorFields({
 
   return (
     <>
-      <div className="editor-language-switch" role="group" aria-label="Langue de saisie">
-        <span>Langue du contenu</span>
-        <div>
-          <button
-            className="editor-language-button"
-            type="button"
-            aria-pressed={language === "fr"}
-            onClick={() => onLanguageChange("fr")}
-          >
-            FR
-          </button>
-          <button
-            className="editor-language-button"
-            type="button"
-            aria-pressed={language === "en"}
-            onClick={() => onLanguageChange("en")}
-          >
-            EN
-          </button>
-        </div>
-      </div>
-
       <label className="admin-field">
         <span>Titre — {languageName}</span>
         <input
-          autoFocus
+          id={`editorial-title-${language}`}
           required
           value={values.title[language]}
           onChange={(event) => updateLocalizedField("title", event.currentTarget.value)}
         />
       </label>
 
-      <label className="admin-field">
-        <span>Catégorie</span>
-        <select
-          required
-          value={customCategory ? "__new__" : values.category.fr}
-          onChange={(event) => {
-            if (event.currentTarget.value === "__new__") {
-              setCustomCategory(true);
-              onChange((current) => ({ ...current, category: { fr: "", en: "" } }));
-              return;
-            }
-            const category = categories.find((item) => item.fr === event.currentTarget.value);
-            if (category) {
-              setCustomCategory(false);
-              onChange((current) => ({ ...current, category }));
-            }
-          }}
-        >
-          <option value="__new__">Nouvelle catégorie</option>
-          {categories.map((category) => (
-            <option key={category.fr} value={category.fr}>
-              {category.fr}
-            </option>
-          ))}
-        </select>
-      </label>
-      {customCategory && (
-        <div className="admin-fields-grid">
-          {(["fr", "en"] as const).map((locale) => (
-            <label className="admin-field" key={locale}>
-              <span>Catégorie — {locale === "fr" ? "Français" : "English"}</span>
-              <input required maxLength={100} value={values.category[locale]} onChange={(event) => {
-                const category = event.currentTarget.value;
-                onChange((current) => ({ ...current, category: { ...current.category, [locale]: category } }));
-              }} />
+      {language === "fr" && (
+        <>
+          <label className="admin-field">
+            <span>Catégorie</span>
+            <select
+              id="editorial-category-fr"
+              required
+              value={customCategory ? "__new__" : values.category.fr}
+              onChange={(event) => {
+                if (event.currentTarget.value === "__new__") {
+                  setCustomCategory(true);
+                  onChange((current) => ({ ...current, category: { fr: "", en: "" } }));
+                  return;
+                }
+                const category = categories.find((item) => item.fr === event.currentTarget.value);
+                if (category) {
+                  setCustomCategory(false);
+                  onChange((current) => ({ ...current, category }));
+                }
+              }}
+            >
+              <option value="__new__">Nouvelle catégorie</option>
+              {categories.map((category) => (
+                <option key={category.fr} value={category.fr}>{category.fr}</option>
+              ))}
+            </select>
+          </label>
+          <label className="admin-field">
+            <span>Tags (séparés par des virgules)</span>
+            <input
+              value={values.tags.join(", ")}
+              onChange={(event) => {
+                const tags = event.currentTarget.value.split(",").map((tag) => tag.trim()).filter(Boolean);
+                onChange((current) => ({ ...current, tags }));
+              }}
+            />
+          </label>
+          <div className="admin-fields-grid">
+            <label className="admin-field">
+              <span>Date de publication</span>
+              <input value={values.date} placeholder="Date du jour si vide" onChange={(event) => onChange((current) => ({ ...current, date: event.currentTarget.value }))} />
+              <span className="admin-field-help">La date du jour sera utilisée si ce champ reste vide.</span>
             </label>
-          ))}
-        </div>
+            {values.readingTime !== undefined && (
+              <label className="admin-field">
+                <span>Temps de lecture</span>
+                <input required value={values.readingTime} onChange={(event) => onChange((current) => ({ ...current, readingTime: event.currentTarget.value }))} />
+              </label>
+            )}
+          </div>
+        </>
+      )}
+      {(customCategory || language === "en") && (
+        <label className="admin-field">
+          <span>Catégorie — {languageName}</span>
+          <input
+            id={`editorial-category-${language}`}
+            required
+            maxLength={100}
+            value={values.category[language]}
+            onChange={(event) => {
+              const category = event.currentTarget.value;
+              onChange((current) => ({ ...current, category: { ...current.category, [language]: category } }));
+            }}
+          />
+        </label>
       )}
 
-      <label className="admin-field">
-        <span>Tags (séparés par des virgules)</span>
-        <input
-          value={values.tags.join(", ")}
-          onChange={(event) => {
-            const tags = event.currentTarget.value.split(",").map((tag) => tag.trim()).filter(Boolean);
-            onChange((current) => ({
-              ...current,
-              tags,
-            }));
-          }}
-        />
-      </label>
-
-      <div className="admin-field">
+      <div className="admin-field" hidden={language !== "fr"}>
         <span>Image principale</span>
         <ImageUploadField
           key={imageInputVersion}
@@ -155,20 +145,22 @@ export function EditorialEditorFields({
           label="Choisir une image"
           value={values.image?.src}
           deferUpload
-          onFileSelected={selectImage}
+          onFileSelected={(file) => selectImage(file)}
         />
-        {values.image && (
+        {values.image && language === "fr" && (
           <>
             <label className="admin-field">
-              <span>Texte alternatif — {languageName}</span>
+              <span>Texte alternatif — Français</span>
               <input
+                id="editorial-image-alt-fr"
                 required
-                value={values.image.alt[language]}
+                disabled={language !== "fr"}
+                value={values.image.alt?.fr ?? ""}
                 onChange={(event) => {
                   const alt = event.currentTarget.value;
                   onChange((current) => current.image ? ({
                     ...current,
-                    image: { ...current.image, alt: { ...current.image.alt, [language]: alt } },
+                    image: { ...current.image, alt: { ...(current.image.alt ?? { fr: "", en: "" }), fr: alt } },
                   }) : current);
                 }}
               />
@@ -183,6 +175,23 @@ export function EditorialEditorFields({
           </>
         )}
       </div>
+      {values.image && language === "en" && (
+        <label className="admin-field">
+          <span>Texte alternatif — Anglais</span>
+          <input
+            id="editorial-image-alt-en"
+            required
+            value={values.image.alt?.en ?? ""}
+            onChange={(event) => {
+              const alt = event.currentTarget.value;
+              onChange((current) => current.image ? ({
+                ...current,
+                image: { ...current.image, alt: { ...(current.image.alt ?? { fr: "", en: "" }), en: alt } },
+              }) : current);
+            }}
+          />
+        </label>
+      )}
 
       <label className="admin-field">
         <span>Contenu — {languageName}</span>

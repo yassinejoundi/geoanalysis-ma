@@ -86,7 +86,7 @@ function getDatabase() {
   return neon(connectionString);
 }
 
-function normalizeProjectRecord(id: string, value: unknown): ProjectDraft | null {
+function normalizeProjectRecord(id: string, value: unknown, includeLegacyImage = false): ProjectDraft | null {
   if (!isRecord(value)) return null;
   const emptyText = { fr: "", en: "" };
   const project = parseProjectFields({
@@ -107,7 +107,12 @@ function normalizeProjectRecord(id: string, value: unknown): ProjectDraft | null
   const slug = typeof value.slug === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value.slug)
     ? value.slug
     : projectSlug(project.title.fr, id);
-  return { id, ...project, slug };
+  return {
+    id,
+    ...project,
+    slug,
+    ...(includeLegacyImage && typeof value.image === "string" ? { legacyImage: value.image } : {}),
+  };
 }
 
 function localizedRecordText(value: unknown) {
@@ -379,7 +384,7 @@ export async function listAdminRecords<T>(actor: AdminActor, collection: AdminCo
       ` as CmsRow[];
   return rows.map(({ id, record, image_url }) => {
     if (collection === "projects") {
-      return (normalizeProjectRecord(id, record) ?? record) as T;
+      return (normalizeProjectRecord(id, record, true) ?? record) as T;
     }
     if (collection === "team" && isRecord(record)) {
       return { ...record, image: image_url ?? record.image ?? null } as T;

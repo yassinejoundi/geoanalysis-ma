@@ -23,6 +23,7 @@ export type ProjectDraft = {
   seoTitle: LocalizedText;
   seoDescription: LocalizedText;
   gallery: ProjectImage[];
+  legacyImage?: string;
 };
 
 export type PublicProject = ProjectDraft & {
