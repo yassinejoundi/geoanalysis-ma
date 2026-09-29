@@ -43,6 +43,9 @@ next-env.d.ts
 
 # other
 /.project/
+/.vscode/
+/NEXTJS_MIGRATION_ISSUES.md
+/PUBLIC_SITE_CONTENT_TASKS.md
 
 # agents
 /.agents/
