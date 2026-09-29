@@ -16,7 +16,7 @@ type ContactMessage = {
 };
 
 export async function sendContactNotification(contact: ContactMessage) {
-  const password = process.env.GMAIL_APP_PASSWORD;
+  const password = process.env.GMAIL_APP_PASSWORD?.replace(/\s/g, "");
   if (!password) throw new Error("Gmail App Password is not configured.");
 
   const settings = await getPublicSettings();
