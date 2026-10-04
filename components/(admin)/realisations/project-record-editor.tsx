@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { ProjectEditorFields } from "@/components/(admin)/realisations/project-editor-fields";
@@ -51,24 +52,43 @@ export function ProjectRecordEditor({
   expertises: AdminExpertise[];
 }) {
   const isNew = initialProject === null;
+  const router = useRouter();
   const [values, setValues] = useState(() => initialProject ? normalizeProject(initialProject) : emptyProject());
   const [language, setLanguage] = useState<"fr" | "en">("fr");
   const [pendingImages, setPendingImages] = useState<File[]>([]);
   const [saving, setSaving] = useState(false);
   const [imageBusy, setImageBusy] = useState(false);
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
-  const [fieldsVersion, setFieldsVersion] = useState(0);
+  const [success, setSuccess] = useState(false);
+  const successDialogRef = useRef<HTMLDialogElement>(null);
+  const successTitleRef = useRef<HTMLHeadingElement>(null);
   const saveLock = useRef(false);
 
   useEffect(() => {
     document.getElementById(`project-title-${language}`)?.focus();
   }, [language]);
 
+  useEffect(() => {
+    if (!success) return;
+
+    const dialog = successDialogRef.current;
+    if (!dialog) return;
+    if (!dialog.open) dialog.showModal();
+    successTitleRef.current?.focus();
+
+    const redirectTimer = window.setTimeout(() => {
+      router.replace("/admin/realisations");
+    }, 2800);
+
+    return () => {
+      window.clearTimeout(redirectTimer);
+      if (dialog.open) dialog.close();
+    };
+  }, [router, success]);
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
-    setNotice("");
     if (language === "fr") {
       setLanguage("en");
       return;
@@ -97,20 +117,12 @@ export function ProjectRecordEditor({
       delete draft.slug;
       delete draft.legacyImage;
       const { id, ...fields } = draft;
-      const saved = isNew
-        ? await sendApiMutation<ProjectDraft>("/api/admin/realisations", "POST", fields)
-        : await sendApiMutation<ProjectDraft>(`/api/admin/realisations/${id}`, "PATCH", fields);
-
-      if (isNew) {
-        setValues(emptyProject());
-        setNotice("Réalisation ajoutée. Fiche prête pour une nouvelle saisie.");
-      } else {
-        setValues(normalizeProject(saved));
-        setNotice("Modifications enregistrées.");
-      }
-      setPendingImages([]);
-      setLanguage("fr");
-      setFieldsVersion((version) => version + 1);
+      await sendApiMutation<ProjectDraft>(
+        isNew ? "/api/admin/realisations" : `/api/admin/realisations/${id}`,
+        isNew ? "POST" : "PATCH",
+        fields,
+      );
+      setSuccess(true);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Enregistrement impossible.");
     } finally {
@@ -153,7 +165,6 @@ export function ProjectRecordEditor({
         <form className={styles.form} onSubmit={submit}>
           <div className={styles.fields}>
             <ProjectEditorFields
-              key={fieldsVersion}
               values={values}
               onChange={setValues}
               expertises={expertises}
@@ -163,7 +174,7 @@ export function ProjectRecordEditor({
             />
           </div>
           <p className={styles.feedback} role="status" aria-live="polite" aria-atomic="true">
-            {imageBusy ? "Envoi des images…" : saving ? "Enregistrement…" : notice}
+            {imageBusy ? "Envoi des images…" : saving ? "Enregistrement…" : ""}
           </p>
           {error && <p className={styles.error} role="alert">{error}</p>}
           <footer className={styles.footer}>
@@ -181,6 +192,44 @@ export function ProjectRecordEditor({
           </footer>
         </form>
       </section>
+
+      <dialog
+        ref={successDialogRef}
+        className={`confirm-dialog ${styles.successDialog}`}
+        aria-labelledby="project-save-success-title"
+        aria-describedby="project-save-success-description"
+        onCancel={(event) => {
+          event.preventDefault();
+          router.replace("/admin/realisations");
+        }}
+      >
+        <div className={styles.successContent}>
+          <span className={styles.successMark} aria-hidden="true">
+            <svg viewBox="0 0 48 48" focusable="false">
+              <path className={styles.successCheck} d="M10 24.5 19.5 34 38 14" />
+            </svg>
+          </span>
+          <p className={styles.successEyebrow}>Enregistrement terminé</p>
+          <h2
+            ref={successTitleRef}
+            className={styles.successTitle}
+            id="project-save-success-title"
+            tabIndex={-1}
+          >
+            {isNew ? "Réalisation ajoutée" : "Modifications enregistrées"}
+          </h2>
+          <p className={styles.successDescription} id="project-save-success-description">
+            {isNew ? "La nouvelle fiche est enregistrée." : "La fiche est à jour."}
+          </p>
+          <Link className={styles.successAction} href="/admin/realisations" replace>
+            Retourner aux réalisations
+          </Link>
+          <div className={styles.redirectStatus}>
+            <span className={styles.redirectProgress} aria-hidden="true"><span /></span>
+            <p>Redirection automatique vers la liste…</p>
+          </div>
+        </div>
+      </dialog>
     </main>
   );
 }

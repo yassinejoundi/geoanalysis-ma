@@ -209,3 +209,225 @@
     outline: 2px solid SelectedItem;
   }
 }
+
+.successDialog {
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.successDialog::backdrop {
+  background: color-mix(in srgb, var(--foreground) 68%, transparent);
+  backdrop-filter: blur(2px);
+}
+
+.successContent {
+  display: grid;
+  justify-items: center;
+  padding: 32px 30px 22px;
+  text-align: center;
+}
+
+.successMark {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  place-items: center;
+  margin-block-end: 20px;
+  border: 1px solid color-mix(in srgb, var(--brand) 32%, var(--border));
+  border-radius: 50%;
+  background: var(--surface-green);
+  color: var(--brand-hover);
+}
+
+.successMark svg {
+  display: block;
+  width: 32px;
+  height: 32px;
+  overflow: visible;
+}
+
+.successCheck {
+  fill: none;
+  stroke: currentColor;
+  stroke-dasharray: 42;
+  stroke-dashoffset: 0;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+}
+
+.successEyebrow {
+  margin: 0 0 8px;
+  color: var(--brand-hover);
+  font: 500 12px/1.4 var(--font-data);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.successContent .successTitle {
+  max-width: 100%;
+  margin: 0;
+  font-size: clamp(22px, 4vw, 26px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.successTitle:focus-visible {
+  outline: 3px solid var(--brand-bright);
+  outline-offset: 4px;
+}
+
+.successDescription {
+  max-width: 32ch;
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.successAction {
+  display: inline-flex;
+  max-width: 100%;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  margin-block-start: 22px;
+  padding: 10px 18px;
+  border: 1px solid var(--brand-hover);
+  border-radius: 2px;
+  background: var(--brand-hover);
+  color: var(--surface);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow-wrap: break-word;
+  text-align: center;
+  text-decoration: none;
+}
+
+.successAction:focus-visible {
+  outline: 3px solid var(--brand-bright);
+  outline-offset: 3px;
+}
+
+.redirectStatus {
+  display: grid;
+  width: 100%;
+  gap: 10px;
+  margin-block-start: 22px;
+  padding-block-start: 16px;
+  border-block-start: 1px solid var(--border);
+}
+
+.redirectProgress {
+  display: none;
+  width: 100%;
+  height: 3px;
+  overflow: hidden;
+  background: var(--surface-soft);
+}
+
+.redirectProgress > span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--brand);
+  transform: scaleX(1);
+  transform-origin: left center;
+}
+
+.redirectStatus p {
+  margin: 0;
+  color: var(--muted);
+  font: 400 12px/1.45 var(--font-data);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .successDialog[open] {
+    animation: success-dialog-enter 260ms cubic-bezier(0.2, 0, 0, 1) both;
+  }
+
+  .successDialog[open]::backdrop {
+    animation: success-backdrop-enter 180ms ease-out both;
+  }
+
+  .successCheck {
+    stroke-dashoffset: 42;
+    animation: success-check-draw 520ms cubic-bezier(0.2, 0, 0, 1) 100ms forwards;
+  }
+
+  .redirectProgress > span {
+    transform: scaleX(0);
+    animation: redirect-progress 2800ms linear forwards;
+  }
+
+  .redirectProgress {
+    display: block;
+  }
+
+  .successAction {
+    transition-property: background-color, border-color;
+    transition-duration: 140ms;
+    transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  .successAction:active {
+    scale: 0.96;
+  }
+}
+
+@media (hover: hover) {
+  .successAction:hover {
+    border-color: var(--foreground);
+    background: var(--foreground);
+  }
+}
+
+@media (max-width: 420px) {
+  .successContent {
+    padding: 28px 22px 18px;
+  }
+}
+
+@media (forced-colors: active) {
+  .successMark {
+    border-color: CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+
+  .successAction {
+    border-color: ButtonText;
+    background: ButtonFace;
+    color: ButtonText;
+  }
+}
+
+@keyframes success-dialog-enter {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes success-backdrop-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes success-check-draw {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes redirect-progress {
+  to { transform: scaleX(1); }
+}
