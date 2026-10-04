@@ -109,7 +109,10 @@ export function ProjectEditorFields({
               <select
                 className="admin-select"
                 value={values.subServiceId}
-                onChange={(event) => onChange((current) => ({ ...current, subServiceId: event.currentTarget.value }))}
+                onChange={(event) => {
+                  const subServiceId = event.currentTarget.value;
+                  onChange((current) => ({ ...current, subServiceId }));
+                }}
               >
                 <option value="">—</option>
                 {selectedExpertise?.subServices.map((service) => (
@@ -127,7 +130,10 @@ export function ProjectEditorFields({
                 id="project-location"
                 required
                 value={values.location}
-                onChange={(event) => onChange((current) => ({ ...current, location: event.currentTarget.value }))}
+                onChange={(event) => {
+                  const location = event.currentTarget.value;
+                  onChange((current) => ({ ...current, location }));
+                }}
               />
             </label>
             <label className="admin-field">
@@ -136,7 +142,10 @@ export function ProjectEditorFields({
                 id="project-date"
                 required
                 value={values.date}
-                onChange={(event) => onChange((current) => ({ ...current, date: event.currentTarget.value }))}
+                onChange={(event) => {
+                  const date = event.currentTarget.value;
+                  onChange((current) => ({ ...current, date }));
+                }}
               />
             </label>
           </div>
