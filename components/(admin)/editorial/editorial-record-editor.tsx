@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { EditorialEditorFields, type EditorialDraft, type EditorialKind } from "@/components/(admin)/editorial/editorial-editor-fields";
 import styles from "@/components/(admin)/shared/admin-record-editor.module.css";
+import { SaveStatusDialog } from "@/components/(admin)/shared/save-status-dialog";
 import { StatusBadge } from "@/components/(admin)/shared/status-badge";
 import { sendApiMutation } from "@/lib/api-client";
 import type { LocalizedText } from "@/lib/i18n";
@@ -67,8 +68,7 @@ export function EditorialRecordEditor({
   const [saving, setSaving] = useState(false);
   const [imageBusy, setImageBusy] = useState(false);
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
-  const [fieldsVersion, setFieldsVersion] = useState(0);
+  const [saveStatus, setSaveStatus] = useState<"saving" | "success" | null>(null);
   const saveLock = useRef(false);
 
   useEffect(() => {
@@ -78,7 +78,6 @@ export function EditorialRecordEditor({
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
-    setNotice("");
     if (language === "fr") {
       setLanguage("en");
       return;
@@ -87,6 +86,7 @@ export function EditorialRecordEditor({
 
     saveLock.current = true;
     setSaving(true);
+    setSaveStatus("saving");
     try {
       let image = values.image;
       if (pendingImage && image) {
@@ -105,21 +105,14 @@ export function EditorialRecordEditor({
         ...(isArticle ? { readingTime: values.readingTime?.trim() || "5 min" } : {}),
       };
       const { id, ...fields } = draft;
-      const saved = isNew
-        ? await sendApiMutation<EditorialDraft>(endpoint, "POST", fields)
-        : await sendApiMutation<EditorialDraft>(`${endpoint}/${id}`, "PATCH", fields);
-
-      if (isNew) {
-        setValues(emptyItem(kind, categories));
-        setNotice(`${isArticle ? "Article ajouté" : "Actualité ajoutée"}. Fiche prête pour une nouvelle saisie.`);
-      } else {
-        setValues(normalizeItem(saved));
-        setNotice("Modifications enregistrées.");
-      }
-      setPendingImage(null);
-      setLanguage("fr");
-      setFieldsVersion((version) => version + 1);
+      await sendApiMutation<EditorialDraft>(
+        isNew ? endpoint : `${endpoint}/${id}`,
+        isNew ? "POST" : "PATCH",
+        fields,
+      );
+      setSaveStatus("success");
     } catch (cause) {
+      setSaveStatus(null);
       setError(cause instanceof Error ? cause.message : "Enregistrement impossible.");
     } finally {
       saveLock.current = false;
@@ -161,7 +154,6 @@ export function EditorialRecordEditor({
         <form className={styles.form} onSubmit={submit}>
           <div className={styles.fields}>
             <EditorialEditorFields
-              key={fieldsVersion}
               values={values}
               onChange={setValues}
               language={language}
@@ -169,9 +161,6 @@ export function EditorialRecordEditor({
               onImageSelected={setPendingImage}
             />
           </div>
-          <p className={styles.feedback} role="status" aria-live="polite" aria-atomic="true">
-            {imageBusy ? "Envoi de l’image…" : saving ? "Enregistrement…" : notice}
-          </p>
           {error && <p className={styles.error} role="alert">{error}</p>}
           <footer className={styles.footer}>
             <Link className="admin-action" href={baseHref}>Annuler</Link>
@@ -188,6 +177,17 @@ export function EditorialRecordEditor({
           </footer>
         </form>
       </section>
+      <SaveStatusDialog
+        status={saveStatus}
+        savingTitle={`Enregistrement de ${isArticle ? "l’article" : "l’actualité"}…`}
+        savingMessage={imageBusy ? "Envoi de l’image…" : "Enregistrement en cours. Veuillez patienter."}
+        successTitle={isNew
+          ? isArticle ? "Article ajouté" : "Actualité ajoutée"
+          : "Modifications enregistrées"}
+        successMessage={isNew ? "La nouvelle fiche est enregistrée." : "La fiche est à jour."}
+        redirectHref={baseHref}
+        returnLabel={`Retourner aux ${isArticle ? "articles" : "actualités"}`}
+      />
     </main>
   );
 }

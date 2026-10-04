@@ -2,13 +2,13 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import { ProjectEditorFields } from "@/components/(admin)/realisations/project-editor-fields";
 import type { ProjectDraft, ProjectImage } from "@/lib/content/projects";
 import type { AdminExpertise } from "@/lib/content/admin";
 import styles from "@/components/(admin)/shared/admin-record-editor.module.css";
+import { SaveStatusDialog } from "@/components/(admin)/shared/save-status-dialog";
 import { StatusBadge } from "@/components/(admin)/shared/status-badge";
 import { sendApiMutation } from "@/lib/api-client";
 import { uploadImageToCloudinary } from "@/lib/upload-image";
@@ -52,39 +52,18 @@ export function ProjectRecordEditor({
   expertises: AdminExpertise[];
 }) {
   const isNew = initialProject === null;
-  const router = useRouter();
   const [values, setValues] = useState(() => initialProject ? normalizeProject(initialProject) : emptyProject());
   const [language, setLanguage] = useState<"fr" | "en">("fr");
   const [pendingImages, setPendingImages] = useState<File[]>([]);
   const [saving, setSaving] = useState(false);
   const [imageBusy, setImageBusy] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState(false);
-  const successDialogRef = useRef<HTMLDialogElement>(null);
-  const successTitleRef = useRef<HTMLHeadingElement>(null);
+  const [saveStatus, setSaveStatus] = useState<"saving" | "success" | null>(null);
   const saveLock = useRef(false);
 
   useEffect(() => {
     document.getElementById(`project-title-${language}`)?.focus();
   }, [language]);
-
-  useEffect(() => {
-    if (!success) return;
-
-    const dialog = successDialogRef.current;
-    if (!dialog) return;
-    if (!dialog.open) dialog.showModal();
-    successTitleRef.current?.focus();
-
-    const redirectTimer = window.setTimeout(() => {
-      router.replace("/admin/realisations");
-    }, 2800);
-
-    return () => {
-      window.clearTimeout(redirectTimer);
-      if (dialog.open) dialog.close();
-    };
-  }, [router, success]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -97,6 +76,7 @@ export function ProjectRecordEditor({
 
     saveLock.current = true;
     setSaving(true);
+    setSaveStatus("saving");
     try {
       const uploadedImages: ProjectImage[] = [];
       for (const file of pendingImages) {
@@ -112,6 +92,7 @@ export function ProjectRecordEditor({
         setValues((current) => ({ ...current, gallery: [...current.gallery, entry] }));
         setPendingImages((current) => current.slice(1));
       }
+      setImageBusy(false);
 
       const draft = { ...values, gallery: [...values.gallery, ...uploadedImages] };
       delete draft.slug;
@@ -122,8 +103,9 @@ export function ProjectRecordEditor({
         isNew ? "POST" : "PATCH",
         fields,
       );
-      setSuccess(true);
+      setSaveStatus("success");
     } catch (cause) {
+      setSaveStatus(null);
       setError(cause instanceof Error ? cause.message : "Enregistrement impossible.");
     } finally {
       saveLock.current = false;
@@ -173,9 +155,6 @@ export function ProjectRecordEditor({
               onPendingImagesChange={setPendingImages}
             />
           </div>
-          <p className={styles.feedback} role="status" aria-live="polite" aria-atomic="true">
-            {imageBusy ? "Envoi des images…" : saving ? "Enregistrement…" : ""}
-          </p>
           {error && <p className={styles.error} role="alert">{error}</p>}
           <footer className={styles.footer}>
             <Link className="admin-action" href="/admin/realisations">Annuler</Link>
@@ -193,43 +172,15 @@ export function ProjectRecordEditor({
         </form>
       </section>
 
-      <dialog
-        ref={successDialogRef}
-        className={`confirm-dialog ${styles.successDialog}`}
-        aria-labelledby="project-save-success-title"
-        aria-describedby="project-save-success-description"
-        onCancel={(event) => {
-          event.preventDefault();
-          router.replace("/admin/realisations");
-        }}
-      >
-        <div className={styles.successContent}>
-          <span className={styles.successMark} aria-hidden="true">
-            <svg viewBox="0 0 48 48" focusable="false">
-              <path className={styles.successCheck} d="M10 24.5 19.5 34 38 14" />
-            </svg>
-          </span>
-          <p className={styles.successEyebrow}>Enregistrement terminé</p>
-          <h2
-            ref={successTitleRef}
-            className={styles.successTitle}
-            id="project-save-success-title"
-            tabIndex={-1}
-          >
-            {isNew ? "Réalisation ajoutée" : "Modifications enregistrées"}
-          </h2>
-          <p className={styles.successDescription} id="project-save-success-description">
-            {isNew ? "La nouvelle fiche est enregistrée." : "La fiche est à jour."}
-          </p>
-          <Link className={styles.successAction} href="/admin/realisations" replace>
-            Retourner aux réalisations
-          </Link>
-          <div className={styles.redirectStatus}>
-            <span className={styles.redirectProgress} aria-hidden="true"><span /></span>
-            <p>Redirection automatique vers la liste…</p>
-          </div>
-        </div>
-      </dialog>
+      <SaveStatusDialog
+        status={saveStatus}
+        savingTitle="Enregistrement de la réalisation…"
+        savingMessage={imageBusy ? "Envoi des images…" : "Enregistrement en cours. Veuillez patienter."}
+        successTitle={isNew ? "Réalisation ajoutée" : "Modifications enregistrées"}
+        successMessage={isNew ? "La nouvelle fiche est enregistrée." : "La fiche est à jour."}
+        redirectHref="/admin/realisations"
+        returnLabel="Retourner aux réalisations"
+      />
     </main>
   );
 }
