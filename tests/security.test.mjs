@@ -53,6 +53,37 @@ test("cookie-authenticated mutations require matching Origin and Host", () => {
   assert.equal(isSameOrigin(missingOrigin), false);
 });
 
+test("same-origin checks accept HTTPS requests forwarded by Coolify", () => {
+  const proxiedRequest = new Request("http://geoanalysis-ma:3000/api/auth/sign-in/email", {
+    method: "POST",
+    headers: {
+      Origin: "https://geoanalysis-expertise.com",
+      Host: "geoanalysis-expertise.com",
+      "X-Forwarded-Proto": "https",
+    },
+  });
+  const wrongOrigin = new Request("http://geoanalysis-ma:3000/api/auth/sign-in/email", {
+    method: "POST",
+    headers: {
+      Origin: "https://attacker.test",
+      Host: "geoanalysis-expertise.com",
+      "X-Forwarded-Proto": "https",
+    },
+  });
+  const wrongForwardedProtocol = new Request("http://geoanalysis-ma:3000/api/auth/sign-in/email", {
+    method: "POST",
+    headers: {
+      Origin: "https://geoanalysis-expertise.com",
+      Host: "geoanalysis-expertise.com",
+      "X-Forwarded-Proto": "http",
+    },
+  });
+
+  assert.equal(isSameOrigin(proxiedRequest), true);
+  assert.equal(isSameOrigin(wrongOrigin), false);
+  assert.equal(isSameOrigin(wrongForwardedProtocol), false);
+});
+
 test("admin response helpers use a generic error shape and no-store status codes", async () => {
   for (const status of [401, 403, 404, 409, 413, 415, 422]) {
     const response = errorResponse(status, "Invalid request.");
