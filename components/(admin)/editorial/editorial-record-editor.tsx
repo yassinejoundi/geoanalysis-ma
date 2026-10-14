@@ -23,11 +23,10 @@ function emptyItem(kind: EditorialKind, categories: LocalizedText[]): EditorialD
     category: { ...category },
     tags: [],
     date: "",
-    ...(kind === "article" ? { readingTime: "5 min" } : {}),
+    ...(kind === "article" ? { author: "", resources: [], files: [] } : {}),
     title: { fr: "", en: "" },
     image: null,
     content: kind === "article" ? { fr: articleContent, en: articleContent } : { fr: "", en: "" },
-    ...(kind === "article" ? { files: [] } : {}),
     seoTitle: { fr: "", en: "" },
     seoDescription: { fr: "", en: "" },
   };
@@ -50,7 +49,7 @@ function normalizeItem(item: EditorialDraft, kind: EditorialKind): EditorialDraf
       fr: JSON.stringify(parseArticleDocument(content.fr)),
       en: JSON.stringify(parseArticleDocument(content.en)),
     } : content,
-    ...(kind === "article" ? { files: item.files ?? [] } : {}),
+    ...(kind === "article" ? { files: item.files ?? [], resources: item.resources ?? [], author: item.author ?? "" } : {}),
     seoTitle: item.seoTitle ?? { fr: "", en: "" },
     seoDescription: item.seoDescription ?? { fr: "", en: "" },
   };
@@ -140,10 +139,11 @@ export function EditorialRecordEditor({
         seoTitle: values.seoTitle,
         seoDescription: values.seoDescription,
         image,
-        date: values.date || new Date().toLocaleDateString("fr-FR"),
+        date: isArticle ? values.date : values.date || new Date().toLocaleDateString("fr-FR"),
         ...(isArticle ? {
-          readingTime: values.readingTime?.trim() || "5 min",
+          author: values.author?.trim() ?? "",
           files,
+          resources: values.resources ?? [],
           ...(values.slug ? { slug: values.slug } : {}),
         } : {}),
       };

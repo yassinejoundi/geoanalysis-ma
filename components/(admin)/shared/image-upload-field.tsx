@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import { uploadImageToCloudinary, type UploadedImage } from "@/lib/upload-image";
 import type { AdminMediaFolder } from "@/lib/media";
 export type { UploadedImage } from "@/lib/upload-image";
@@ -15,6 +17,7 @@ export function ImageUploadField({
   disabled = false,
   deferUpload = false,
   onFileSelected,
+  onRemove,
   onFilesSelected,
   uploadFolder,
   multiple = false,
@@ -28,6 +31,7 @@ export function ImageUploadField({
   disabled?: boolean;
   deferUpload?: boolean;
   onFileSelected?: (file: File) => void;
+  onRemove?: () => void;
   onFilesSelected?: (files: File[]) => void;
   uploadFolder?: AdminMediaFolder;
   multiple?: boolean;
@@ -144,6 +148,16 @@ export function ImageUploadField({
       {preview && (
         <figure className="admin-image-preview">
           <Image src={preview} alt="" width={640} height={360} unoptimized />
+          {onRemove ? (
+            <button
+              aria-label="Retirer l’image"
+              className="admin-image-remove"
+              onClick={onRemove}
+              type="button"
+            >
+              <FontAwesomeIcon icon={faTrash} aria-hidden="true" />
+            </button>
+          ) : null}
           <figcaption>Aperçu de l’image</figcaption>
         </figure>
       )}

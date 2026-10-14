@@ -20,6 +20,7 @@ export type ArticleFileAttachment = {
   size: number;
   url: string;
 };
+export type ArticleResource = { text: string; url: string };
 
 export const maxArticleFiles = 20;
 export const maxArticleFileBytes = 15 * 1024 * 1024;
@@ -90,6 +91,18 @@ export function parseArticleDocument(value: string | undefined): ArticleDocument
   const content = value.split(/\r?\n(?:[ \t]*\r?\n)+/).filter((paragraph) => paragraph.length > 0)
     .map((text): ArticleBlock => ({ type: "paragraph", content: [{ type: "text", text }] }));
   return { type: "doc", content };
+}
+
+export function estimateArticleReadingTime(content: { fr: string; en: string }) {
+  const wordCount = (value: string) => {
+    const document = parseArticleDocument(value);
+    const text = document.content.map((block) => block.type === "list"
+      ? block.items.map((item) => item.map((node) => node.text).join(" ")).join(" ")
+      : block.content.map((node) => node.text).join(" ")).join(" ");
+    return text.match(/[\p{L}\p{N}]+(?:[’'-][\p{L}\p{N}]+)*/gu)?.length ?? 0;
+  };
+  const longestVersion = Math.max(wordCount(content.fr), wordCount(content.en));
+  return `${Math.max(1, Math.ceil(longestVersion / 200))} min`;
 }
 
 function escapeHtml(value: string) {

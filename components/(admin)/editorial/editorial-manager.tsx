@@ -44,6 +44,15 @@ function normalize(value: string) {
   return value.trim().toLocaleLowerCase("fr");
 }
 
+function formatPublicationDate(value: string) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return value || "Date non renseignée";
+  const date = new Date(`${value}T12:00:00Z`);
+  return Number.isNaN(date.getTime()) ? value : new Intl.DateTimeFormat("fr-FR", {
+    dateStyle: "medium",
+    timeZone: "UTC",
+  }).format(date);
+}
+
 function localizedSearchText(value: LocalizedText) {
   return `${value.fr} ${value.en}`;
 }
@@ -294,7 +303,7 @@ export function EditorialManager({ kind, initialItems }: { kind: EditorialKind; 
                     </div>
                     <h2>{item.title.fr || "Sans titre"}</h2>
                     <div className="editorial-article-meta">
-                      <span><FontAwesomeIcon icon={faCalendarDays} aria-hidden="true" />{item.date || "Date non renseignée"}</span>
+                      <span><FontAwesomeIcon icon={faCalendarDays} aria-hidden="true" />{formatPublicationDate(item.date)}</span>
                       {item.readingTime && <span><FontAwesomeIcon icon={faClock} aria-hidden="true" />{item.readingTime} de lecture</span>}
                     </div>
                     <div className="editorial-article-actions" role="group" aria-label={`Actions de l’article ${item.title.fr || "Sans titre"}`}>

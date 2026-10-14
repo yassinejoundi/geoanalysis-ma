@@ -10,6 +10,8 @@ import {
   maxArticleFiles,
   parseArticleDocument,
   type ArticleFileAttachment,
+  type ArticleResource,
+  estimateArticleReadingTime,
 } from "@/lib/content/article-document";
 
 export const MAX_MEDIA_BYTES = 4 * 1024 * 1024;
@@ -106,6 +108,25 @@ function parseArticleFiles(value: unknown): ArticleFileAttachment[] | null {
   return files;
 }
 
+function parseArticleResources(value: unknown): ArticleResource[] | null {
+  if (!Array.isArray(value) || value.length > 20) return null;
+  const resources: ArticleResource[] = [];
+  for (const resource of value) {
+    if (!isRecord(resource) || !hasOnlyKeys(resource, ["text", "url"])) return null;
+    const text = textField(resource.text, 160);
+    const url = textField(resource.url, 2048);
+    if (!text || !url || !isSafeArticleHref(url)) return null;
+    try {
+      const parsed = new URL(url);
+      if ((parsed.protocol !== "https:" && parsed.protocol !== "http:") || !parsed.hostname) return null;
+      resources.push({ text, url: parsed.href });
+    } catch {
+      return null;
+    }
+  }
+  return resources;
+}
+
 export function publicationState(value: unknown): PublicationState | null {
   return value === "published" || value === "draft" ? value : null;
 }
@@ -192,28 +213,30 @@ function parseProjectGallery(value: unknown) {
 
 export function parseEditorialFields(value: unknown, kind: "articles" | "news") {
   const requiredKeys = ["state", "category", "tags", "date", "title", "content", "seoTitle", "seoDescription"];
-  const keys = [...requiredKeys, "image", ...(kind === "articles" ? ["readingTime", "files", "slug"] : [])];
+  const keys = [...requiredKeys, "image", ...(kind === "articles" ? ["readingTime", "files", "slug", "author", "resources"] : [])];
   if (!isRecord(value) || !hasOnlyKeys(value, keys) || requiredKeys.some((key) => !(key in value))) return null;
   const state = publicationState(value.state);
   const category = localizedText(value.category, 100);
-  const date = textField(value.date, 40);
+  const date = textField(value.date, 40, kind !== "articles");
   const title = localizedText(value.title, 160);
   const content = kind === "articles" ? parseArticleContent(value.content) : localizedText(value.content, 20_000, false);
-  const files = kind === "articles" ? parseArticleFiles(value.files) : undefined;
+  const files = kind === "articles" ? parseArticleFiles(value.files ?? []) : undefined;
+  const resources = kind === "articles" ? parseArticleResources(value.resources ?? []) : undefined;
+  const author = kind === "articles" ? textField(value.author ?? "", 120, false) : undefined;
   const seoTitle = localizedText(value.seoTitle, 160, false);
   const seoDescription = localizedText(value.seoDescription, 320, false);
   const image = value.image === undefined ? undefined : parseEditorialImage(value.image);
-  const readingTime = kind === "articles" ? textField(value.readingTime, 30) : undefined;
   const slug = kind === "articles" && value.slug !== undefined ? textField(value.slug, 120) : undefined;
-  if (!Array.isArray(value.tags) || value.tags.length > 12 || image === false || (kind === "articles" && !files)) return null;
+  if (!Array.isArray(value.tags) || value.tags.length > 12 || image === false ||
+    (kind === "articles" && (!files || !resources || author === null))) return null;
   const tags = value.tags.map((tag) => textField(tag, 30)).filter((tag): tag is string => tag !== null);
-  if (tags.length !== value.tags.length || !state || !category || !date || !title || !content || !seoTitle || !seoDescription ||
-    (kind === "articles" && (!readingTime || (value.slug !== undefined && (!slug || !/^[a-z0-9][a-z0-9-]{0,119}$/.test(slug)))))) return null;
+  if (tags.length !== value.tags.length || !state || !category || date === null || (kind === "news" && !date) || !title || !content || !seoTitle || !seoDescription ||
+    (kind === "articles" && (value.slug !== undefined && (!slug || !/^[a-z0-9][a-z0-9-]{0,119}$/.test(slug))))) return null;
+  const readingTime = kind === "articles" ? estimateArticleReadingTime(content) : undefined;
   return {
     state, category, tags, date, title, content, seoTitle, seoDescription,
     ...(image !== undefined ? { image } : {}),
-    ...(kind === "articles" ? { files } : {}),
-    ...(readingTime ? { readingTime } : {}),
+    ...(kind === "articles" ? { files, resources, author, readingTime } : {}),
     ...(slug ? { slug } : {}),
   };
 }

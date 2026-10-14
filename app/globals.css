@@ -857,6 +857,8 @@ button:focus-visible {
 .editorial-detail-hero-inner { width: min(100%, 900px); margin-inline: auto; padding: clamp(40px, 6vh, 72px) clamp(20px, 4vw, 48px); }
 .editorial-back-link { display: inline-flex; min-height: 44px; align-items: center; gap: 8px; color: var(--muted); font-family: var(--font-data); font-size: 11px; }
 .editorial-detail-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 24px; color: var(--muted); font-family: var(--font-data); font-size: 11px; line-height: 1.45; }
+.editorial-detail-author { margin: 14px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.editorial-detail-author span { color: var(--foreground); font-weight: 600; }
 .editorial-detail-category { padding: 6px 9px; border-radius: 2px; background: var(--surface-green); color: var(--brand-hover); font-size: 10px; font-weight: 500; }
 .site-content > main.editorial-detail-page .editorial-detail-hero h1 { max-width: 26ch; margin: 18px 0 0; font-size: clamp(28px, 3.8vw, 46px); font-weight: 300; letter-spacing: -.018em; line-height: 1.14; overflow-wrap: anywhere; }
 .editorial-detail-teaser { margin: 16px 0 0; color: var(--muted); font-size: clamp(16px, 1.4vw, 18.5px); font-weight: 300; line-height: 1.66; }
@@ -5730,10 +5732,36 @@ button:focus-visible {
 }
 
 .admin-image-preview {
+  position: relative;
   display: grid;
   gap: 6px;
   min-width: 0;
   margin: 0;
+}
+
+.admin-image-remove {
+  position: absolute;
+  inset-block-start: 8px;
+  inset-inline-end: 8px;
+  z-index: 1;
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--danger) 70%, white);
+  border-radius: 2px;
+  background: var(--danger);
+  color: white;
+  cursor: pointer;
+}
+
+.admin-image-remove:hover {
+  background: color-mix(in srgb, var(--danger) 82%, black);
+}
+
+.admin-image-remove:focus-visible {
+  outline: 3px solid var(--brand-bright);
+  outline-offset: 2px;
 }
 
 .admin-image-preview img {

@@ -179,6 +179,17 @@
   list-style: none;
 }
 
+.resourceRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
+  align-items: end;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface);
+}
+
 .fileRow {
   display: flex;
   min-width: 0;
@@ -231,6 +242,12 @@
   color: var(--danger);
   cursor: pointer;
   font: 500 12px/1.3 var(--font-body);
+}
+
+@media (max-width: 600px) {
+  .resourceRow {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .removeFile:focus-visible,

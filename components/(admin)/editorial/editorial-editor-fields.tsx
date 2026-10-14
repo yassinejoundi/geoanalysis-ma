@@ -3,7 +3,7 @@
 import { useState, type Dispatch, type SetStateAction } from "react";
 import type { LocalizedText } from "@/lib/i18n";
 import type { PublicationState } from "@/lib/content/admin";
-import type { ArticleFileAttachment } from "@/lib/content/article-document";
+import type { ArticleFileAttachment, ArticleResource } from "@/lib/content/article-document";
 import { ImageUploadField } from "@/components/(admin)/shared/image-upload-field";
 import { ArticleRichTextEditor } from "./article-rich-text-editor";
 import { ArticleFilesEditor } from "./article-files-editor";
@@ -20,10 +20,12 @@ export type EditorialDraft = {
   tags: string[];
   date: string;
   readingTime?: string;
+  author?: string;
   title: LocalizedText;
   image?: EditorialImage | null;
   content: LocalizedText;
   files?: ArticleFileAttachment[];
+  resources?: ArticleResource[];
   seoTitle: LocalizedText;
   seoDescription: LocalizedText;
 };
@@ -152,17 +154,15 @@ export function ArticleEditorFields({
           />
         </label>
 
-        <div className="admin-fields-grid">
-          <label className="admin-field">
-            <span>Date de publication</span>
-            <input value={values.date} placeholder="Date du jour si vide" onChange={(event) => onChange((current) => ({ ...current, date: event.currentTarget.value }))} />
-            <span className="admin-field-help">La date du jour sera utilisée si ce champ reste vide.</span>
-          </label>
-          <label className="admin-field">
-            <span>Temps de lecture</span>
-            <input required value={values.readingTime ?? "5 min"} onChange={(event) => onChange((current) => ({ ...current, readingTime: event.currentTarget.value }))} />
-          </label>
-        </div>
+        <label className="admin-field">
+          <span>Auteur de l’article</span>
+          <input
+            required
+            maxLength={120}
+            value={values.author ?? ""}
+            onChange={(event) => onChange((current) => ({ ...current, author: event.currentTarget.value }))}
+          />
+        </label>
 
         <div className="admin-field">
           <span>Image principale</span>
@@ -173,11 +173,16 @@ export function ArticleEditorFields({
             value={values.image?.src}
             deferUpload
             onFileSelected={selectImage}
+            onRemove={() => {
+              onImageSelected(null);
+              setImageInputVersion((version) => version + 1);
+              onChange((current) => ({ ...current, image: null }));
+            }}
           />
           {values.image ? (
             <>
               <fieldset className={styles.localizedPair}>
-                <legend className={styles.localizedLegend}>Texte alternatif</legend>
+                <legend className={styles.localizedLegend}>Texte alternatif (description de l’image sur la page)</legend>
                 {(["fr", "en"] as const).map((language) => (
                   <label className="admin-field" key={language}>
                     <span>{language === "fr" ? "Français" : "Anglais"}</span>
@@ -190,13 +195,6 @@ export function ArticleEditorFields({
                   </label>
                 ))}
               </fieldset>
-              <button className="admin-action" type="button" onClick={() => {
-                onImageSelected(null);
-                setImageInputVersion((version) => version + 1);
-                onChange((current) => ({ ...current, image: null }));
-              }}>
-                Retirer l’image
-              </button>
             </>
           ) : null}
         </div>
@@ -233,6 +231,71 @@ export function ArticleEditorFields({
           onFilesChange={(files) => onChange((current) => ({ ...current, files }))}
           onPendingFilesChange={onPendingFilesChange}
         />
+        <section className={styles.filesSection} aria-labelledby="article-resources-heading">
+          <h2 id="article-resources-heading">Ressources</h2>
+          <p className={styles.fileHelp}>Ajoutez des liens utiles à consulter avec l’article.</p>
+          {(values.resources ?? []).map((resource, index) => (
+            <div className={styles.resourceRow} key={index}>
+              <label className="admin-field">
+                <span>Texte de la ressource</span>
+                <input
+                  required
+                  maxLength={160}
+                  value={resource.text}
+                  onChange={(event) => {
+                    const text = event.currentTarget.value;
+                    onChange((current) => ({
+                      ...current,
+                      resources: (current.resources ?? []).map((item, itemIndex) => itemIndex === index
+                        ? { ...item, text }
+                        : item),
+                    }));
+                  }}
+                />
+              </label>
+              <label className="admin-field">
+                <span>Lien</span>
+                <input
+                  required
+                  type="url"
+                  maxLength={2048}
+                  value={resource.url}
+                  onChange={(event) => {
+                    const url = event.currentTarget.value;
+                    onChange((current) => ({
+                      ...current,
+                      resources: (current.resources ?? []).map((item, itemIndex) => itemIndex === index
+                        ? { ...item, url }
+                        : item),
+                    }));
+                  }}
+                />
+              </label>
+              <button
+                className={styles.removeFile}
+                type="button"
+                aria-label={`Retirer la ressource ${resource.text || index + 1}`}
+                onClick={() => onChange((current) => ({
+                  ...current,
+                  resources: (current.resources ?? []).filter((_, itemIndex) => itemIndex !== index),
+                }))}
+              >
+                Retirer
+              </button>
+            </div>
+          ))}
+          <button
+            className="admin-action"
+            type="button"
+            disabled={(values.resources?.length ?? 0) >= 20}
+            onClick={() => onChange((current) => ({
+              ...current,
+              resources: [...(current.resources ?? []), { text: "", url: "" }],
+            }))}
+          >
+            Ajouter une ressource
+          </button>
+        </section>
       </>
     );
   }
@@ -397,11 +460,16 @@ export function EditorialEditorFields({
           value={values.image?.src}
           deferUpload
           onFileSelected={(file) => selectImage(file)}
+          onRemove={() => {
+            onImageSelected(null);
+            setImageInputVersion((version) => version + 1);
+            onChange((current) => ({ ...current, image: null }));
+          }}
         />
         {values.image && language === "fr" && (
           <>
             <label className="admin-field">
-              <span>Texte alternatif — Français</span>
+              <span>Texte alternatif (description de l’image sur la page) — Français</span>
               <input
                 id="editorial-image-alt-fr"
                 required
@@ -416,19 +484,12 @@ export function EditorialEditorFields({
                 }}
               />
             </label>
-            <button className="admin-action" type="button" onClick={() => {
-              onImageSelected(null);
-              setImageInputVersion((version) => version + 1);
-              onChange((current) => ({ ...current, image: null }));
-            }}>
-              Retirer l’image
-            </button>
           </>
         )}
       </div>
       {values.image && language === "en" && (
         <label className="admin-field">
-          <span>Texte alternatif — Anglais</span>
+          <span>Texte alternatif (description de l’image sur la page) — Anglais</span>
           <input
             id="editorial-image-alt-en"
             required

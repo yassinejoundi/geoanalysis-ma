@@ -24,7 +24,7 @@ import type { BureauContent, BureauContentRecord } from "@/components/(public)/b
 import type { ExpertisePageContent, ExpertisePageContentRecord } from "@/components/(public)/expertises/content";
 import type { Locale } from "@/lib/i18n";
 import { articles as articleFixtures, type EditorialDetailEntry } from "@/lib/content/site";
-import { parseArticleDocument } from "@/lib/content/article-document";
+import { estimateArticleReadingTime, parseArticleDocument } from "@/lib/content/article-document";
 
 export const adminCollections = [
   "expertises",
@@ -228,6 +228,8 @@ export const getPublicArticles = cache(async (): Promise<EditorialDetailEntry[]>
         ...(record.image === undefined ? {} : { image: record.image }),
         readingTime: record.readingTime,
         files: record.files ?? [],
+        author: record.author ?? "",
+        resources: record.resources ?? [],
       }, "articles");
       if (!article || article.state !== "published" || typeof record.slug !== "string" ||
         !/^[a-z0-9][a-z0-9-]{0,119}$/.test(record.slug)) return [];
@@ -265,6 +267,8 @@ export const getPublicArticles = cache(async (): Promise<EditorialDetailEntry[]>
         imageLabel: fixture?.imageLabel ?? article.category.fr,
         ...(record.image === null ? {} : { image: article.image ?? fixture?.image }),
         ...(fixture?.sources ? { sources: fixture.sources } : {}),
+        ...(article.author ? { author: article.author } : {}),
+        ...(article.resources?.length ? { resources: article.resources } : {}),
         body: fixture?.body ?? { fr: [], en: [] },
         richBody: {
           fr: parseArticleDocument(article.content.fr),
@@ -465,6 +469,14 @@ export async function listAdminRecords<T>(actor: AdminActor, collection: AdminCo
         ORDER BY position ASC, created_at ASC, id ASC
       ` as CmsRow[];
   return rows.map(({ id, record, image_url }) => {
+    if (collection === "articles" && isRecord(record) && isRecord(record.content) &&
+      typeof record.content.fr === "string" && typeof record.content.en === "string") {
+      return {
+        ...record,
+        id: record.id ?? id,
+        readingTime: estimateArticleReadingTime({ fr: record.content.fr, en: record.content.en }),
+      } as T;
+    }
     if (collection === "projects") {
       return (normalizeProjectRecord(id, record, true) ?? record) as T;
     }

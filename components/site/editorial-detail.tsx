@@ -14,6 +14,8 @@ export interface EditorialDetailCopy {
   sourceLabel?: string;
   sourceNote?: string;
   sources?: string;
+  resources?: string;
+  author?: string;
   files?: string;
   openFile?: string;
 }
@@ -62,6 +64,11 @@ export function EditorialDetail({
           <p className="editorial-detail-teaser">
             {localize(entry.teaser, locale)}
           </p>
+          {kind === "articles" && entry.author ? (
+            <p className="editorial-detail-author">
+              <span>{copy.author ?? (locale === "fr" ? "Par" : "By")}</span> {entry.author}
+            </p>
+          ) : null}
         </div>
       </section>
 
@@ -110,6 +117,18 @@ export function EditorialDetail({
             >
               <p>{copy.sourceLabel}</p>
               <div>{copy.sourceNote}</div>
+            </aside>
+          ) : null}
+          {kind === "articles" && entry.resources?.length ? (
+            <aside className="editorial-detail-source-note editorial-detail-sources" aria-labelledby="editorial-resources-heading">
+              <h2 id="editorial-resources-heading">{copy.resources ?? (locale === "fr" ? "Ressources" : "Resources")}</h2>
+              <ul>
+                {entry.resources.map((resource) => (
+                  <li key={resource.url}>
+                    <a href={resource.url} rel="noopener noreferrer" target="_blank">{resource.text}</a>
+                  </li>
+                ))}
+              </ul>
             </aside>
           ) : null}
         </div>
