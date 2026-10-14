@@ -97,7 +97,7 @@ function parseArticleFiles(value: unknown): ArticleFileAttachment[] | null {
       return null;
     }
     if (parsedUrl.protocol !== "https:" || parsedUrl.hostname !== "res.cloudinary.com" ||
-      !/^\/(?:Home\/)?geoanalysis\/articles\/files\/[^/]+$/.test(parsedUrl.pathname) ||
+      !/^\/[^/]+\/raw\/upload\/v\d+\/(?:Home\/)?geoanalysis\/articles\/files\/[^/]+$/.test(parsedUrl.pathname) ||
       !parsedUrl.pathname.toLowerCase().endsWith(`.${String(kind).toLowerCase()}`) ||
       !id.startsWith("article-file-") || !isSafeArticleHref(parsedUrl.href)) return null;
     ids.add(id);
