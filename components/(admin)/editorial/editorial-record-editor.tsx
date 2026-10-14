@@ -82,10 +82,12 @@ export function EditorialRecordEditor({
   const [error, setError] = useState("");
   const [saveStatus, setSaveStatus] = useState<"saving" | "success" | null>(null);
   const saveLock = useRef(false);
+  const previousArticleStep = useRef(articleStep);
 
   useEffect(() => {
     if (isArticle) {
-      if (articleStep > 1) document.getElementById("editorial-step-heading")?.focus();
+      if (previousArticleStep.current !== articleStep) document.getElementById("editorial-step-heading")?.focus();
+      previousArticleStep.current = articleStep;
       return;
     }
     document.getElementById(`editorial-title-${language}`)?.focus();
@@ -190,7 +192,18 @@ export function EditorialRecordEditor({
               const currentStep = isArticle ? articleStep : language === "fr" ? 1 : 2;
               return (
                 <li className={styles.step} aria-current={currentStep === index + 1 ? "step" : undefined} key={label}>
-                  <span className={styles.stepNumber}>{index + 1}</span> {label}
+                  {isArticle && index + 1 < currentStep ? (
+                    <button
+                      className={styles.stepButton}
+                      onClick={() => {
+                        setError("");
+                        setArticleStep((index + 1) as 1 | 2);
+                      }}
+                      type="button"
+                    >
+                      <span className={styles.stepNumber}>{index + 1}</span> {label}
+                    </button>
+                  ) : <><span className={styles.stepNumber}>{index + 1}</span> {label}</>}
                 </li>
               );
             })}

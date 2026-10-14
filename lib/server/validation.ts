@@ -97,10 +97,9 @@ function parseArticleFiles(value: unknown): ArticleFileAttachment[] | null {
       return null;
     }
     if (parsedUrl.protocol !== "https:" || parsedUrl.hostname !== "res.cloudinary.com" ||
-      !parsedUrl.pathname.includes("/Home/geoanalysis/articles/files/") || !isSafeArticleHref(parsedUrl.href)) return null;
-    const publicId = parsedUrl.pathname.split("/").pop()?.replace(/\.(pdf|docx|xlsx|csv)$/i, "");
-    if (parsedUrl.pathname.split("/").pop()?.toLowerCase().endsWith(`.${String(kind).toLowerCase()}`) !== true ||
-      id !== `article-file-${publicId}`) return null;
+      !/^\/(?:Home\/)?geoanalysis\/articles\/files\/[^/]+$/.test(parsedUrl.pathname) ||
+      !parsedUrl.pathname.toLowerCase().endsWith(`.${String(kind).toLowerCase()}`) ||
+      !id.startsWith("article-file-") || !isSafeArticleHref(parsedUrl.href)) return null;
     ids.add(id);
     files.push({ id, name, kind: kind as ArticleFileAttachment["kind"], size, url });
   }

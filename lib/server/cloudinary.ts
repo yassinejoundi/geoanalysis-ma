@@ -71,15 +71,20 @@ export async function storeArticleFile(file: File) {
   if (typeof validation !== "object") return { error: validation } as const;
 
   const timestamp = await configureCloudinary();
-  const publicId = `${randomUUID()}.${validation.format.toLowerCase()}`;
+  const originalName = basename(file.name.replaceAll("\\", "/")).slice(0, 180);
+  const uploadName = originalName.normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9._-]+/g, "_").replace(/_+/g, "_");
+  const extension = `.${validation.format.toLowerCase()}`;
+  const uploadFilename = `${uploadName.replace(/\.[^.]*$/, "").slice(0, 180 - extension.length) || "article-file"}${extension}`;
   const uploaded = await new Promise<{ secure_url: string; bytes: number }>((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       {
-        folder: "Home/geoanalysis/articles/files",
-        public_id: publicId,
+        folder: "geoanalysis/articles/files",
+        filename: uploadFilename,
         resource_type: "raw",
         overwrite: false,
-        unique_filename: false,
+        use_filename: true,
+        unique_filename: true,
         allowed_formats: ["pdf", "docx", "xlsx", "csv"],
         timestamp,
       },
@@ -93,8 +98,8 @@ export async function storeArticleFile(file: File) {
 
   return {
     file: {
-      id: "article-file-" + publicId.split(".", 1)[0],
-      name: basename(file.name.replaceAll("\\", "/")).slice(0, 180),
+      id: "article-file-" + randomUUID(),
+      name: originalName,
       kind: validation.format,
       size: uploaded.bytes,
       url: uploaded.secure_url,
