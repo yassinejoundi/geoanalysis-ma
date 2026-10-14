@@ -244,6 +244,31 @@
   font: 500 12px/1.3 var(--font-body);
 }
 
+.removeResource {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--danger);
+  border-radius: 2px;
+  background: var(--danger);
+  color: var(--surface);
+  cursor: pointer;
+  font: 600 12px/1.3 var(--font-body);
+}
+
+.removeResource:hover {
+  border-color: color-mix(in srgb, var(--danger) 82%, black);
+  background: color-mix(in srgb, var(--danger) 82%, black);
+}
+
+.removeResource:focus-visible {
+  outline: 3px solid var(--brand-bright);
+  outline-offset: 2px;
+}
+
 @media (max-width: 600px) {
   .resourceRow {
     grid-template-columns: minmax(0, 1fr);

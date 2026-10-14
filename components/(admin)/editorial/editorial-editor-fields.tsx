@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, type Dispatch, type SetStateAction } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import type { LocalizedText } from "@/lib/i18n";
 import type { PublicationState } from "@/lib/content/admin";
 import type { ArticleFileAttachment, ArticleResource } from "@/lib/content/article-document";
@@ -275,7 +277,7 @@ export function ArticleEditorFields({
                 />
               </label>
               <button
-                className={styles.removeFile}
+                className={styles.removeResource}
                 type="button"
                 aria-label={`Retirer la ressource ${resource.text || index + 1}`}
                 onClick={() => onChange((current) => ({
@@ -283,6 +285,7 @@ export function ArticleEditorFields({
                   resources: (current.resources ?? []).filter((_, itemIndex) => itemIndex !== index),
                 }))}
               >
+                <FontAwesomeIcon icon={faTrash} aria-hidden="true" />
                 Retirer
               </button>
             </div>
