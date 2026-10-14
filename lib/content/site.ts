@@ -1,4 +1,5 @@
 import type { LocalizedText, Locale } from "@/lib/i18n";
+import type { ArticleDocument, ArticleFileAttachment } from "@/lib/content/article-document";
 
 export interface Expertise {
   id: "mining" | "env" | "water";
@@ -29,6 +30,8 @@ export interface EditorialEntry {
   readingTime?: string;
   title: LocalizedText;
   teaser: LocalizedText;
+  seoTitle?: LocalizedText;
+  seoDescription?: LocalizedText;
   imageLabel: string;
   image?: { src: string; alt: LocalizedText };
   sources?: { label: LocalizedText; url: string }[];
@@ -36,6 +39,8 @@ export interface EditorialEntry {
 
 export interface EditorialDetailEntry extends EditorialEntry {
   body: Record<Locale, string[]>;
+  richBody?: Record<Locale, ArticleDocument>;
+  files?: ArticleFileAttachment[];
 }
 
 export interface MethodGroup {

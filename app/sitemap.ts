@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
-import { articles, expertises, news } from "@/lib/content/site";
+import { expertises, news } from "@/lib/content/site";
 import { locales } from "@/lib/i18n";
-import { getPublicProjects } from "@/lib/server/data/admin";
+import { getPublicArticles, getPublicProjects } from "@/lib/server/data/admin";
 
 const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://geoanalysis.ma").replace(/\/$/, "");
 
@@ -19,7 +19,7 @@ function localizedEntries(path: string, priority: number): MetadataRoute.Sitemap
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const projects = await getPublicProjects();
+  const [articles, projects] = await Promise.all([getPublicArticles(), getPublicProjects()]);
   const pages = [
     ...["", "articles", "actualites", "realisations", "expertises", "bureau", "contact"].map(
       (path) => ({ path, priority: path ? 0.7 : 1 }),

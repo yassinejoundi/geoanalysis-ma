@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { EditorialDetailEntry } from "@/lib/content/site";
+import { ArticleRichText } from "@/components/site/article-rich-text";
 import { localize, type Locale } from "@/lib/i18n";
 import { EditorialCard, type EditorialKind } from "./editorial-card";
 
@@ -13,6 +14,8 @@ export interface EditorialDetailCopy {
   sourceLabel?: string;
   sourceNote?: string;
   sources?: string;
+  files?: string;
+  openFile?: string;
 }
 
 export function EditorialDetail({
@@ -80,7 +83,9 @@ export function EditorialDetail({
           className={`editorial-detail-reading-layout editorial-detail-reading-layout-${kind}`}
         >
           <div className="editorial-detail-copy">
-            {entry.body[locale].map((paragraph) => (
+            {entry.richBody ? (
+              <ArticleRichText document={entry.richBody[locale]} />
+            ) : entry.body[locale].map((paragraph) => (
               <p key={paragraph}>{paragraph}</p>
             ))}
           </div>
@@ -108,6 +113,21 @@ export function EditorialDetail({
             </aside>
           ) : null}
         </div>
+        {kind === "articles" && entry.files?.length ? (
+          <section className="editorial-files" aria-labelledby="editorial-files-heading">
+            <h2 id="editorial-files-heading">{copy.files}</h2>
+            <ul>
+              {entry.files.map((file) => (
+                <li key={file.id}>
+                  <a href={file.url} rel="noreferrer" target="_blank" aria-label={`${copy.openFile}: ${file.name} (${file.kind})`}>
+                    <span>{file.name}</span>
+                    <small>{file.kind} · {file.size < 1024 * 1024 ? `${Math.ceil(file.size / 1024)} Ko` : `${(file.size / (1024 * 1024)).toFixed(1)} Mo`}</small>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
         {copy.contact ? (
           <Link className="editorial-contact-link" href={`/${locale}/contact`}>
             {copy.contact}

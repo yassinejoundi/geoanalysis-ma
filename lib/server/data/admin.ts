@@ -9,6 +9,7 @@ import { projectSlug } from "@/lib/content/projects";
 import { getAdminAccess, isAllowedAdminEmail, type AdminActor } from "@/lib/server/auth";
 import {
   isRecord,
+  parseEditorialFields,
   parseExpertiseFields,
   parseBureauContentFields,
   parseExpertisePageContentFields,
@@ -22,6 +23,8 @@ import { homeContent, type HomeContent, type HomeContentRecord } from "@/compone
 import type { BureauContent, BureauContentRecord } from "@/components/(public)/bureau/content";
 import type { ExpertisePageContent, ExpertisePageContentRecord } from "@/components/(public)/expertises/content";
 import type { Locale } from "@/lib/i18n";
+import { articles as articleFixtures, type EditorialDetailEntry } from "@/lib/content/site";
+import { parseArticleDocument } from "@/lib/content/article-document";
 
 export const adminCollections = [
   "expertises",
@@ -198,6 +201,85 @@ export const getPublicProjects = cache(async (): Promise<PublicProject[]> => {
 
 export async function getPublicProjectBySlug(slug: string) {
   return (await getPublicProjects()).find((project) => project.slug === slug) ?? null;
+}
+
+export const getPublicArticles = cache(async (): Promise<EditorialDetailEntry[]> => {
+  await connection();
+  try {
+    const sql = getDatabase();
+    const rows = await sql`
+      SELECT id, record
+      FROM cms_articles
+      WHERE record->>'state' = 'published'
+      ORDER BY position ASC, created_at ASC, id ASC
+    ` as CmsRow[];
+    const fixtures = new Map(articleFixtures.map((article) => [article.id, article]));
+    return rows.flatMap(({ id, record }) => {
+      if (!isRecord(record)) return [];
+      const article = parseEditorialFields({
+        state: record.state,
+        category: record.category,
+        tags: record.tags,
+        date: record.date,
+        title: record.title,
+        content: record.content,
+        seoTitle: record.seoTitle,
+        seoDescription: record.seoDescription,
+        ...(record.image === undefined ? {} : { image: record.image }),
+        readingTime: record.readingTime,
+        files: record.files ?? [],
+      }, "articles");
+      if (!article || article.state !== "published" || typeof record.slug !== "string" ||
+        !/^[a-z0-9][a-z0-9-]{0,119}$/.test(record.slug)) return [];
+      const fixture = fixtures.get(id);
+      const candidateDateISO = /^\d{4}-\d{2}-\d{2}$/.test(article.date) ? article.date : undefined;
+      const dateValue = candidateDateISO ? new Date(`${candidateDateISO}T12:00:00Z`) : null;
+      const dateISO = dateValue && !Number.isNaN(dateValue.getTime()) && dateValue.toISOString().slice(0, 10) === candidateDateISO
+        ? candidateDateISO
+        : undefined;
+      const date = dateISO
+        ? {
+            fr: new Intl.DateTimeFormat("fr", { dateStyle: "long", timeZone: "UTC" }).format(new Date(`${dateISO}T12:00:00Z`)),
+            en: new Intl.DateTimeFormat("en", { dateStyle: "long", timeZone: "UTC" }).format(new Date(`${dateISO}T12:00:00Z`)),
+          }
+        : { fr: article.date, en: article.date };
+      const seoTitle = {
+        fr: article.seoTitle.fr || article.title.fr,
+        en: article.seoTitle.en || article.title.en,
+      };
+      const teaser = {
+        fr: article.seoDescription.fr || fixture?.teaser.fr || "",
+        en: article.seoDescription.en || fixture?.teaser.en || "",
+      };
+      return [{
+        id,
+        slug: record.slug,
+        category: article.category,
+        date,
+        ...(dateISO ? { dateISO } : {}),
+        readingTime: article.readingTime,
+        title: article.title,
+        seoTitle,
+        seoDescription: teaser,
+        teaser,
+        imageLabel: fixture?.imageLabel ?? article.category.fr,
+        ...(record.image === null ? {} : { image: article.image ?? fixture?.image }),
+        ...(fixture?.sources ? { sources: fixture.sources } : {}),
+        body: fixture?.body ?? { fr: [], en: [] },
+        richBody: {
+          fr: parseArticleDocument(article.content.fr),
+          en: parseArticleDocument(article.content.en),
+        },
+        files: article.files ?? [],
+      }];
+    });
+  } catch {
+    return articleFixtures;
+  }
+});
+
+export async function getPublicArticleBySlug(slug: string) {
+  return (await getPublicArticles()).find((article) => article.slug === slug) ?? null;
 }
 
 export async function getPublicHomeContent(locale: Locale): Promise<HomeContent | null> {

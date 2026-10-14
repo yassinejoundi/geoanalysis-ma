@@ -1,13 +1,20 @@
 import type { Metadata } from "next";
 import { articlePageCopy } from "@/components/(public)/articles/content";
 import { EditorialDetail } from "@/components/site/editorial-detail";
-import { articles } from "@/lib/content/site";
+import { articles as articleFixtures } from "@/lib/content/site";
+import { getPublicArticles } from "@/lib/server/data/admin";
 import { isLocale, locales, localize } from "@/lib/i18n";
 import { notFound } from "next/navigation";
 
+async function getArticle(slug: string) {
+  const entry = (await getPublicArticles()).find((item) => item.slug === slug);
+  if (!entry) notFound();
+  return entry;
+}
+
 export function generateStaticParams() {
   return locales.flatMap((lang) =>
-    articles.map(({ slug }) => ({ lang, slug })),
+    articleFixtures.map(({ slug }) => ({ lang, slug })),
   );
 }
 
@@ -18,11 +25,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang, slug } = await params;
   if (!isLocale(lang)) return {};
-  const entry = articles.find((item) => item.slug === slug);
-  if (!entry) notFound();
+  const entry = await getArticle(slug);
   return {
-    title: `${localize(entry.title, lang)} | GEOANALYSIS`,
-    description: localize(entry.teaser, lang),
+    title: `${localize(entry.seoTitle ?? entry.title, lang)} | GEOANALYSIS`,
+    description: localize(entry.seoDescription ?? entry.teaser, lang),
   };
 }
 
@@ -33,9 +39,8 @@ export default async function ArticlePage({
 }) {
   const { lang, slug } = await params;
   if (!isLocale(lang)) notFound();
-  const entry = articles.find((item) => item.slug === slug);
-  if (!entry) notFound();
-  const relatedEntries = articles
+  const entry = await getArticle(slug);
+  const relatedEntries = (await getPublicArticles())
     .filter((item) => item.id !== entry.id)
     .slice(0, 3);
 

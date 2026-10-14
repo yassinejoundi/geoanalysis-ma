@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { ArticleIndexSection } from "@/components/(public)/articles/article-index-section";
 import { articlePageCopy } from "@/components/(public)/articles/content";
-import { articles } from "@/lib/content/site";
 import { isLocale } from "@/lib/i18n";
 import { notFound } from "next/navigation";
+import { getPublicArticles } from "@/lib/server/data/admin";
 
 export async function generateMetadata({
   params,
@@ -29,7 +29,7 @@ export default async function ArticleIndex({
 
   return (
     <main className="articles-page">
-      <ArticleIndexSection entries={articles} locale={lang} />
+      <ArticleIndexSection entries={await getPublicArticles()} locale={lang} />
     </main>
   );
 }

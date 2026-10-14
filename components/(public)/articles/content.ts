@@ -16,6 +16,8 @@ export const articlePageCopy = {
     related: "Autres articles",
     contact: "Parler de votre projet",
     sources: "Sources et références",
+    files: "Documents associés",
+    openFile: "Ouvrir le fichier",
   },
   en: {
     title: "Geology, water and environment articles",
@@ -34,5 +36,7 @@ export const articlePageCopy = {
     related: "More articles",
     contact: "Discuss your project",
     sources: "Sources and references",
+    files: "Related documents",
+    openFile: "Open file",
   },
 } as const;
