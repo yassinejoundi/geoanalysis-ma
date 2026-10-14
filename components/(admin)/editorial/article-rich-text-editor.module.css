@@ -108,6 +108,14 @@
   padding-inline-start: 24px;
 }
 
+.editable ul {
+  list-style: disc;
+}
+
+.editable ol {
+  list-style: decimal;
+}
+
 .filesSection {
   display: grid;
   gap: 10px;

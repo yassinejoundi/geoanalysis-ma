@@ -873,6 +873,8 @@ button:focus-visible {
 .editorial-detail-copy blockquote { padding-inline-start: 16px; border-inline-start: 2px solid var(--brand); color: var(--muted); font-size: 16px; line-height: 1.65; }
 .editorial-detail-copy ul,
 .editorial-detail-copy ol { display: grid; max-width: 70ch; gap: 8px; margin: 0; padding-inline-start: 25px; color: var(--foreground); font-size: 16.5px; font-weight: 300; line-height: 1.65; }
+.editorial-detail-copy ul { list-style: disc; }
+.editorial-detail-copy ol { list-style: decimal; }
 .editorial-detail-copy a { color: var(--brand-hover); text-decoration: underline; text-decoration-thickness: from-font; text-underline-offset: 3px; }
 .editorial-files { display: grid; gap: 14px; margin-top: 32px; padding: 18px; border: 1px solid var(--border); border-radius: 3px; background: var(--surface); }
 .editorial-files h2 { margin: 0; font-size: 17px; font-weight: 500; line-height: 1.3; }
