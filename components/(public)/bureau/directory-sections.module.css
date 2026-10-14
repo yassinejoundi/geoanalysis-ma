@@ -74,48 +74,42 @@
 }
 
 .teamList {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 270px), 1fr));
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .teamCard {
+  display: grid;
+  grid-template-columns: minmax(240px, 0.8fr) minmax(0, 1.4fr);
+  align-items: start;
+  gap: clamp(24px, 4vw, 64px);
   min-width: 0;
-  padding: 22px;
+  padding: clamp(20px, 3vw, 30px);
   border: 1px solid var(--border);
-  border-top: 2px solid var(--brand);
-  background: var(--background);
-}
-
-.teamMeta {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  border-inline-start: 3px solid var(--brand);
+  background: var(--surface);
 }
 
 .teamOrder {
+  display: block;
   color: var(--brand-hover);
   font-family: var(--font-data);
-  font-size: 11px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
   font-variant-numeric: tabular-nums;
-}
-
-.teamRule {
-  width: 28px;
-  height: 1px;
-  background: var(--border-strong);
 }
 
 .teamProfile {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-block-start: 18px;
+  gap: 16px;
+  margin-block-start: 14px;
 }
 
 .teamAvatar {
   position: relative;
   display: grid;
-  width: 64px;
-  height: 64px;
+  width: 88px;
+  height: 88px;
   flex: none;
   place-items: center;
   overflow: hidden;
@@ -136,30 +130,38 @@
   min-width: 0;
 }
 
+.teamDetails {
+  min-width: 0;
+}
+
 .teamCard h3 {
   margin: 0;
   color: var(--foreground);
-  font-size: 18px;
+  font-size: clamp(19px, 2vw, 24px);
   font-weight: 500;
-  line-height: 1.35;
+  line-height: 1.2;
   overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 
 .teamRole {
-  margin: 12px 0 0;
+  margin: 8px 0 0;
   color: var(--brand-hover);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   line-height: 1.5;
   overflow-wrap: anywhere;
 }
 
 .teamBio {
-  margin: 12px 0 0;
+  max-width: 70ch;
+  margin: 0;
   color: var(--muted);
-  font-size: 14px;
-  line-height: 1.65;
+  font-size: 16px;
+  line-height: 1.7;
   overflow-wrap: anywhere;
+  text-wrap: pretty;
+  white-space: pre-line;
 }
 
 .partners {
@@ -185,17 +187,16 @@
 }
 
 .partnerLogoFrame {
+  position: relative;
   display: grid;
-  width: 100%;
-  min-height: 84px;
+  width: min(100%, 220px);
+  height: 84px;
+  margin-inline: auto;
   place-items: center;
 }
 
 .partnerLogo {
   display: block;
-  width: min(100%, 220px);
-  height: auto;
-  max-height: 84px;
   object-fit: contain;
 }
 
@@ -220,6 +221,21 @@
 }
 
 @media (max-width: 760px) {
+  .teamCard {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+    padding: 20px;
+  }
+
+  .teamAvatar {
+    width: 72px;
+    height: 72px;
+  }
+
+  .teamProfile {
+    align-items: flex-start;
+  }
+
   .aboutGrid {
     grid-template-columns: minmax(0, 1fr);
     gap: 24px;

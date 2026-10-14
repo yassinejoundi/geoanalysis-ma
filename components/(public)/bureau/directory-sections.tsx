@@ -63,23 +63,28 @@ export function BureauDirectorySections({
             <ul className={styles.teamList}>
               {team.map((member) => (
                 <li className={styles.teamCard} key={member.id}>
-                  <div className={styles.teamMeta}>
+                  <div className={styles.teamIdentity}>
                     <span className={styles.teamOrder} aria-hidden="true">
                       {String(member.order).padStart(2, "0")}
                     </span>
-                    <span className={styles.teamRule} aria-hidden="true" />
-                  </div>
-                  <div className={styles.teamProfile}>
-                    <div className={styles.teamAvatar} aria-hidden="true">
-                      {member.image ? (
-                        <Image src={member.image} alt="" fill sizes="64px" className={styles.teamPortrait} />
-                      ) : initials(member.name)}
+                    <div className={styles.teamProfile}>
+                      <div className={styles.teamAvatar} aria-hidden="true">
+                        {member.image ? (
+                          <Image
+                            src={member.image}
+                            alt=""
+                            fill
+                            sizes="(max-width: 760px) 72px, 88px"
+                            className={styles.teamPortrait}
+                          />
+                        ) : initials(member.name)}
+                      </div>
+                      <div className={styles.teamDetails}>
+                        <h3>{member.name}</h3>
+                        <p className={styles.teamRole}>{member.role[locale]}</p>
+                      </div>
                     </div>
-                    <div className={styles.teamIdentity}>
-                      <h3>{member.name}</h3>
-                    </div>
                   </div>
-                  <p className={styles.teamRole}>{member.role[locale]}</p>
                   <p className={styles.teamBio}>{member.bio[locale]}</p>
                 </li>
               ))}
@@ -104,8 +109,7 @@ export function BureauDirectorySections({
                         <Image
                           src={partner.logo}
                           alt=""
-                          width={220}
-                          height={112}
+                          fill
                           sizes="(max-width: 760px) 100vw, (max-width: 1100px) 33vw, 220px"
                           className={styles.partnerLogo}
                         />
