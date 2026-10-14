@@ -6249,12 +6249,6 @@ a.partner-card-link:hover {
   margin-top: auto;
 }
 
-.partner-url-error {
-  margin: -4px 0 0;
-  color: var(--danger);
-  font-size: 12px;
-}
-
 .messages-manager {
   gap: 18px;
 }
@@ -7480,6 +7474,12 @@ a.partner-card-link:hover {
   color: var(--foreground);
 }
 
+.directory-partner-logo {
+  padding: 4px;
+  background: var(--surface);
+  object-fit: contain;
+}
+
 .directory-record-copy {
   min-width: 0;
 }
@@ -7576,36 +7576,6 @@ a.partner-card-link:hover {
   border-color: color-mix(in srgb, var(--danger) 42%, var(--border));
   background: color-mix(in srgb, var(--danger) 6%, var(--surface));
   color: var(--danger);
-}
-
-.directory-partner-link {
-  display: inline-flex;
-  min-height: 34px;
-  max-width: 100%;
-  align-items: center;
-  gap: 8px;
-  margin-top: 2px;
-  color: var(--muted);
-  font: 400 11px/1.45 var(--font-data);
-  overflow-wrap: anywhere;
-  text-decoration: underline;
-  text-decoration-color: transparent;
-  text-underline-offset: 3px;
-}
-
-.directory-partner-link:hover {
-  color: var(--brand-hover);
-  text-decoration-color: currentColor;
-}
-
-.directory-partner-link:focus-visible {
-  outline: 3px solid var(--brand-hover);
-  outline-offset: 2px;
-}
-
-.directory-partner-link svg {
-  flex: none;
-  font-size: 10px;
 }
 
 .directory-record-kind {

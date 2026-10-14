@@ -20,5 +20,9 @@ export default async function AdminBureauContentPage() {
     }
   }
 
-  return <BureauManager initialContent={initialContent} initialMembers={members} initialPartners={partners} />;
+  return <BureauManager
+    initialContent={initialContent}
+    initialMembers={members}
+    initialPartners={partners.map(({ id, name, logo }) => ({ id, name, logo: logo ?? "" }))}
+  />;
 }

@@ -98,10 +98,23 @@ export function BureauDirectorySections({
             <ul className={styles.partnerList}>
               {partners.map((partner) => (
                 <li key={partner.id}>
-                  <a className={styles.partnerLink} href={partner.url} target="_blank" rel="noopener noreferrer">
-                    <span>{partner.name}</span>
-                    <span aria-hidden="true">↗</span>
-                  </a>
+                  <div className={styles.partnerCard}>
+                    <div className={styles.partnerLogoFrame}>
+                      {partner.logo ? (
+                        <Image
+                          src={partner.logo}
+                          alt=""
+                          width={220}
+                          height={112}
+                          sizes="(max-width: 760px) 100vw, (max-width: 1100px) 33vw, 220px"
+                          className={styles.partnerLogo}
+                        />
+                      ) : (
+                        <span className={styles.partnerFallback} aria-hidden="true">{initials(partner.name)}</span>
+                      )}
+                    </div>
+                    <span className={styles.partnerName}>{partner.name}</span>
+                  </div>
                 </li>
               ))}
             </ul>

@@ -22,6 +22,7 @@ export function ImageUploadField({
   uploadFolder,
   multiple = false,
   maxFiles,
+  errorMessage,
 }: {
   id: string;
   label: string;
@@ -36,6 +37,7 @@ export function ImageUploadField({
   uploadFolder?: AdminMediaFolder;
   multiple?: boolean;
   maxFiles?: number;
+  errorMessage?: string;
 }) {
   const [preview, setPreview] = useState(value ?? null);
   const [status, setStatus] = useState("");
@@ -47,6 +49,7 @@ export function ImageUploadField({
   const fileNameId = `${id}-file-name`;
   const statusId = `${id}-status`;
   const errorId = `${id}-error`;
+  const fieldErrorId = `${id}-field-error`;
 
   useEffect(() => {
     if (!localPreview.current) setPreview(value ?? null);
@@ -127,7 +130,8 @@ export function ImageUploadField({
         accept="image/jpeg,image/png,image/webp"
         multiple={multiple}
         disabled={uploading || disabled || maxFiles === 0}
-        aria-describedby={`${helpId} ${fileNameId} ${statusId}${error ? ` ${errorId}` : ""}`}
+        aria-describedby={`${helpId} ${fileNameId} ${statusId}${error ? ` ${errorId}` : ""}${errorMessage ? ` ${fieldErrorId}` : ""}`}
+        aria-invalid={errorMessage ? true : undefined}
         onChange={(event) => {
           const files = Array.from(event.currentTarget.files ?? []);
           event.currentTarget.value = "";
@@ -145,6 +149,7 @@ export function ImageUploadField({
         {status}
       </p>
       {error && <p className="admin-image-upload-error" id={errorId} role="alert">{error}</p>}
+      {errorMessage && <p className="admin-image-upload-error" id={fieldErrorId} role="alert">{errorMessage}</p>}
       {preview && (
         <figure className="admin-image-preview">
           <Image src={preview} alt="" width={640} height={360} unoptimized />

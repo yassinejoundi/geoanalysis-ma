@@ -1,7 +1,8 @@
 "use client";
 
+import Image from "next/image";
 import { useRef, useState } from "react";
-import { faArrowUpRightFromSquare, faMagnifyingGlass, faPenToSquare, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faMagnifyingGlass, faPenToSquare, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { ConfirmDialog } from "@/components/(admin)/shared/confirm-dialog";
 import { EditorDrawer } from "@/components/(admin)/shared/editor-drawer";
@@ -10,27 +11,6 @@ import { PartnerEditorFields, type PartnerDraft } from "@/components/(admin)/par
 import { sendApiMutation } from "@/lib/api-client";
 
 type ToastMessage = { id: number; message: string };
-
-function normalizePartnerUrl(value: string) {
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-  const hasScheme = /^[a-z][a-z\d+.-]*:/i.test(trimmed);
-  const candidate = hasScheme ? trimmed : "https://" + trimmed;
-  try {
-    const parsed = new URL(candidate);
-    if ((parsed.protocol !== "http:" && parsed.protocol !== "https:") || !parsed.hostname) return null;
-    return parsed.href;
-  } catch {
-    return null;
-  }
-}
-
-function displayPartnerUrl(value: string) {
-  const normalized = normalizePartnerUrl(value);
-  if (!normalized) return value;
-  const parsed = new URL(normalized);
-  return parsed.host + (parsed.pathname === "/" ? "" : parsed.pathname) + parsed.search + parsed.hash;
-}
 
 function initials(name: string) {
   return name.trim().split(/\s+/).slice(0, 2).map((part) => part.charAt(0)).join("").toLocaleUpperCase("fr");
@@ -41,16 +21,15 @@ export function PartnersManager({ initialPartners, embedded = false }: { initial
   const [editorValues, setEditorValues] = useState<PartnerDraft | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [search, setSearch] = useState("");
   const [pendingDelete, setPendingDelete] = useState<PartnerDraft | null>(null);
-  const [urlError, setUrlError] = useState("");
+  const [logoError, setLogoError] = useState("");
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastSequence = useRef(0);
   const saveLock = useRef(false);
   const query = search.trim().toLocaleLowerCase("fr");
-  const visiblePartners = partners.filter((partner) =>
-    (partner.name + " " + displayPartnerUrl(partner.url)).toLocaleLowerCase("fr").includes(query),
-  );
+  const visiblePartners = partners.filter((partner) => partner.name.toLocaleLowerCase("fr").includes(query));
 
   function notify(message: string) {
     toastSequence.current += 1;
@@ -58,36 +37,37 @@ export function PartnersManager({ initialPartners, embedded = false }: { initial
   }
 
   function openCreateEditor() {
-    setUrlError("");
+    setLogoError("");
     setIsCreating(true);
-    setEditorValues({ id: "", name: "", url: "" });
+    setEditorValues({ id: "", name: "", logo: "" });
   }
 
   function openEditor(partner: PartnerDraft) {
-    setUrlError("");
+    setLogoError("");
     setIsCreating(false);
-    setEditorValues({ ...partner, url: normalizePartnerUrl(partner.url) ?? partner.url });
+    setEditorValues(partner);
   }
 
   function closeEditor() {
     setEditorValues(null);
     setIsCreating(false);
-    setUrlError("");
+    setLogoError("");
   }
 
   async function saveEditor() {
-    if (!editorValues || saveLock.current) return;
-    const url = normalizePartnerUrl(editorValues.url);
-    if (!url) {
-      setUrlError("Saisissez une URL HTTP ou HTTPS valide avant d’enregistrer.");
+    if (!editorValues || saveLock.current || isUploading) return;
+    const logo = editorValues.logo.trim();
+    if (!logo) {
+      setLogoError("Téléversez un logo avant d’enregistrer.");
+      document.getElementById("partner-logo")?.focus();
       return;
     }
 
     saveLock.current = true;
     setIsSaving(true);
-    const updatedPartner = { ...editorValues, name: editorValues.name.trim(), url };
+    const updatedPartner = { ...editorValues, name: editorValues.name.trim(), logo };
     try {
-      const fields = { name: updatedPartner.name, url: updatedPartner.url };
+      const fields = { name: updatedPartner.name, logo: updatedPartner.logo };
       if (isCreating) {
         const created = await sendApiMutation<PartnerDraft>("/api/admin/partenaires", "POST", fields);
         setPartners((current) => [...current, created]);
@@ -130,7 +110,7 @@ export function PartnersManager({ initialPartners, embedded = false }: { initial
         <div className="directory-heading-copy">
           <p className="admin-eyebrow">{embedded ? "LE BUREAU / PARTENAIRES" : "ORGANISATION / PARTENAIRES"}</p>
           {embedded ? <h2 id="bureau-partners-title">Partenaires</h2> : <h1>Partenaires</h1>}
-          <p>Réunissez les organisations qui accompagnent vos projets.</p>
+          <p>Ajoutez les organisations partenaires et leurs logos.</p>
         </div>
         <button className="admin-action admin-action-primary directory-add-action" type="button" onClick={openCreateEditor}>
           <FontAwesomeIcon icon={faPlus} aria-hidden="true" />
@@ -147,7 +127,7 @@ export function PartnersManager({ initialPartners, embedded = false }: { initial
               aria-label="Rechercher un partenaire"
               value={search}
               onChange={(event) => setSearch(event.currentTarget.value)}
-              placeholder="Nom ou site web"
+              placeholder="Nom du partenaire"
             />
           </label>
           <p className="directory-result-count" aria-live="polite">
@@ -160,7 +140,7 @@ export function PartnersManager({ initialPartners, embedded = false }: { initial
             <span className="directory-empty-index" aria-hidden="true">01</span>
             <div>
               <h2>Votre réseau commence ici</h2>
-              <p>Ajoutez les organisations partenaires et leurs sites web.</p>
+              <p>Ajoutez un partenaire pour afficher son logo sur la page du bureau.</p>
             </div>
           </div>
         ) : visiblePartners.length === 0 ? (
@@ -174,27 +154,15 @@ export function PartnersManager({ initialPartners, embedded = false }: { initial
           </div>
         ) : (
           <ul className="directory-list" aria-label="Organisations partenaires">
-            {visiblePartners.map((partner) => {
-              const href = normalizePartnerUrl(partner.url);
-              return (
+            {visiblePartners.map((partner) => (
                 <li className="directory-record partner-record" key={partner.id}>
-                  <span className="directory-avatar directory-partner-avatar" aria-hidden="true">{initials(partner.name)}</span>
+                  {partner.logo ? (
+                    <Image className="directory-avatar directory-partner-avatar directory-partner-logo" src={partner.logo} alt="" width={48} height={48} />
+                  ) : (
+                    <span className="directory-avatar directory-partner-avatar" aria-hidden="true">{initials(partner.name)}</span>
+                  )}
                   <div className="directory-record-copy">
                     <h2>{partner.name}</h2>
-                    {href ? (
-                      <a
-                        className="directory-partner-link"
-                        href={href}
-                        target="_blank"
-                        rel="noreferrer"
-                        aria-label={"Visiter le site de " + partner.name + " (nouvel onglet)"}
-                      >
-                        <span>{displayPartnerUrl(partner.url)}</span>
-                        <FontAwesomeIcon icon={faArrowUpRightFromSquare} aria-hidden="true" />
-                      </a>
-                    ) : (
-                      <p className="directory-partner-link">{partner.url}</p>
-                    )}
                   </div>
                   <span className="directory-record-kind">Partenaire</span>
                   <div className="directory-actions">
@@ -208,8 +176,7 @@ export function PartnersManager({ initialPartners, embedded = false }: { initial
                     </button>
                   </div>
                 </li>
-              );
-            })}
+            ))}
           </ul>
         )}
       </section>
@@ -217,17 +184,23 @@ export function PartnersManager({ initialPartners, embedded = false }: { initial
       <EditorDrawer
         open={editorValues !== null}
         heading={isCreating ? "Ajouter un partenaire" : "Modifier un partenaire"}
-        description={isCreating ? "Renseignez le nom de l’organisation et son adresse web." : "Mettez à jour le nom et le lien du partenaire."}
+        description={isCreating ? "Renseignez le nom de l’organisation et téléversez son logo." : "Mettez à jour le nom et le logo du partenaire."}
         onClose={closeEditor}
         onSave={saveEditor}
-        saving={isSaving}
+        saving={isSaving || isUploading}
+        savingLabel={isUploading ? "Envoi du logo…" : "Enregistrement…"}
       >
         {editorValues && (
           <PartnerEditorFields
             values={editorValues}
             onChange={setEditorValues}
-            urlError={urlError}
-            onUrlChange={() => setUrlError("")}
+            logoError={logoError}
+            onLogoChange={() => setLogoError("")}
+            onBusyChange={(busy) => {
+              setIsUploading(busy);
+              if (busy) setLogoError("");
+            }}
+            disabled={isSaving}
           />
         )}
       </EditorDrawer>

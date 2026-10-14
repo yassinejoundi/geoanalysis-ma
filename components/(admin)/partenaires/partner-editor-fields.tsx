@@ -1,23 +1,28 @@
 "use client";
 
 import type { Dispatch, SetStateAction } from "react";
+import { ImageUploadField } from "@/components/(admin)/shared/image-upload-field";
 
 export type PartnerDraft = {
   id: string;
   name: string;
-  url: string;
+  logo: string;
 };
 
 export function PartnerEditorFields({
   values,
   onChange,
-  urlError,
-  onUrlChange,
+  logoError,
+  onLogoChange,
+  onBusyChange,
+  disabled,
 }: {
   values: PartnerDraft;
   onChange: Dispatch<SetStateAction<PartnerDraft | null>>;
-  urlError: string;
-  onUrlChange: () => void;
+  logoError: string;
+  onLogoChange: () => void;
+  onBusyChange: (busy: boolean) => void;
+  disabled: boolean;
 }) {
   return (
     <>
@@ -35,26 +40,23 @@ export function PartnerEditorFields({
         />
       </label>
 
-      <label className="admin-field">
-        <span>Lien du partenaire</span>
-        <input
-          type="url"
-          required
-          maxLength={2048}
-          value={values.url}
-          aria-describedby="partner-url-help"
-          aria-invalid={urlError ? true : undefined}
-          onChange={(event) => {
-            const url = event.currentTarget.value;
-            onChange((current) => current && ({ ...current, url }));
-            onUrlChange();
-          }}
-        />
-        <span className="admin-field-help" id="partner-url-help">Saisissez une adresse complète, par exemple https://onhym.com.</span>
-      </label>
-      {urlError && <p className="partner-url-error" role="alert">{urlError}</p>}
-
-      <p className="admin-disabled-field">Logo : les fichiers restent des espaces réservés dans cette démo.</p>
+      <ImageUploadField
+        id="partner-logo"
+        label="Logo du partenaire"
+        value={values.logo}
+        uploadFolder="bureau/partners"
+        disabled={disabled}
+        errorMessage={logoError}
+        onBusyChange={onBusyChange}
+        onUploaded={(image) => {
+          onChange((current) => current && ({ ...current, logo: image.url }));
+          onLogoChange();
+        }}
+        onRemove={() => {
+          onChange((current) => current && ({ ...current, logo: "" }));
+          onLogoChange();
+        }}
+      />
     </>
   );
 }

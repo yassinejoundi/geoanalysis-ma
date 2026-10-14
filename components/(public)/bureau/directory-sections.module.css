@@ -172,42 +172,51 @@
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
 }
 
-.partnerLink {
+.partnerCard {
   display: flex;
-  min-height: 76px;
+  min-height: 150px;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 16px;
+  justify-content: center;
+  gap: 12px;
+  padding: 18px;
   border: 1px solid var(--border);
   background: var(--surface);
+  text-align: center;
+}
+
+.partnerLogoFrame {
+  display: grid;
+  width: 100%;
+  min-height: 84px;
+  place-items: center;
+}
+
+.partnerLogo {
+  display: block;
+  width: min(100%, 220px);
+  height: 84px;
+  object-fit: contain;
+}
+
+.partnerFallback {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--brand) 22%, var(--border));
+  background: var(--surface-green);
+  color: var(--brand-hover);
+  font-family: var(--font-data);
+  font-size: 16px;
+}
+
+.partnerName {
   color: var(--foreground);
   font-size: 14px;
   font-weight: 500;
   line-height: 1.4;
   overflow-wrap: anywhere;
-  text-decoration: none;
-}
-
-.partnerLink span:last-child {
-  flex: none;
-  color: var(--brand-hover);
-}
-
-.partnerLink:focus-visible {
-  outline: 3px solid var(--brand-hover);
-  outline-offset: 3px;
-}
-
-@media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .partnerLink {
-    transition: background-color 160ms ease, border-color 160ms ease;
-  }
-
-  .partnerLink:hover {
-    border-color: var(--brand);
-    background: var(--surface-green);
-  }
 }
 
 @media (max-width: 760px) {

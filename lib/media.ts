@@ -1,4 +1,4 @@
-export const adminMediaFolders = ["articles", "actualites", "realisations", "accueil", "bureau", "expertises", "logo"] as const;
+export const adminMediaFolders = ["articles", "actualites", "realisations", "accueil", "bureau", "bureau/partners", "expertises", "logo"] as const;
 
 export type AdminMediaFolder = (typeof adminMediaFolders)[number];
 

@@ -58,6 +58,25 @@ function isAllowedImageSource(value: string) {
   }
 }
 
+function isPartnerLogo(value: string) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" && url.hostname === "res.cloudinary.com" &&
+      /^\/[^/]+\/image\/upload\/v\d+\/geoanalysis\/bureau\/partners\/[^/]+$/.test(url.pathname);
+  } catch {
+    return false;
+  }
+}
+
+function normalizeHttpUrl(value: string) {
+  try {
+    const url = new URL(/^[a-z][a-z\d+.-]*:/i.test(value) ? value : "https://" + value);
+    return (url.protocol === "https:" || url.protocol === "http:") && url.hostname ? url.href : null;
+  } catch {
+    return null;
+  }
+}
+
 function parseEditorialImage(value: unknown) {
   if (value === null) return null;
   if (!isRecord(value) || !hasOnlyKeys(value, ["src", "alt"])) return false;
@@ -276,18 +295,15 @@ export function parseTeamFields(value: unknown) {
   return { order: Number(order), name, role, bio, ...(image !== undefined ? { image } : {}) };
 }
 
-export function parsePartnerFields(value: unknown) {
-  if (!isRecord(value) || !hasOnlyKeys(value, ["name", "url"])) return null;
+export function parsePartnerFields(value: unknown, allowMissingLogo = false) {
+  const keys = allowMissingLogo ? ["name", "logo", "url"] : ["name", "logo"];
+  if (!isRecord(value) || !hasOnlyKeys(value, keys)) return null;
   const name = textField(value.name, 120);
-  const url = textField(value.url, 2048);
-  if (!name || !url) return null;
-  try {
-    const parsed = new URL(/^[a-z][a-z\d+.-]*:/i.test(url) ? url : "https://" + url);
-    if ((parsed.protocol !== "https:" && parsed.protocol !== "http:") || !parsed.hostname) return null;
-    return { name, url: parsed.href };
-  } catch {
-    return null;
-  }
+  const logo = value.logo === undefined || (allowMissingLogo && value.logo === null)
+    ? ""
+    : textField(value.logo, 2048, false);
+  if (!name || logo === null || (!allowMissingLogo && !logo) || (logo && !isPartnerLogo(logo))) return null;
+  return { name, logo };
 }
 
 const settingsLinkKeys = new Set(["googleMaps", "linkedin", "facebook", "instagram"]);
@@ -303,9 +319,9 @@ export function parseSettingsFields(value: unknown) {
     if (field === null) return null;
     if (key === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(field)) return null;
     if (settingsLinkKeys.has(key) && field) {
-      const parsed = parsePartnerFields({ name: key, url: field });
+      const parsed = normalizeHttpUrl(field);
       if (!parsed) return null;
-      result[key] = parsed.url;
+      result[key] = parsed;
       continue;
     }
     if ((key === "logo" || key === "logoInverse") && !isAllowedImageSource(field)) return null;

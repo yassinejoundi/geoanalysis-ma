@@ -54,7 +54,7 @@ export type PublicTeamMember = {
   image: string | null;
 };
 
-export type PublicPartner = { id: string; name: string; url: string };
+export type PublicPartner = { id: string; name: string; logo: string };
 
 const dedicatedTables = {
   expertises: "cms_expertises",
@@ -471,7 +471,7 @@ export async function getPublicFirmDirectory(): Promise<{
     });
     const partners = partnerRows.flatMap(({ id, record }) => {
       if (!isRecord(record)) return [];
-      const fields = parsePartnerFields({ name: record.name, url: record.url });
+      const fields = parsePartnerFields({ name: record.name, logo: record.logo, url: record.url }, true);
       return fields ? [{ id, ...fields }] : [];
     });
 
