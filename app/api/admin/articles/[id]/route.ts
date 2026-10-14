@@ -1,9 +1,10 @@
-import { deleteAdminRecord, getAdminRecord, updateAdminRecord } from "@/lib/server/data/admin";
+import { deleteAdminRecord, getAdminRecord, listAdminRecords, updateAdminRecord } from "@/lib/server/data/admin";
 import { adminMutationAccess, logAdminMutation, mutationFailureResponse, mutationResponse, readMutationJson } from "@/lib/server/api";
 import { hasOnlyKeys, isIdentifier, isRecord, parseEditorialFields } from "@/lib/server/validation";
+import { uniqueArticleSlug } from "@/lib/content/article-slug";
 
 type RouteContext = { params: Promise<{ id: string }> };
-const keys = ["state", "category", "tags", "date", "title", "content", "seoTitle", "seoDescription", "readingTime", "image"] as const;
+const keys = ["state", "category", "tags", "date", "title", "content", "seoTitle", "seoDescription", "readingTime", "image", "files", "slug"] as const;
 
 export async function PATCH(request: Request, context: RouteContext) {
   const access = await adminMutationAccess(request);
@@ -19,7 +20,9 @@ export async function PATCH(request: Request, context: RouteContext) {
     const currentFields = Object.fromEntries(keys.map((key) => [key, current[key]]));
     const fields = parseEditorialFields({ ...currentFields, ...body.value }, "articles");
     if (!fields) return mutationFailureResponse(400, "Invalid request.");
-    const record = { ...current, id, ...fields };
+    const currentRecords = await listAdminRecords<Record<string, unknown>>(access.actor, "articles");
+    const slug = typeof current.slug === "string" ? current.slug : uniqueArticleSlug(fields.title.fr, currentRecords, id);
+    const record = { ...current, id, ...fields, slug };
     if (!await updateAdminRecord(access.actor, "articles", id, record)) return mutationFailureResponse(404, "Record not found.");
     logAdminMutation(request, access.actor, "articles.update", "success");
     return mutationResponse({ data: record });

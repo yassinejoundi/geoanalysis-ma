@@ -15,6 +15,7 @@ import { expertiseDetails } from "../lib/content/expertise-details.ts";
 import { realisationMissions } from "../components/(public)/realisations/content.ts";
 import { homeContent } from "../components/(public)/home/content.ts";
 import { expertisePageContent } from "../components/(public)/expertises/content.ts";
+import { parseArticleDocument } from "../lib/content/article-document.ts";
 
 const contentTables = {
   expertises: "cms_expertises",
@@ -430,6 +431,64 @@ try {
         AND record->>'phone' = '+212 5 24 00 00 00'
     `;
     await sql`INSERT INTO cms_migrations (version) VALUES (${contactPhoneMigration}) ON CONFLICT (version) DO NOTHING`;
+  }
+
+  const articleRichContentMigration = "011_article_rich_content_and_files_v1";
+  const articleRichContentApplied = await sql`SELECT version FROM cms_migrations WHERE version = ${articleRichContentMigration}`;
+  if (articleRichContentApplied.length === 0) {
+    const rows = await sql`SELECT id, record FROM cms_articles`;
+    for (const { id, record: rawRecord } of rows) {
+      if (!rawRecord || typeof rawRecord !== "object" || Array.isArray(rawRecord)) {
+        throw new Error("An article record is invalid.");
+      }
+      const record = rawRecord;
+      const oldContent = record.content && typeof record.content === "object" && !Array.isArray(record.content)
+        ? record.content
+        : {};
+      const content = {
+        fr: JSON.stringify(parseArticleDocument(typeof oldContent.fr === "string" ? oldContent.fr : "")),
+        en: JSON.stringify(parseArticleDocument(typeof oldContent.en === "string" ? oldContent.en : "")),
+      };
+      const files = Array.isArray(record.files) ? record.files : [];
+      const migrated = JSON.stringify({ ...record, content, files });
+      await sql`
+        UPDATE cms_articles
+        SET record = ${migrated}::jsonb, updated_by = 'system', updated_at = now()
+        WHERE id = ${id}
+      `;
+    }
+
+    await sql`
+      CREATE UNIQUE INDEX IF NOT EXISTS cms_articles_slug_unique
+      ON cms_articles ((record->>'slug'))
+      WHERE record ? 'slug'
+    `;
+
+    const constraint = await sql`
+      SELECT 1 FROM pg_constraint
+      WHERE conname = 'cms_articles_editorial_content_check'
+        AND conrelid = 'cms_articles'::regclass
+      LIMIT 1
+    `;
+    if (constraint.length === 0) {
+      await sql`
+        ALTER TABLE cms_articles
+        ADD CONSTRAINT cms_articles_editorial_content_check CHECK (
+          record ?& ARRAY['content', 'files']
+          AND record->'content' ?& ARRAY['fr', 'en']
+          AND jsonb_typeof(record->'content') = 'object'
+          AND jsonb_typeof(record->'content'->'fr') = 'string'
+          AND jsonb_typeof(record->'content'->'en') = 'string'
+          AND (((record->'content'->>'fr')::jsonb)->>'type') = 'doc'
+          AND (((record->'content'->>'en')::jsonb)->>'type') = 'doc'
+          AND jsonb_typeof(((record->'content'->>'fr')::jsonb)->'content') = 'array'
+          AND jsonb_typeof(((record->'content'->>'en')::jsonb)->'content') = 'array'
+          AND jsonb_typeof(record->'files') = 'array'
+          AND jsonb_array_length(record->'files') <= 20
+        )
+      `;
+    }
+    await sql`INSERT INTO cms_migrations (version) VALUES (${articleRichContentMigration}) ON CONFLICT (version) DO NOTHING`;
   }
 
   console.log("Admin data schema is ready.");

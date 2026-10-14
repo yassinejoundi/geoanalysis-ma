@@ -3,14 +3,10 @@ import "server-only";
 import { createHash, randomUUID } from "node:crypto";
 import { basename } from "node:path";
 import { v2 as cloudinary } from "cloudinary";
-import { validateMediaFile } from "@/lib/server/validation";
+import { MAX_ARTICLE_FILE_BYTES, validateArticleFile, validateMediaFile } from "@/lib/server/validation";
 import type { AdminMediaFolder } from "@/lib/media";
 
-export async function storeMedia(file: File, actorId: string, folder?: AdminMediaFolder) {
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  const validation = validateMediaFile(file, bytes);
-  if (validation !== "valid") return { error: validation } as const;
-
+async function configureCloudinary() {
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
   const apiKey = process.env.CLOUDINARY_API_KEY;
   const apiSecret = process.env.CLOUDINARY_API_SECRET;
@@ -24,6 +20,15 @@ export async function storeMedia(file: File, actorId: string, folder?: AdminMedi
   })).headers.get("date");
   const timestamp = Math.floor(Date.parse(serverDate ?? "") / 1000);
   if (!Number.isFinite(timestamp)) throw new Error("Media storage time is unavailable.");
+  return timestamp;
+}
+
+export async function storeMedia(file: File, actorId: string, folder?: AdminMediaFolder) {
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const validation = validateMediaFile(file, bytes);
+  if (validation !== "valid") return { error: validation } as const;
+
+  const timestamp = await configureCloudinary();
   const actorFolder = createHash("sha256").update(actorId).digest("hex").slice(0, 16);
   const publicId = randomUUID();
   const resourceType = file.type.startsWith("image/") ? "image" : "raw";
@@ -52,6 +57,45 @@ export async function storeMedia(file: File, actorId: string, folder?: AdminMedi
       id: "media-" + publicId,
       name: basename(file.name.replaceAll("\\", "/")).slice(0, 180),
       kind: uploaded.format.toUpperCase(),
+      size: uploaded.bytes,
+      url: uploaded.secure_url,
+    },
+  } as const;
+}
+
+export async function storeArticleFile(file: File) {
+  if (file.size > MAX_ARTICLE_FILE_BYTES) return { error: "too-large" } as const;
+  if (!file.name || file.name.length > 180) return { error: "unsupported" } as const;
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  const validation = validateArticleFile(file, bytes);
+  if (typeof validation !== "object") return { error: validation } as const;
+
+  const timestamp = await configureCloudinary();
+  const publicId = `${randomUUID()}.${validation.format.toLowerCase()}`;
+  const uploaded = await new Promise<{ secure_url: string; bytes: number }>((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: "Home/geoanalysis/articles/files",
+        public_id: publicId,
+        resource_type: "raw",
+        overwrite: false,
+        unique_filename: false,
+        allowed_formats: ["pdf", "docx", "xlsx", "csv"],
+        timestamp,
+      },
+      (error, result) => {
+        if (error || !result) reject(new Error("Article file upload failed."));
+        else resolve({ secure_url: result.secure_url, bytes: result.bytes });
+      },
+    );
+    stream.end(Buffer.from(bytes));
+  });
+
+  return {
+    file: {
+      id: "article-file-" + publicId.split(".", 1)[0],
+      name: basename(file.name.replaceAll("\\", "/")).slice(0, 180),
+      kind: validation.format,
       size: uploaded.bytes,
       url: uploaded.secure_url,
     },

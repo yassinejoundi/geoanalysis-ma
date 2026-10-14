@@ -3,8 +3,18 @@ import type { HomeContent } from "@/components/(public)/home/content";
 import type { BureauContent } from "@/components/(public)/bureau/content";
 import type { ExpertisePageContent } from "@/components/(public)/expertises/content";
 import type { MessageStatus, PublicationState } from "@/lib/content/admin";
+import {
+  isArticleDocument,
+  isSafeArticleHref,
+  maxArticleFileBytes,
+  maxArticleFiles,
+  parseArticleDocument,
+  type ArticleFileAttachment,
+} from "@/lib/content/article-document";
 
 export const MAX_MEDIA_BYTES = 4 * 1024 * 1024;
+export const MAX_ARTICLE_FILE_BYTES = maxArticleFileBytes;
+export const MAX_ARTICLE_FILES = maxArticleFiles;
 export const MAX_JSON_BYTES = 64 * 1024;
 
 export function isRecord(value: unknown): value is Record<string, unknown> {
@@ -51,6 +61,50 @@ function parseEditorialImage(value: unknown) {
   const alt = localizedText(value.alt, 250);
   if (!src || !alt || !isAllowedImageSource(src)) return false;
   return { src, alt };
+}
+
+function parseArticleContent(value: unknown) {
+  if (!isRecord(value) || !hasOnlyKeys(value, ["fr", "en"])) return null;
+  const content = { fr: "", en: "" };
+  for (const locale of ["fr", "en"] as const) {
+    const serialized = textField(value[locale], 24_000, false);
+    if (!serialized) return null;
+    const document = parseArticleDocument(serialized);
+    if (!isArticleDocument(document)) return null;
+    content[locale] = JSON.stringify(document);
+  }
+  return content;
+}
+
+function parseArticleFiles(value: unknown): ArticleFileAttachment[] | null {
+  if (!Array.isArray(value) || value.length > MAX_ARTICLE_FILES) return null;
+  const files: ArticleFileAttachment[] = [];
+  const ids = new Set<string>();
+  for (const file of value) {
+    if (!isRecord(file) || !hasOnlyKeys(file, ["id", "name", "kind", "size", "url"])) return null;
+    const id = textField(file.id, 80);
+    const name = textField(file.name, 180);
+    const url = textField(file.url, 2048);
+    const kind = file.kind;
+    const size = file.size;
+    if (!id || !isIdentifier(id) || ids.has(id) || !name || !url ||
+      !["PDF", "DOCX", "XLSX", "CSV"].includes(String(kind)) ||
+      typeof size !== "number" || !Number.isSafeInteger(size) || size < 1 || size > MAX_ARTICLE_FILE_BYTES) return null;
+    let parsedUrl: URL;
+    try {
+      parsedUrl = new URL(url);
+    } catch {
+      return null;
+    }
+    if (parsedUrl.protocol !== "https:" || parsedUrl.hostname !== "res.cloudinary.com" ||
+      !parsedUrl.pathname.includes("/Home/geoanalysis/articles/files/") || !isSafeArticleHref(parsedUrl.href)) return null;
+    const publicId = parsedUrl.pathname.split("/").pop()?.replace(/\.(pdf|docx|xlsx|csv)$/i, "");
+    if (parsedUrl.pathname.split("/").pop()?.toLowerCase().endsWith(`.${String(kind).toLowerCase()}`) !== true ||
+      id !== `article-file-${publicId}`) return null;
+    ids.add(id);
+    files.push({ id, name, kind: kind as ArticleFileAttachment["kind"], size, url });
+  }
+  return files;
 }
 
 export function publicationState(value: unknown): PublicationState | null {
@@ -139,24 +193,29 @@ function parseProjectGallery(value: unknown) {
 
 export function parseEditorialFields(value: unknown, kind: "articles" | "news") {
   const requiredKeys = ["state", "category", "tags", "date", "title", "content", "seoTitle", "seoDescription"];
-  const keys = [...requiredKeys, "image", ...(kind === "articles" ? ["readingTime"] : [])];
+  const keys = [...requiredKeys, "image", ...(kind === "articles" ? ["readingTime", "files", "slug"] : [])];
   if (!isRecord(value) || !hasOnlyKeys(value, keys) || requiredKeys.some((key) => !(key in value))) return null;
   const state = publicationState(value.state);
   const category = localizedText(value.category, 100);
   const date = textField(value.date, 40);
   const title = localizedText(value.title, 160);
-  const content = localizedText(value.content, 20_000, false);
+  const content = kind === "articles" ? parseArticleContent(value.content) : localizedText(value.content, 20_000, false);
+  const files = kind === "articles" ? parseArticleFiles(value.files) : undefined;
   const seoTitle = localizedText(value.seoTitle, 160, false);
   const seoDescription = localizedText(value.seoDescription, 320, false);
   const image = value.image === undefined ? undefined : parseEditorialImage(value.image);
   const readingTime = kind === "articles" ? textField(value.readingTime, 30) : undefined;
-  if (!Array.isArray(value.tags) || value.tags.length > 12 || image === false) return null;
+  const slug = kind === "articles" && value.slug !== undefined ? textField(value.slug, 120) : undefined;
+  if (!Array.isArray(value.tags) || value.tags.length > 12 || image === false || (kind === "articles" && !files)) return null;
   const tags = value.tags.map((tag) => textField(tag, 30)).filter((tag): tag is string => tag !== null);
-  if (tags.length !== value.tags.length || !state || !category || !date || !title || !content || !seoTitle || !seoDescription || (kind === "articles" && !readingTime)) return null;
+  if (tags.length !== value.tags.length || !state || !category || !date || !title || !content || !seoTitle || !seoDescription ||
+    (kind === "articles" && (!readingTime || (value.slug !== undefined && (!slug || !/^[a-z0-9][a-z0-9-]{0,119}$/.test(slug)))))) return null;
   return {
     state, category, tags, date, title, content, seoTitle, seoDescription,
     ...(image !== undefined ? { image } : {}),
+    ...(kind === "articles" ? { files } : {}),
     ...(readingTime ? { readingTime } : {}),
+    ...(slug ? { slug } : {}),
   };
 }
 
@@ -447,4 +506,39 @@ export function validateMediaFile(file: { name: string; type: string; size: numb
   const extension = file.name.split(".").pop()?.toLowerCase() ?? "";
   if (!format || !format.extension.includes(extension) || !format.magic(bytes)) return "unsupported" as const;
   return "valid" as const;
+}
+
+const articleFileFormats = {
+  pdf: {
+    mimeTypes: ["application/pdf"],
+    magic: (bytes: Uint8Array) => String.fromCharCode(...bytes.subarray(0, 5)) === "%PDF-",
+  },
+  docx: {
+    mimeTypes: ["application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
+    magic: (bytes: Uint8Array) => bytes[0] === 0x50 && bytes[1] === 0x4b && bytes[2] === 0x03 && bytes[3] === 0x04,
+  },
+  xlsx: {
+    mimeTypes: ["application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"],
+    magic: (bytes: Uint8Array) => bytes[0] === 0x50 && bytes[1] === 0x4b && bytes[2] === 0x03 && bytes[3] === 0x04,
+  },
+  csv: {
+    mimeTypes: ["text/csv", "application/vnd.ms-excel"],
+    magic: (bytes: Uint8Array) => {
+      try {
+        return !new TextDecoder("utf-8", { fatal: true }).decode(bytes).includes("\u0000");
+      } catch {
+        return false;
+      }
+    },
+  },
+} as const;
+
+export function validateArticleFile(file: { name: string; type: string; size: number }, bytes: Uint8Array) {
+  if (file.size > MAX_ARTICLE_FILE_BYTES || bytes.byteLength > MAX_ARTICLE_FILE_BYTES) return "too-large" as const;
+  if (!file.name || file.name.length > 180) return "invalid" as const;
+  const format = file.name.split(".").pop()?.toLowerCase() as keyof typeof articleFileFormats | undefined;
+  const rules = format ? articleFileFormats[format] : undefined;
+  const mimeAllowed = file.type === "" || Boolean(rules && (rules.mimeTypes as readonly string[]).includes(file.type));
+  if (!format || !rules || !mimeAllowed || !rules.magic(bytes)) return "unsupported" as const;
+  return { format: format.toUpperCase() as "PDF" | "DOCX" | "XLSX" | "CSV" };
 }
