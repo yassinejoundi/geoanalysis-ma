@@ -160,7 +160,10 @@ export function ArticleEditorFields({
             required
             maxLength={120}
             value={values.author ?? ""}
-            onChange={(event) => onChange((current) => ({ ...current, author: event.currentTarget.value }))}
+            onChange={(event) => {
+              const author = event.currentTarget.value;
+              onChange((current) => ({ ...current, author }));
+            }}
           />
         </label>
 
@@ -423,13 +426,19 @@ export function EditorialEditorFields({
           <div className="admin-fields-grid">
             <label className="admin-field">
               <span>Date de publication</span>
-              <input value={values.date} placeholder="Date du jour si vide" onChange={(event) => onChange((current) => ({ ...current, date: event.currentTarget.value }))} />
+              <input value={values.date} placeholder="Date du jour si vide" onChange={(event) => {
+                const date = event.currentTarget.value;
+                onChange((current) => ({ ...current, date }));
+              }} />
               <span className="admin-field-help">La date du jour sera utilisée si ce champ reste vide.</span>
             </label>
             {values.readingTime !== undefined && (
               <label className="admin-field">
                 <span>Temps de lecture</span>
-                <input required value={values.readingTime} onChange={(event) => onChange((current) => ({ ...current, readingTime: event.currentTarget.value }))} />
+                <input required value={values.readingTime} onChange={(event) => {
+                  const readingTime = event.currentTarget.value;
+                  onChange((current) => ({ ...current, readingTime }));
+                }} />
               </label>
             )}
           </div>
@@ -510,10 +519,13 @@ export function EditorialEditorFields({
         <textarea
           rows={8}
           value={values.content[language]}
-          onChange={(event) => onChange((current) => ({
-            ...current,
-            content: { ...current.content, [language]: event.currentTarget.value },
-          }))}
+          onChange={(event) => {
+            const content = event.currentTarget.value;
+            onChange((current) => ({
+              ...current,
+              content: { ...current.content, [language]: content },
+            }));
+          }}
           aria-describedby="editorial-content-help"
         />
         <span className="admin-field-help" id="editorial-content-help">
