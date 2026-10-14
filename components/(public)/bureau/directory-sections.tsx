@@ -72,7 +72,7 @@ export function BureauDirectorySections({
                   <div className={styles.teamProfile}>
                     <div className={styles.teamAvatar} aria-hidden="true">
                       {member.image ? (
-                        <Image src={member.image} alt="" width={72} height={72} className={styles.teamPortrait} />
+                        <Image src={member.image} alt="" fill sizes="64px" className={styles.teamPortrait} />
                       ) : initials(member.name)}
                     </div>
                     <div className={styles.teamIdentity}>
