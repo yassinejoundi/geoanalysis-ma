@@ -9,6 +9,7 @@ import { EditorDrawer } from "@/components/(admin)/shared/editor-drawer";
 import { Toast } from "@/components/(admin)/shared/toast";
 import { PartnerEditorFields, type PartnerDraft } from "@/components/(admin)/partenaires/partner-editor-fields";
 import { sendApiMutation } from "@/lib/api-client";
+import { uploadImageToCloudinary } from "@/lib/upload-image";
 
 type ToastMessage = { id: number; message: string };
 
@@ -22,6 +23,7 @@ export function PartnersManager({ initialPartners, embedded = false }: { initial
   const [isCreating, setIsCreating] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [pendingLogo, setPendingLogo] = useState<File | null>(null);
   const [search, setSearch] = useState("");
   const [pendingDelete, setPendingDelete] = useState<PartnerDraft | null>(null);
   const [logoError, setLogoError] = useState("");
@@ -38,12 +40,14 @@ export function PartnersManager({ initialPartners, embedded = false }: { initial
 
   function openCreateEditor() {
     setLogoError("");
+    setPendingLogo(null);
     setIsCreating(true);
     setEditorValues({ id: "", name: "", logo: "" });
   }
 
   function openEditor(partner: PartnerDraft) {
     setLogoError("");
+    setPendingLogo(null);
     setIsCreating(false);
     setEditorValues(partner);
   }
@@ -51,13 +55,13 @@ export function PartnersManager({ initialPartners, embedded = false }: { initial
   function closeEditor() {
     setEditorValues(null);
     setIsCreating(false);
+    setPendingLogo(null);
     setLogoError("");
   }
 
   async function saveEditor() {
     if (!editorValues || saveLock.current || isUploading) return;
-    const logo = editorValues.logo.trim();
-    if (!logo) {
+    if (!editorValues.logo.trim() && !pendingLogo) {
       setLogoError("Téléversez un logo avant d’enregistrer.");
       document.getElementById("partner-logo")?.focus();
       return;
@@ -65,8 +69,16 @@ export function PartnersManager({ initialPartners, embedded = false }: { initial
 
     saveLock.current = true;
     setIsSaving(true);
-    const updatedPartner = { ...editorValues, name: editorValues.name.trim(), logo };
     try {
+      let logo = editorValues.logo.trim();
+      if (pendingLogo) {
+        setIsUploading(true);
+        const uploaded = await uploadImageToCloudinary(pendingLogo, "bureau/partners");
+        logo = uploaded.url;
+        setEditorValues((current) => current && ({ ...current, logo }));
+        setPendingLogo(null);
+      }
+      const updatedPartner = { ...editorValues, name: editorValues.name.trim(), logo };
       const fields = { name: updatedPartner.name, logo: updatedPartner.logo };
       if (isCreating) {
         const created = await sendApiMutation<PartnerDraft>("/api/admin/partenaires", "POST", fields);
@@ -83,6 +95,7 @@ export function PartnersManager({ initialPartners, embedded = false }: { initial
     } finally {
       saveLock.current = false;
       setIsSaving(false);
+      setIsUploading(false);
     }
   }
 
@@ -188,7 +201,7 @@ export function PartnersManager({ initialPartners, embedded = false }: { initial
         onClose={closeEditor}
         onSave={saveEditor}
         saving={isSaving || isUploading}
-        savingLabel={isUploading ? "Envoi du logo…" : "Enregistrement…"}
+        savingLabel={isUploading ? "Téléversement du logo…" : "Enregistrement…"}
       >
         {editorValues && (
           <PartnerEditorFields
@@ -196,10 +209,7 @@ export function PartnersManager({ initialPartners, embedded = false }: { initial
             onChange={setEditorValues}
             logoError={logoError}
             onLogoChange={() => setLogoError("")}
-            onBusyChange={(busy) => {
-              setIsUploading(busy);
-              if (busy) setLogoError("");
-            }}
+            onFileSelected={setPendingLogo}
             disabled={isSaving}
           />
         )}

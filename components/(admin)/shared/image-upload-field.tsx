@@ -157,7 +157,15 @@ export function ImageUploadField({
             <button
               aria-label="Retirer l’image"
               className="admin-image-remove"
-              onClick={onRemove}
+              onClick={() => {
+                if (localPreview.current) URL.revokeObjectURL(localPreview.current);
+                localPreview.current = null;
+                setPreview(null);
+                setSelectedName("");
+                setStatus("");
+                setError("");
+                onRemove();
+              }}
               type="button"
             >
               <FontAwesomeIcon icon={faTrash} aria-hidden="true" />

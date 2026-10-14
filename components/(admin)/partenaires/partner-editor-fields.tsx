@@ -14,14 +14,14 @@ export function PartnerEditorFields({
   onChange,
   logoError,
   onLogoChange,
-  onBusyChange,
+  onFileSelected,
   disabled,
 }: {
   values: PartnerDraft;
   onChange: Dispatch<SetStateAction<PartnerDraft | null>>;
   logoError: string;
   onLogoChange: () => void;
-  onBusyChange: (busy: boolean) => void;
+  onFileSelected: (file: File | null) => void;
   disabled: boolean;
 }) {
   return (
@@ -45,14 +45,12 @@ export function PartnerEditorFields({
         label="Logo du partenaire"
         value={values.logo}
         uploadFolder="bureau/partners"
+        deferUpload
         disabled={disabled}
         errorMessage={logoError}
-        onBusyChange={onBusyChange}
-        onUploaded={(image) => {
-          onChange((current) => current && ({ ...current, logo: image.url }));
-          onLogoChange();
-        }}
+        onFileSelected={onFileSelected}
         onRemove={() => {
+          onFileSelected(null);
           onChange((current) => current && ({ ...current, logo: "" }));
           onLogoChange();
         }}
