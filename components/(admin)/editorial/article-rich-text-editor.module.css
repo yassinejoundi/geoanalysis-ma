@@ -1,0 +1,245 @@
+.editorFrame {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  border-radius: 2px;
+  background: var(--surface);
+}
+
+.controls {
+  display: flex;
+  min-height: 52px;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-soft);
+}
+
+.toolButton,
+.clearButton {
+  display: inline-flex;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  background: var(--surface);
+  color: var(--foreground);
+  cursor: pointer;
+  font: 600 12px/1 var(--font-body);
+}
+
+.toolButton:hover,
+.clearButton:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-green);
+}
+
+.toolButton[aria-pressed="true"] {
+  border-color: var(--brand);
+  background: var(--brand-pale);
+  color: var(--brand-hover);
+}
+
+.toolButton:focus-visible,
+.clearButton:focus-visible {
+  outline: 3px solid var(--brand-bright);
+  outline-offset: 2px;
+}
+
+.clearButton {
+  padding-inline: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.separator {
+  width: 1px;
+  height: 24px;
+  margin-inline: 2px;
+  background: var(--border-strong);
+}
+
+.editable {
+  min-height: 280px;
+  padding: 16px;
+  color: var(--foreground);
+  font: 400 16px/1.6 var(--font-body);
+  overflow-wrap: anywhere;
+  text-align: start;
+}
+
+.editable:empty::before {
+  color: var(--muted);
+  content: attr(data-placeholder);
+  pointer-events: none;
+}
+
+.editable:focus-visible {
+  outline: 3px solid var(--brand-bright);
+  outline-offset: -3px;
+}
+
+.editable p,
+.editable h2,
+.editable h3,
+.editable blockquote {
+  margin: 0 0 12px;
+}
+
+.editable h2,
+.editable h3 {
+  line-height: 1.2;
+}
+
+.editable blockquote {
+  padding-inline-start: 14px;
+  border-inline-start: 2px solid var(--brand);
+  color: var(--muted);
+}
+
+.editable ul,
+.editable ol {
+  padding-inline-start: 24px;
+}
+
+.filesSection {
+  display: grid;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.filesSection h2 {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.fileHelp,
+.noFiles,
+.fileStatus,
+.fileError {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.filePicker {
+  display: grid;
+  gap: 7px;
+  color: var(--foreground);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.filePicker input {
+  width: 100%;
+  min-height: 44px;
+  color: var(--foreground);
+  font: 400 16px/1.4 var(--font-body);
+}
+
+.filePicker input::file-selector-button {
+  min-height: 44px;
+  margin-inline-end: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 2px;
+  background: var(--surface-soft);
+  color: var(--foreground);
+  cursor: pointer;
+  font: 500 12px/1.3 var(--font-body);
+}
+
+.fileError {
+  color: var(--danger);
+}
+
+.fileList {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.fileRow {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  background: var(--surface);
+}
+
+.fileRow a {
+  display: grid;
+  min-width: 0;
+  flex: 1 1 200px;
+  gap: 3px;
+  color: var(--foreground);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.fileRow a:hover {
+  color: var(--brand-hover);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.fileRow small {
+  color: var(--muted);
+  font: 400 12px/1.4 var(--font-data);
+}
+
+.removeFile {
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-strong);
+  border-radius: 2px;
+  background: var(--surface);
+  color: var(--danger);
+  cursor: pointer;
+  font: 500 12px/1.3 var(--font-body);
+}
+
+.removeFile:focus-visible,
+.filePicker input:focus-visible {
+  outline: 3px solid var(--brand-bright);
+  outline-offset: 2px;
+}
+
+.removeFile:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+@media (max-width: 560px) {
+  .controls {
+    gap: 4px;
+    padding: 6px;
+  }
+
+  .toolButton {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .editable {
+    min-height: 240px;
+    padding: 14px;
+  }
+}

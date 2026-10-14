@@ -11,9 +11,11 @@ import { StatusBadge } from "@/components/(admin)/shared/status-badge";
 import { sendApiMutation } from "@/lib/api-client";
 import type { LocalizedText } from "@/lib/i18n";
 import { uploadImageToCloudinary } from "@/lib/upload-image";
+import { emptyArticleDocument, parseArticleDocument } from "@/lib/content/article-document";
 
 function emptyItem(kind: EditorialKind, categories: LocalizedText[]): EditorialDraft {
   const category = categories[0] ?? { fr: "", en: "" };
+  const articleContent = JSON.stringify(emptyArticleDocument);
   return {
     id: "",
     state: "draft",
@@ -23,13 +25,15 @@ function emptyItem(kind: EditorialKind, categories: LocalizedText[]): EditorialD
     ...(kind === "article" ? { readingTime: "5 min" } : {}),
     title: { fr: "", en: "" },
     image: null,
-    content: { fr: "", en: "" },
+    content: kind === "article" ? { fr: articleContent, en: articleContent } : { fr: "", en: "" },
+    ...(kind === "article" ? { files: [] } : {}),
     seoTitle: { fr: "", en: "" },
     seoDescription: { fr: "", en: "" },
   };
 }
 
-function normalizeItem(item: EditorialDraft): EditorialDraft {
+function normalizeItem(item: EditorialDraft, kind: EditorialKind): EditorialDraft {
+  const content = item.content ?? { fr: "", en: "" };
   return {
     ...item,
     category: item.category ?? { fr: "", en: "" },
@@ -41,7 +45,11 @@ function normalizeItem(item: EditorialDraft): EditorialDraft {
       src: item.image.src ?? "",
       alt: { fr: item.image.alt?.fr ?? "", en: item.image.alt?.en ?? "" },
     } : null,
-    content: item.content ?? { fr: "", en: "" },
+    content: kind === "article" ? {
+      fr: JSON.stringify(parseArticleDocument(content.fr)),
+      en: JSON.stringify(parseArticleDocument(content.en)),
+    } : content,
+    ...(kind === "article" ? { files: item.files ?? [] } : {}),
     seoTitle: item.seoTitle ?? { fr: "", en: "" },
     seoDescription: item.seoDescription ?? { fr: "", en: "" },
   };
@@ -62,11 +70,12 @@ export function EditorialRecordEditor({
   const newItemLabel = isArticle ? "Nouvel article" : "Nouvelle actualité";
   const subject = isArticle ? "article" : "actualité";
   const endpoint = isArticle ? "/api/admin/articles" : "/api/admin/actualites";
-  const [values, setValues] = useState(() => initialItem ? normalizeItem(initialItem) : emptyItem(kind, categories));
+  const [values, setValues] = useState(() => initialItem ? normalizeItem(initialItem, kind) : emptyItem(kind, categories));
   const [language, setLanguage] = useState<"fr" | "en">("fr");
   const [pendingImage, setPendingImage] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const [imageBusy, setImageBusy] = useState(false);
+  const [fileBusy, setFileBusy] = useState(false);
   const [error, setError] = useState("");
   const [saveStatus, setSaveStatus] = useState<"saving" | "success" | null>(null);
   const saveLock = useRef(false);
@@ -98,15 +107,24 @@ export function EditorialRecordEditor({
         setImageBusy(false);
       }
 
-      const draft = {
-        ...values,
+      const fields = {
+        state: values.state,
+        category: values.category,
+        tags: values.tags,
+        title: values.title,
+        content: values.content,
+        seoTitle: values.seoTitle,
+        seoDescription: values.seoDescription,
         image,
         date: values.date || new Date().toLocaleDateString("fr-FR"),
-        ...(isArticle ? { readingTime: values.readingTime?.trim() || "5 min" } : {}),
+        ...(isArticle ? {
+          readingTime: values.readingTime?.trim() || "5 min",
+          files: values.files ?? [],
+          ...(values.slug ? { slug: values.slug } : {}),
+        } : {}),
       };
-      const { id, ...fields } = draft;
       await sendApiMutation<EditorialDraft>(
-        isNew ? endpoint : `${endpoint}/${id}`,
+        isNew ? endpoint : `${endpoint}/${values.id}`,
         isNew ? "POST" : "PATCH",
         fields,
       );
@@ -159,6 +177,8 @@ export function EditorialRecordEditor({
               language={language}
               categories={categories}
               onImageSelected={setPendingImage}
+              onFilesBusyChange={setFileBusy}
+              kind={kind}
             />
           </div>
           {error && <p className={styles.error} role="alert">{error}</p>}
@@ -170,8 +190,8 @@ export function EditorialRecordEditor({
                   Retour au français
                 </button>
               )}
-              <button className="admin-action admin-action-primary" type="submit" disabled={saving}>
-                {saving ? imageBusy ? "Envoi de l’image…" : "Enregistrement…" : language === "fr" ? "Continuer vers l’anglais" : "Enregistrer"}
+              <button className="admin-action admin-action-primary" type="submit" disabled={saving || fileBusy}>
+                {saving ? imageBusy ? "Envoi de l’image…" : "Enregistrement…" : fileBusy ? "Envoi du fichier…" : language === "fr" ? "Continuer vers l’anglais" : "Enregistrer"}
               </button>
             </div>
           </footer>
@@ -180,7 +200,7 @@ export function EditorialRecordEditor({
       <SaveStatusDialog
         status={saveStatus}
         savingTitle={`Enregistrement de ${isArticle ? "l’article" : "l’actualité"}…`}
-        savingMessage={imageBusy ? "Envoi de l’image…" : "Enregistrement en cours. Veuillez patienter."}
+        savingMessage={imageBusy ? "Envoi de l’image…" : fileBusy ? "Envoi du fichier…" : "Enregistrement en cours. Veuillez patienter."}
         successTitle={isNew
           ? isArticle ? "Article ajouté" : "Actualité ajoutée"
           : "Modifications enregistrées"}

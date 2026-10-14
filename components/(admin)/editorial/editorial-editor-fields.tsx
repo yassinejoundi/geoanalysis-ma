@@ -4,12 +4,16 @@ import { useState, type Dispatch, type SetStateAction } from "react";
 import type { LocalizedText } from "@/lib/i18n";
 import type { PublicationState } from "@/lib/content/admin";
 import { ImageUploadField } from "@/components/(admin)/shared/image-upload-field";
+import { ArticleRichTextEditor } from "./article-rich-text-editor";
+import { ArticleFilesEditor } from "./article-files-editor";
+import type { ArticleFileAttachment } from "@/lib/content/article-document";
 
 export type EditorialKind = "article" | "news";
 export type EditorialImage = { src: string; alt: LocalizedText };
 
 export type EditorialDraft = {
   id: string;
+  slug?: string;
   state: PublicationState;
   category: LocalizedText;
   tags: string[];
@@ -18,6 +22,7 @@ export type EditorialDraft = {
   title: LocalizedText;
   image?: EditorialImage | null;
   content: LocalizedText;
+  files?: ArticleFileAttachment[];
   seoTitle: LocalizedText;
   seoDescription: LocalizedText;
 };
@@ -28,19 +33,23 @@ export function EditorialEditorFields({
   language,
   categories,
   onImageSelected,
+  onFilesBusyChange,
+  kind,
 }: {
   values: EditorialDraft;
   onChange: Dispatch<SetStateAction<EditorialDraft>>;
   language: "fr" | "en";
   categories: LocalizedText[];
   onImageSelected: (file: File | null) => void;
+  onFilesBusyChange: (busy: boolean) => void;
+  kind: EditorialKind;
 }) {
   const languageName = language === "fr" ? "Français" : "Anglais";
   const [customCategory, setCustomCategory] = useState(!categories.some((category) => category.fr === values.category.fr));
   const [imageInputVersion, setImageInputVersion] = useState(0);
 
   function updateLocalizedField(
-    field: "title" | "content" | "seoTitle" | "seoDescription",
+    field: "title" | "seoTitle" | "seoDescription",
     value: string,
   ) {
     onChange((current) => ({
@@ -197,18 +206,42 @@ export function EditorialEditorFields({
         </label>
       )}
 
-      <label className="admin-field">
-        <span>Contenu — {languageName}</span>
-        <textarea
-          rows={8}
-          value={values.content[language]}
-          onChange={(event) => updateLocalizedField("content", event.currentTarget.value)}
-          aria-describedby="editorial-content-help"
-        />
+      <div className="admin-field">
+        <span id="editorial-content-label">Contenu — {languageName}</span>
+        {kind === "article" ? (
+          <ArticleRichTextEditor
+            key={language}
+            labelId="editorial-content-label"
+            value={values.content[language]}
+            onChange={(value) => onChange((current) => ({
+              ...current,
+              content: { ...current.content, [language]: value },
+            }))}
+          />
+        ) : (
+          <textarea
+            rows={8}
+            value={values.content[language]}
+            onChange={(event) => onChange((current) => ({
+              ...current,
+              content: { ...current.content, [language]: event.currentTarget.value },
+            }))}
+            aria-describedby="editorial-content-help"
+          />
+        )}
         <span className="admin-field-help" id="editorial-content-help">
-          Le contenu est enregistré comme texte brut.
+          {kind === "article"
+            ? "Mettez en forme le texte avec la barre d’outils."
+            : "Le contenu est enregistré comme texte brut."}
         </span>
-      </label>
+      </div>
+      {kind === "article" && language === "fr" ? (
+        <ArticleFilesEditor
+          files={values.files ?? []}
+          onChange={(files) => onChange((current) => ({ ...current, files }))}
+          onBusyChange={onFilesBusyChange}
+        />
+      ) : null}
 
       <section className="project-seo-editor" aria-labelledby="editorial-seo-title">
         <h3 id="editorial-seo-title">SEO</h3>
