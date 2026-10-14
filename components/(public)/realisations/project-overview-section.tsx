@@ -1,6 +1,8 @@
 import { SectionHeading } from "@/components/(public)/home/section-heading";
 import type { ProjectDetail } from "@/lib/content/project-details";
 import { localize, type Locale } from "@/lib/i18n";
+import { ArticleRichText } from "@/components/site/article-rich-text";
+import { parseArticleDocument } from "@/lib/content/article-document";
 
 export function ProjectOverviewSection({
   detail,
@@ -16,18 +18,20 @@ export function ProjectOverviewSection({
     methodologyTitle: string;
   };
 }) {
+  const description = parseArticleDocument(localize(detail.description, locale));
+  const methodology = parseArticleDocument(localize(detail.methodology, locale));
   return (
     <section className="project-overview-section">
-      {localize(detail.description, locale).trim() && (
+      {description.content.length > 0 && (
         <div>
           <SectionHeading kicker={copy.descriptionKicker} title={copy.descriptionTitle} />
-          <p className="project-description">{localize(detail.description, locale)}</p>
+          <div className="project-description project-rich-content"><ArticleRichText document={description} /></div>
         </div>
       )}
-      {localize(detail.methodology, locale).trim() && (
+      {methodology.content.length > 0 && (
         <div>
           <SectionHeading kicker={copy.methodologyKicker} title={copy.methodologyTitle} />
-          <p className="project-description">{localize(detail.methodology, locale)}</p>
+          <div className="project-description project-rich-content"><ArticleRichText document={methodology} /></div>
         </div>
       )}
     </section>

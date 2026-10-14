@@ -8,6 +8,7 @@ import { ProjectResultsSection } from "@/components/(public)/realisations/projec
 import { getPublicProjectBySlug } from "@/lib/server/data/admin";
 import { isLocale, localize } from "@/lib/i18n";
 import { notFound } from "next/navigation";
+import { parseArticleDocument } from "@/lib/content/article-document";
 
 type ProjectPageProps = PageProps<"/[lang]/realisations/[slug]">;
 
@@ -42,10 +43,10 @@ export default async function ProjectPage({
     methodology: project.methodology,
     results: project.results,
   };
-  const hasDetails = Object.values(detail).some((value) => value.fr.trim() || value.en.trim());
-  const hasOverview = [detail.description, detail.methodology].some(
-    (value) => value.fr.trim() || value.en.trim(),
-  );
+  const hasContent = (value: { fr: string; en: string }) =>
+    parseArticleDocument(value.fr).content.length > 0 || parseArticleDocument(value.en).content.length > 0;
+  const hasDetails = Object.values(detail).some(hasContent);
+  const hasOverview = [detail.description, detail.methodology].some(hasContent);
 
   return (
     <main className="projects-page project-detail-page">
@@ -58,11 +59,34 @@ export default async function ProjectPage({
       {hasDetails && (
         <div className="project-detail-inner project-detail-content">
           {hasOverview && <ProjectOverviewSection detail={detail} locale={lang} copy={copy} />}
-          {detail.results.fr.trim() || detail.results.en.trim() ? (
+          {hasContent(detail.results) ? (
             <ProjectResultsSection detail={detail} locale={lang} copy={copy} />
           ) : null}
         </div>
       )}
+      {project.resources?.length || project.files?.length ? (
+        <section className="project-detail-resources" aria-label={lang === "fr" ? "Ressources du projet" : "Project resources"}>
+          {project.resources?.length ? (
+            <div className="editorial-detail-source-note editorial-detail-sources">
+              <h2>{lang === "fr" ? "Ressources" : "Resources"}</h2>
+              <ul>{project.resources.map((resource) => <li key={resource.url}>
+                <a href={resource.url} rel="noopener noreferrer" target="_blank">{resource.text}</a>
+              </li>)}</ul>
+            </div>
+          ) : null}
+          {project.files?.length ? (
+            <section className="editorial-files" aria-labelledby="project-files-heading">
+              <h2 id="project-files-heading">{lang === "fr" ? "Fichiers à télécharger" : "Files to download"}</h2>
+              <ul>{project.files.map((file) => <li key={file.id}>
+                <a href={file.url} rel="noreferrer" target="_blank">
+                  <span>{file.name}</span>
+                  <small>{file.kind} · {file.size < 1024 * 1024 ? `${Math.ceil(file.size / 1024)} Ko` : `${(file.size / (1024 * 1024)).toFixed(1)} Mo`}</small>
+                </a>
+              </li>)}</ul>
+            </section>
+          ) : null}
+        </section>
+      ) : null}
       <ProjectContactSection
         locale={lang}
         title={copy.contactTitle}

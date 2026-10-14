@@ -13,6 +13,10 @@ export const newsPageCopy = {
     archiveLabel: "Archives photographiques",
     sourceLabel: "Précision sur les sources",
     sourceNote: "Les documents fournis ne permettent pas d’associer ces archives à un site ou à un client précis.",
+    author: "Par",
+    resources: "Ressources",
+    files: "Fichiers à télécharger",
+    openFile: "Ouvrir le fichier",
   },
   en: {
     title: "News",
@@ -28,5 +32,9 @@ export const newsPageCopy = {
     archiveLabel: "Photo archive",
     sourceLabel: "Source note",
     sourceNote: "The supplied documents do not link these archive images to a specific site or client.",
+    author: "By",
+    resources: "Resources",
+    files: "Files to download",
+    openFile: "Open file",
   },
 } as const;

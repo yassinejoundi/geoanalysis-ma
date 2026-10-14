@@ -728,6 +728,7 @@ button:focus-visible {
 .page-hero-kicker { margin: 0; color: var(--brand); font-family: var(--font-data); font-size: 11px; font-weight: 500; letter-spacing: .18em; line-height: 1.4; text-transform: uppercase; }
 .site-content > main .page-hero h1 { max-width: 22ch; margin: 18px 0 0; color: var(--foreground); font-size: clamp(32px, 4.6vw, 60px); font-weight: 300; letter-spacing: -.02em; line-height: 1.08; }
 .page-hero-lead { max-width: 60ch; margin: 20px 0 0; color: var(--muted); font-size: clamp(15px, 1.3vw, 17px); font-weight: 300; line-height: 1.7; }
+.page-hero-byline { margin: 14px 0 0; color: var(--muted); font-size: 13px; line-height: 1.5; }
 .firm-hero { position: relative; isolation: isolate; overflow: hidden; border-bottom: 1px solid var(--border); background: radial-gradient(ellipse 50% 100% at 18% 0%, color-mix(in srgb, var(--brand-pale) 48%, transparent), transparent 100%), var(--surface-soft); }
 .firm-hero::before { position: absolute; z-index: -1; inset: 0; background-image: repeating-radial-gradient(ellipse at 20% 15%, transparent 0 35px, color-mix(in srgb, var(--brand) 7%, transparent) 36px 37px); -webkit-mask-image: linear-gradient(100deg, #000 0%, transparent 72%); mask-image: linear-gradient(100deg, #000 0%, transparent 72%); content: ""; pointer-events: none; }
 .firm-hero-inner { display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, .96fr); align-items: center; gap: clamp(36px, 6vw, 84px); width: min(100%, 1360px); margin-inline: auto; padding: clamp(56px, 8vh, 96px) clamp(20px, 4vw, 48px); }
@@ -1691,6 +1692,18 @@ button:focus-visible {
 
 .project-overview-section { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(24px, 3vw, 40px); }
 .project-description { margin: 16px 0 0; color: var(--foreground); font-size: 15.5px; font-weight: 300; line-height: 1.72; white-space: pre-line; }
+.project-rich-content > :first-child { margin-top: 0; }
+.project-rich-content > :last-child { margin-bottom: 0; }
+.project-rich-content h2, .project-rich-content h3 { margin: 20px 0 9px; color: var(--foreground); font-weight: 500; line-height: 1.3; }
+.project-rich-content h2 { font-size: 20px; }
+.project-rich-content h3 { font-size: 17px; }
+.project-rich-content p, .project-rich-content blockquote { margin: 0 0 14px; }
+.project-rich-content blockquote { padding-inline-start: 14px; border-inline-start: 2px solid var(--brand); color: var(--muted); }
+.project-rich-content ul, .project-rich-content ol { margin: 0 0 14px; padding-inline-start: 24px; }
+.project-rich-content ul { list-style: disc; }
+.project-rich-content ol { list-style: decimal; }
+.project-rich-content li { padding-inline-start: 3px; }
+.project-rich-content a { color: var(--brand-hover); text-decoration: underline; text-underline-offset: 3px; }
 
 .project-method-list {
   margin: 14px 0 0;
@@ -5615,6 +5628,7 @@ button:focus-visible {
 }
 
 .project-gallery-placeholder {
+  position: relative;
   display: flex;
   min-height: 96px;
   align-items: flex-start;
@@ -5623,6 +5637,25 @@ button:focus-visible {
   border: 1px solid var(--border);
   background: repeating-linear-gradient(112deg, var(--surface-soft) 0 8px, color-mix(in srgb, var(--surface-soft) 48%, var(--surface)) 8px 16px);
 }
+.project-gallery-remove {
+  position: absolute;
+  inset-block-start: 7px;
+  inset-inline-end: 7px;
+  z-index: 1;
+  display: grid;
+  width: 40px;
+  height: 40px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--danger) 70%, white);
+  border-radius: 2px;
+  background: var(--danger);
+  color: #fff;
+  cursor: pointer;
+}
+.project-gallery-remove:hover { background: color-mix(in srgb, var(--danger) 82%, black); }
+.project-gallery-remove:focus-visible { outline: 3px solid var(--brand-bright); outline-offset: 2px; }
+.project-detail-resources { width: min(100% - 40px, 920px); margin: 0 auto clamp(44px, 6vw, 72px); }
+.project-detail-resources .editorial-files { margin-top: 18px; }
 
 .project-gallery-placeholder span {
   padding: 4px 6px;

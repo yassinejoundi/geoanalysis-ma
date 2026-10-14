@@ -23,8 +23,8 @@ import { homeContent, type HomeContent, type HomeContentRecord } from "@/compone
 import type { BureauContent, BureauContentRecord } from "@/components/(public)/bureau/content";
 import type { ExpertisePageContent, ExpertisePageContentRecord } from "@/components/(public)/expertises/content";
 import type { Locale } from "@/lib/i18n";
-import { articles as articleFixtures, type EditorialDetailEntry } from "@/lib/content/site";
-import { estimateArticleReadingTime, parseArticleDocument } from "@/lib/content/article-document";
+import { articles as articleFixtures, news as newsFixtures, type EditorialDetailEntry } from "@/lib/content/site";
+import { articleDocumentToText, estimateArticleReadingTime, parseArticleDocument } from "@/lib/content/article-document";
 
 export const adminCollections = [
   "expertises",
@@ -105,6 +105,9 @@ function normalizeProjectRecord(id: string, value: unknown, includeLegacyImage =
     seoTitle: value.seoTitle ?? value.title,
     seoDescription: value.seoDescription ?? value.description ?? emptyText,
     gallery: value.gallery ?? [],
+    author: value.author ?? "",
+    files: value.files ?? [],
+    resources: value.resources ?? [],
   });
   if (!project) return null;
   const slug = typeof value.slug === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value.slug)
@@ -114,6 +117,7 @@ function normalizeProjectRecord(id: string, value: unknown, includeLegacyImage =
     id,
     ...project,
     slug,
+    ...(typeof value.publishedAt === "string" ? { publishedAt: value.publishedAt } : {}),
     ...(includeLegacyImage && typeof value.image === "string" ? { legacyImage: value.image } : {}),
   };
 }
@@ -189,7 +193,10 @@ export const getPublicProjects = cache(async (): Promise<PublicProject[]> => {
         ...project,
         slug: project.slug ?? projectSlug(project.title.fr, id),
         domain,
-        teaser: project.context,
+        teaser: {
+          fr: articleDocumentToText(parseArticleDocument(project.context.fr)).slice(0, 220),
+          en: articleDocumentToText(parseArticleDocument(project.context.en)).slice(0, 220),
+        },
         gallery,
         coverImage: gallery.find((image) => image.isCover)?.url ?? gallery[0]?.url,
       }];
@@ -284,6 +291,87 @@ export const getPublicArticles = cache(async (): Promise<EditorialDetailEntry[]>
 
 export async function getPublicArticleBySlug(slug: string) {
   return (await getPublicArticles()).find((article) => article.slug === slug) ?? null;
+}
+
+export const getPublicNews = cache(async (): Promise<EditorialDetailEntry[]> => {
+  await connection();
+  try {
+    const sql = getDatabase();
+    const rows = await sql`
+      SELECT id, record
+      FROM cms_actualites
+      WHERE record->>'state' = 'published'
+      ORDER BY position ASC, created_at ASC, id ASC
+    ` as CmsRow[];
+    if (!rows.length) return newsFixtures;
+    const fixtures = new Map(newsFixtures.map((entry) => [entry.id, entry]));
+    return rows.flatMap(({ id, record }) => {
+      if (!isRecord(record)) return [];
+      const entry = parseEditorialFields({
+        state: record.state,
+        category: record.category,
+        tags: record.tags ?? [],
+        date: record.date ?? "",
+        title: record.title,
+        content: record.content,
+        seoTitle: record.seoTitle ?? { fr: "", en: "" },
+        seoDescription: record.seoDescription ?? { fr: "", en: "" },
+        ...(record.image === undefined ? {} : { image: record.image }),
+        files: record.files ?? [],
+        author: record.author ?? "",
+        resources: record.resources ?? [],
+      }, "news");
+      if (!entry || entry.state !== "published") return [];
+      const slug = typeof record.slug === "string" && /^[a-z0-9][a-z0-9-]{0,119}$/.test(record.slug)
+        ? record.slug
+        : projectSlug(entry.title.fr, id);
+      const dateValue = /^\d{4}-\d{2}-\d{2}$/.test(entry.date) ? new Date(`${entry.date}T12:00:00Z`) : null;
+      const dateISO = dateValue && !Number.isNaN(dateValue.getTime()) && dateValue.toISOString().slice(0, 10) === entry.date
+        ? entry.date
+        : undefined;
+      const date = dateISO
+        ? {
+            fr: new Intl.DateTimeFormat("fr", { dateStyle: "long", timeZone: "UTC" }).format(dateValue!),
+            en: new Intl.DateTimeFormat("en", { dateStyle: "long", timeZone: "UTC" }).format(dateValue!),
+          }
+        : { fr: entry.date, en: entry.date };
+      const fixture = fixtures.get(id);
+      const richBody = {
+        fr: parseArticleDocument(entry.content.fr),
+        en: parseArticleDocument(entry.content.en),
+      };
+      const teaser = {
+        fr: entry.seoDescription.fr || articleDocumentToText(richBody.fr).slice(0, 220),
+        en: entry.seoDescription.en || articleDocumentToText(richBody.en).slice(0, 220),
+      };
+      return [{
+        id,
+        slug,
+        category: entry.category,
+        date,
+        ...(dateISO ? { dateISO } : {}),
+        readingTime: entry.readingTime,
+        title: entry.title,
+        seoTitle: { fr: entry.seoTitle.fr || entry.title.fr, en: entry.seoTitle.en || entry.title.en },
+        seoDescription: teaser,
+        teaser,
+        imageLabel: fixture?.imageLabel ?? entry.category.fr,
+        ...(record.image === null ? {} : { image: entry.image ?? fixture?.image }),
+        ...(fixture?.sources ? { sources: fixture.sources } : {}),
+        ...(entry.author ? { author: entry.author } : {}),
+        ...(entry.resources?.length ? { resources: entry.resources } : {}),
+        body: fixture?.body ?? { fr: [], en: [] },
+        richBody,
+        files: entry.files ?? [],
+      }];
+    });
+  } catch {
+    return newsFixtures;
+  }
+});
+
+export async function getPublicNewsBySlug(slug: string) {
+  return (await getPublicNews()).find((entry) => entry.slug === slug) ?? null;
 }
 
 export async function getPublicHomeContent(locale: Locale): Promise<HomeContent | null> {
@@ -469,7 +557,7 @@ export async function listAdminRecords<T>(actor: AdminActor, collection: AdminCo
         ORDER BY position ASC, created_at ASC, id ASC
       ` as CmsRow[];
   return rows.map(({ id, record, image_url }) => {
-    if (collection === "articles" && isRecord(record) && isRecord(record.content) &&
+    if ((collection === "articles" || collection === "news") && isRecord(record) && isRecord(record.content) &&
       typeof record.content.fr === "string" && typeof record.content.en === "string") {
       return {
         ...record,

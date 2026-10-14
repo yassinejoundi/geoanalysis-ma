@@ -8,9 +8,11 @@ import {
   isSafeArticleHref,
   maxArticleFileBytes,
   maxArticleFiles,
+  articleDocumentToText,
   parseArticleDocument,
   type ArticleFileAttachment,
   type ArticleResource,
+  type EditorialFileCollection,
   estimateArticleReadingTime,
 } from "@/lib/content/article-document";
 
@@ -78,7 +80,7 @@ function parseArticleContent(value: unknown) {
   return content;
 }
 
-function parseArticleFiles(value: unknown): ArticleFileAttachment[] | null {
+function parseArticleFiles(value: unknown, collection: EditorialFileCollection): ArticleFileAttachment[] | null {
   if (!Array.isArray(value) || value.length > MAX_ARTICLE_FILES) return null;
   const files: ArticleFileAttachment[] = [];
   const ids = new Set<string>();
@@ -98,10 +100,14 @@ function parseArticleFiles(value: unknown): ArticleFileAttachment[] | null {
     } catch {
       return null;
     }
+    const idPrefix = collection === "articles" ? "article-file-" : collection === "actualites" ? "news-file-" : "project-file-";
+    const allowedPath = collection === "articles"
+      ? /^\/[^/]+\/raw\/upload\/v\d+\/(?:Home\/)?geoanalysis\/articles\/files\/[^/]+$/
+      : new RegExp(`^/[^/]+/raw/upload/v\\d+/geoanalysis/${collection}/files/[^/]+$`);
     if (parsedUrl.protocol !== "https:" || parsedUrl.hostname !== "res.cloudinary.com" ||
-      !/^\/[^/]+\/raw\/upload\/v\d+\/(?:Home\/)?geoanalysis\/articles\/files\/[^/]+$/.test(parsedUrl.pathname) ||
+      !allowedPath.test(parsedUrl.pathname) ||
       !parsedUrl.pathname.toLowerCase().endsWith(`.${String(kind).toLowerCase()}`) ||
-      !id.startsWith("article-file-") || !isSafeArticleHref(parsedUrl.href)) return null;
+      !id.startsWith(idPrefix) || !isSafeArticleHref(parsedUrl.href)) return null;
     ids.add(id);
     files.push({ id, name, kind: kind as ArticleFileAttachment["kind"], size, url });
   }
@@ -177,7 +183,7 @@ export function parseSubServiceFields(value: unknown, partial = false) {
 }
 
 export function parseProjectFields(value: unknown) {
-  const keys = ["state", "expertiseId", "subServiceId", "location", "date", "title", "context", "methodology", "results", "seoTitle", "seoDescription", "gallery"];
+  const keys = ["state", "expertiseId", "subServiceId", "location", "date", "title", "context", "methodology", "results", "seoTitle", "seoDescription", "gallery", "author", "files", "resources"];
   if (!isRecord(value) || !hasOnlyKeys(value, keys) || keys.some((key) => !(key in value))) return null;
   const state = publicationState(value.state);
   const expertiseId = textField(value.expertiseId, 80);
@@ -185,14 +191,31 @@ export function parseProjectFields(value: unknown) {
   const location = textField(value.location, 140);
   const date = textField(value.date, 40);
   const title = localizedText(value.title, 160);
-  const context = localizedText(value.context, 5000, false);
-  const methodology = localizedText(value.methodology, 5000, false);
-  const results = localizedText(value.results, 5000, false);
+  const parseProjectContent = (input: unknown) => {
+    const content = parseArticleContent(input);
+    return content && [content.fr, content.en].every((serialized) =>
+      articleDocumentToText(parseArticleDocument(serialized)).length <= 5000)
+      ? content
+      : null;
+  };
+  const context = parseProjectContent(value.context);
+  const methodology = parseProjectContent(value.methodology);
+  const results = parseProjectContent(value.results);
   const seoTitle = localizedText(value.seoTitle, 160, false);
   const seoDescription = localizedText(value.seoDescription, 320, false);
   const gallery = parseProjectGallery(value.gallery);
-  if (!state || !expertiseId || !isIdentifier(expertiseId) || subServiceId === null || (subServiceId && !isIdentifier(subServiceId)) || !location || !date || !title || !context || !methodology || !results || !seoTitle || !seoDescription || !gallery) return null;
-  return { state, expertiseId, subServiceId, location, date, title, context, methodology, results, seoTitle, seoDescription, gallery };
+  const author = textField(value.author ?? "", 120, false);
+  const files = parseArticleFiles(value.files ?? [], "realisations");
+  const resources = parseArticleResources(value.resources ?? []);
+  if (!state || !expertiseId || !isIdentifier(expertiseId) || subServiceId === null || (subServiceId && !isIdentifier(subServiceId)) || !location || !date || !title || !context || !methodology || !results || !seoTitle || !seoDescription || !gallery || author === null || !files || !resources) return null;
+  return {
+    state, expertiseId, subServiceId, location, date, title, context, methodology, results,
+    seoTitle, seoDescription, gallery, author, files, resources,
+    readingTime: estimateArticleReadingTime({
+      fr: [context.fr, methodology.fr, results.fr].join(" "),
+      en: [context.en, methodology.en, results.en].join(" "),
+    }),
+  };
 }
 
 function parseProjectGallery(value: unknown) {
@@ -213,30 +236,30 @@ function parseProjectGallery(value: unknown) {
 
 export function parseEditorialFields(value: unknown, kind: "articles" | "news") {
   const requiredKeys = ["state", "category", "tags", "date", "title", "content", "seoTitle", "seoDescription"];
-  const keys = [...requiredKeys, "image", ...(kind === "articles" ? ["readingTime", "files", "slug", "author", "resources"] : [])];
+  const keys = [...requiredKeys, "image", "readingTime", "files", "slug", "author", "resources"];
   if (!isRecord(value) || !hasOnlyKeys(value, keys) || requiredKeys.some((key) => !(key in value))) return null;
   const state = publicationState(value.state);
   const category = localizedText(value.category, 100);
-  const date = textField(value.date, 40, kind !== "articles");
+  const date = textField(value.date, 40, false);
   const title = localizedText(value.title, 160);
-  const content = kind === "articles" ? parseArticleContent(value.content) : localizedText(value.content, 20_000, false);
-  const files = kind === "articles" ? parseArticleFiles(value.files ?? []) : undefined;
-  const resources = kind === "articles" ? parseArticleResources(value.resources ?? []) : undefined;
-  const author = kind === "articles" ? textField(value.author ?? "", 120, false) : undefined;
+  const content = parseArticleContent(value.content);
+  const files = parseArticleFiles(value.files ?? [], kind === "articles" ? "articles" : "actualites");
+  const resources = parseArticleResources(value.resources ?? []);
+  const author = textField(value.author ?? "", 120, false);
   const seoTitle = localizedText(value.seoTitle, 160, false);
   const seoDescription = localizedText(value.seoDescription, 320, false);
   const image = value.image === undefined ? undefined : parseEditorialImage(value.image);
-  const slug = kind === "articles" && value.slug !== undefined ? textField(value.slug, 120) : undefined;
+  const slug = value.slug !== undefined ? textField(value.slug, 120) : undefined;
   if (!Array.isArray(value.tags) || value.tags.length > 12 || image === false ||
-    (kind === "articles" && (!files || !resources || author === null))) return null;
+    !files || !resources || author === null) return null;
   const tags = value.tags.map((tag) => textField(tag, 30)).filter((tag): tag is string => tag !== null);
-  if (tags.length !== value.tags.length || !state || !category || date === null || (kind === "news" && !date) || !title || !content || !seoTitle || !seoDescription ||
-    (kind === "articles" && (value.slug !== undefined && (!slug || !/^[a-z0-9][a-z0-9-]{0,119}$/.test(slug))))) return null;
-  const readingTime = kind === "articles" ? estimateArticleReadingTime(content) : undefined;
+  if (tags.length !== value.tags.length || !state || !category || date === null || !title || !content || !seoTitle || !seoDescription ||
+    (value.slug !== undefined && (!slug || !/^[a-z0-9][a-z0-9-]{0,119}$/.test(slug)))) return null;
+  const readingTime = estimateArticleReadingTime(content);
   return {
-    state, category, tags, date, title, content, seoTitle, seoDescription,
+    state, category, tags, date: date || "", title, content, seoTitle, seoDescription,
     ...(image !== undefined ? { image } : {}),
-    ...(kind === "articles" ? { files, resources, author, readingTime } : {}),
+    files, resources, author, readingTime,
     ...(slug ? { slug } : {}),
   };
 }

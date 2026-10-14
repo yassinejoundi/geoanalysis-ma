@@ -3,6 +3,7 @@ import { adminMutationAccess, logAdminMutation, mutationFailureResponse, mutatio
 import { createAdminRecord, listAdminRecords, validateProjectReferences } from "@/lib/server/data/admin";
 import { parseProjectFields } from "@/lib/server/validation";
 import { projectSlug } from "@/lib/content/projects";
+import { currentPublicationDate } from "@/lib/server/publication-date";
 
 export async function POST(request: Request) {
   const access = await adminMutationAccess(request);
@@ -10,13 +11,18 @@ export async function POST(request: Request) {
   const body = await readMutationJson(request);
   if ("response" in body) return body.response;
   const fields = parseProjectFields(body.value);
-  if (!fields) return mutationFailureResponse(400, "Invalid request.");
+  if (!fields || (fields.state === "published" && !fields.author)) return mutationFailureResponse(400, "Invalid request.");
 
   try {
     if (!await validateProjectReferences(access.actor, fields.expertiseId, fields.subServiceId, fields.gallery.map((image) => image.id))) return mutationFailureResponse(422, "An expertise, service, or media item is unavailable.");
     const current = await listAdminRecords(access.actor, "projects");
     const id = "project-" + randomUUID();
-    const record = { id, ...fields, slug: projectSlug(fields.title.fr, id) };
+    const record = {
+      id,
+      ...fields,
+      slug: projectSlug(fields.title.fr, id),
+      publishedAt: fields.state === "published" ? currentPublicationDate() : null,
+    };
     if (!await createAdminRecord(access.actor, "projects", record.id, record, current.length)) {
       return mutationFailureResponse(409, "A record with this value already exists.");
     }

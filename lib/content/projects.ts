@@ -1,5 +1,6 @@
 import type { PublicationState } from "@/lib/content/admin";
 import type { LocalizedText } from "@/lib/i18n";
+import type { ArticleFileAttachment, ArticleResource } from "@/lib/content/article-document";
 
 export type ProjectImage = {
   id: string;
@@ -23,6 +24,11 @@ export type ProjectDraft = {
   seoTitle: LocalizedText;
   seoDescription: LocalizedText;
   gallery: ProjectImage[];
+  author?: string;
+  files?: ArticleFileAttachment[];
+  resources?: ArticleResource[];
+  readingTime?: string;
+  publishedAt?: string | null;
   legacyImage?: string;
 };
 

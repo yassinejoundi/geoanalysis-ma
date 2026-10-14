@@ -1,8 +1,9 @@
 import { sendApiForm } from "@/lib/api-client";
-import type { ArticleFileAttachment } from "@/lib/content/article-document";
+import type { ArticleFileAttachment, EditorialFileCollection } from "@/lib/content/article-document";
 
-export async function uploadArticleFileToCloudinary(file: File) {
+export async function uploadArticleFileToCloudinary(file: File, collection: EditorialFileCollection = "articles") {
   const form = new FormData();
   form.append("file", file);
-  return sendApiForm<ArticleFileAttachment>("/api/admin/articles/files", form);
+  form.append("collection", collection);
+  return sendApiForm<ArticleFileAttachment>("/api/admin/editorial-files", form);
 }

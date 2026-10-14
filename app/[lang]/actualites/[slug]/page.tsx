@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { newsPageCopy } from "@/components/(public)/actualites/content";
 import { EditorialDetail } from "@/components/site/editorial-detail";
-import { news } from "@/lib/content/site";
+import { news as newsFixtures } from "@/lib/content/site";
+import { getPublicNews } from "@/lib/server/data/admin";
 import { isLocale, locales, localize } from "@/lib/i18n";
 import { notFound } from "next/navigation";
 
 export function generateStaticParams() {
-  return locales.flatMap((lang) => news.map(({ slug }) => ({ lang, slug })));
+  return locales.flatMap((lang) => newsFixtures.map(({ slug }) => ({ lang, slug })));
 }
 
 export async function generateMetadata({
@@ -16,7 +17,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { lang, slug } = await params;
   if (!isLocale(lang)) return {};
-  const entry = news.find((item) => item.slug === slug);
+  const entry = (await getPublicNews()).find((item) => item.slug === slug);
   if (!entry) notFound();
   return {
     title: `${localize(entry.title, lang)} | GEOANALYSIS`,
@@ -31,9 +32,10 @@ export default async function NewsPage({
 }) {
   const { lang, slug } = await params;
   if (!isLocale(lang)) notFound();
-  const entry = news.find((item) => item.slug === slug);
+  const entries = await getPublicNews();
+  const entry = entries.find((item) => item.slug === slug);
   if (!entry) notFound();
-  const relatedEntries = news
+  const relatedEntries = entries
     .filter((item) => item.id !== entry.id)
     .slice(0, 3);
 

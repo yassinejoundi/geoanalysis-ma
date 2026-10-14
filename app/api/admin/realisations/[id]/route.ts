@@ -2,9 +2,10 @@ import { deleteAdminRecord, getAdminRecord, updateAdminRecord, validateProjectRe
 import { adminMutationAccess, logAdminMutation, mutationFailureResponse, mutationResponse, readMutationJson } from "@/lib/server/api";
 import { hasOnlyKeys, isIdentifier, isRecord, parseProjectFields } from "@/lib/server/validation";
 import { projectSlug } from "@/lib/content/projects";
+import { currentPublicationDate } from "@/lib/server/publication-date";
 
 type RouteContext = { params: Promise<{ id: string }> };
-const fields = ["state", "expertiseId", "subServiceId", "location", "date", "title", "context", "methodology", "results", "seoTitle", "seoDescription", "gallery"] as const;
+const fields = ["state", "expertiseId", "subServiceId", "location", "date", "title", "context", "methodology", "results", "seoTitle", "seoDescription", "gallery", "author", "files", "resources"] as const;
 
 export async function PATCH(request: Request, context: RouteContext) {
   const access = await adminMutationAccess(request);
@@ -19,14 +20,22 @@ export async function PATCH(request: Request, context: RouteContext) {
   try {
     const current = await getAdminRecord<Record<string, unknown>>(access.actor, "projects", id);
     if (!current) return mutationFailureResponse(404, "Record not found.");
-    const candidate = Object.fromEntries(fields.map((field) => [field, Object.hasOwn(value, field) ? value[field] : current[field]]));
+    const candidate = Object.fromEntries(fields.map((field) => [field, Object.hasOwn(value, field) ? value[field] : current[field] ?? (field === "files" || field === "resources" ? [] : "")]));
     const parsed = parseProjectFields(candidate);
-    if (!parsed) return mutationFailureResponse(400, "Invalid request.");
+    if (!parsed || (parsed.state === "published" && !parsed.author)) return mutationFailureResponse(400, "Invalid request.");
     if (!await validateProjectReferences(access.actor, parsed.expertiseId, parsed.subServiceId, parsed.gallery.map((image) => image.id))) return mutationFailureResponse(422, "An expertise, service, or media item is unavailable.");
     const slug = typeof current.slug === "string" && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(current.slug)
       ? current.slug
       : projectSlug(parsed.title.fr, id);
-    const record = { ...current, id, ...parsed, slug };
+    const published = parsed.state === "published";
+    const wasPublished = current.state === "published";
+    const record = {
+      ...current,
+      id,
+      ...parsed,
+      slug,
+      publishedAt: published ? wasPublished && typeof current.publishedAt === "string" ? current.publishedAt : currentPublicationDate() : null,
+    };
     if (!await updateAdminRecord(access.actor, "projects", id, record)) return mutationFailureResponse(404, "Record not found.");
     logAdminMutation(request, access.actor, "projects.update", "success");
     return mutationResponse({ data: record });

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { newsPageCopy } from "@/components/(public)/actualites/content";
 import { NewsIndexSection } from "@/components/(public)/actualites/news-index-section";
-import { news } from "@/lib/content/site";
+import { getPublicNews } from "@/lib/server/data/admin";
 import { isLocale } from "@/lib/i18n";
 import { notFound } from "next/navigation";
 
@@ -43,7 +43,7 @@ export default async function NewsIndex({
           </div>
         </div>
       </section>
-      <NewsIndexSection entries={news} locale={lang} copy={copy} />
+      <NewsIndexSection entries={await getPublicNews()} locale={lang} copy={copy} />
     </main>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ChangeEvent } from "react";
-import { maxArticleFileBytes, maxArticleFiles, type ArticleFileAttachment } from "@/lib/content/article-document";
+import { maxArticleFileBytes, maxArticleFiles, type ArticleFileAttachment, type EditorialFileCollection } from "@/lib/content/article-document";
 import styles from "./article-rich-text-editor.module.css";
 
 function formatSize(size: number) {
@@ -11,11 +11,13 @@ function formatSize(size: number) {
 export function ArticleFilesEditor({
   files,
   pendingFiles,
+  collection = "articles",
   onFilesChange,
   onPendingFilesChange,
 }: {
   files: ArticleFileAttachment[];
   pendingFiles: File[];
+  collection?: EditorialFileCollection;
   onFilesChange: (files: ArticleFileAttachment[]) => void;
   onPendingFilesChange: (files: File[]) => void;
 }) {
@@ -44,8 +46,8 @@ export function ArticleFilesEditor({
   }
 
   return (
-    <section className={styles.filesSection} aria-labelledby="article-files-heading">
-      <h2 id="article-files-heading">Fichiers à joindre</h2>
+    <section className={styles.filesSection} aria-labelledby={`${collection}-files-heading`}>
+      <h2 id={`${collection}-files-heading`}>Fichiers à joindre</h2>
       <p id="article-files-help" className={styles.fileHelp}>
         PDF, DOCX, XLSX ou CSV · 15 Mo maximum par fichier · {maxArticleFiles} fichiers maximum.
       </p>

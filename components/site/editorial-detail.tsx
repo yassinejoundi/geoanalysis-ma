@@ -64,7 +64,7 @@ export function EditorialDetail({
           <p className="editorial-detail-teaser">
             {localize(entry.teaser, locale)}
           </p>
-          {kind === "articles" && entry.author ? (
+          {entry.author ? (
             <p className="editorial-detail-author">
               <span>{copy.author ?? (locale === "fr" ? "Par" : "By")}</span> {entry.author}
             </p>
@@ -119,7 +119,7 @@ export function EditorialDetail({
               <div>{copy.sourceNote}</div>
             </aside>
           ) : null}
-          {kind === "articles" && entry.resources?.length ? (
+          {entry.resources?.length ? (
             <aside className="editorial-detail-source-note editorial-detail-sources" aria-labelledby="editorial-resources-heading">
               <h2 id="editorial-resources-heading">{copy.resources ?? (locale === "fr" ? "Ressources" : "Resources")}</h2>
               <ul>
@@ -132,9 +132,9 @@ export function EditorialDetail({
             </aside>
           ) : null}
         </div>
-        {kind === "articles" && entry.files?.length ? (
+        {entry.files?.length ? (
           <section className="editorial-files" aria-labelledby="editorial-files-heading">
-            <h2 id="editorial-files-heading">{copy.files}</h2>
+            <h2 id="editorial-files-heading">{copy.files ?? (locale === "fr" ? "Fichiers à télécharger" : "Files to download")}</h2>
             <ul>
               {entry.files.map((file) => (
                 <li key={file.id}>

@@ -24,9 +24,10 @@ export function ProjectDetailHero({
         </div>
       </div>
       <PageHero
-        kicker={`${localize(project.domain, locale)} / ${project.location}${project.date ? ` · ${project.date}` : ""}`}
+        kicker={`${localize(project.domain, locale)} / ${project.location}${project.date ? ` · ${project.date}` : ""}${project.readingTime ? ` · ${project.readingTime} ${locale === "fr" ? "de lecture" : "read"}` : ""}`}
         title={localize(project.title, locale)}
         lead={localize(project.teaser, locale)}
+        byline={project.author ? `${locale === "fr" ? "Par" : "By"} ${project.author}` : undefined}
       />
     </>
   );

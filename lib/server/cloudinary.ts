@@ -5,6 +5,7 @@ import { basename } from "node:path";
 import { v2 as cloudinary } from "cloudinary";
 import { MAX_ARTICLE_FILE_BYTES, validateArticleFile, validateMediaFile } from "@/lib/server/validation";
 import type { AdminMediaFolder } from "@/lib/media";
+import type { EditorialFileCollection } from "@/lib/content/article-document";
 
 async function configureCloudinary() {
   const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
@@ -63,7 +64,7 @@ export async function storeMedia(file: File, actorId: string, folder?: AdminMedi
   } as const;
 }
 
-export async function storeArticleFile(file: File) {
+export async function storeEditorialFile(file: File, collection: EditorialFileCollection) {
   if (file.size > MAX_ARTICLE_FILE_BYTES) return { error: "too-large" } as const;
   if (!file.name || file.name.length > 180) return { error: "unsupported" } as const;
   const bytes = new Uint8Array(await file.arrayBuffer());
@@ -79,7 +80,7 @@ export async function storeArticleFile(file: File) {
   const uploaded = await new Promise<{ secure_url: string; bytes: number }>((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       {
-        folder: "geoanalysis/articles/files",
+        folder: `geoanalysis/${collection}/files`,
         filename: uploadFilename,
         resource_type: "raw",
         overwrite: false,
@@ -98,11 +99,15 @@ export async function storeArticleFile(file: File) {
 
   return {
     file: {
-      id: "article-file-" + randomUUID(),
+      id: `${collection === "articles" ? "article" : collection === "actualites" ? "news" : "project"}-file-` + randomUUID(),
       name: originalName,
       kind: validation.format,
       size: uploaded.bytes,
       url: uploaded.secure_url,
     },
   } as const;
+}
+
+export async function storeArticleFile(file: File) {
+  return storeEditorialFile(file, "articles");
 }

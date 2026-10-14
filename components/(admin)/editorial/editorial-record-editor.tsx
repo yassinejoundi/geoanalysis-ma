@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
-import { ArticleEditorFields, EditorialEditorFields, type EditorialDraft, type EditorialKind } from "@/components/(admin)/editorial/editorial-editor-fields";
+import { ArticleEditorFields, type EditorialDraft, type EditorialKind } from "@/components/(admin)/editorial/editorial-editor-fields";
 import styles from "@/components/(admin)/shared/admin-record-editor.module.css";
 import { SaveStatusDialog } from "@/components/(admin)/shared/save-status-dialog";
 import { StatusBadge } from "@/components/(admin)/shared/status-badge";
@@ -14,25 +14,27 @@ import { uploadImageToCloudinary } from "@/lib/upload-image";
 import { uploadArticleFileToCloudinary } from "@/lib/upload-article-file";
 import { emptyArticleDocument, parseArticleDocument } from "@/lib/content/article-document";
 
-function emptyItem(kind: EditorialKind, categories: LocalizedText[]): EditorialDraft {
+function emptyItem(categories: LocalizedText[]): EditorialDraft {
   const category = categories[0] ?? { fr: "", en: "" };
-  const articleContent = JSON.stringify(emptyArticleDocument);
+  const content = JSON.stringify(emptyArticleDocument);
   return {
     id: "",
     state: "draft",
     category: { ...category },
     tags: [],
     date: "",
-    ...(kind === "article" ? { author: "", resources: [], files: [] } : {}),
+    author: "",
     title: { fr: "", en: "" },
     image: null,
-    content: kind === "article" ? { fr: articleContent, en: articleContent } : { fr: "", en: "" },
+    content: { fr: content, en: content },
+    files: [],
+    resources: [],
     seoTitle: { fr: "", en: "" },
     seoDescription: { fr: "", en: "" },
   };
 }
 
-function normalizeItem(item: EditorialDraft, kind: EditorialKind): EditorialDraft {
+function normalizeItem(item: EditorialDraft): EditorialDraft {
   const content = item.content ?? { fr: "", en: "" };
   return {
     ...item,
@@ -45,11 +47,13 @@ function normalizeItem(item: EditorialDraft, kind: EditorialKind): EditorialDraf
       src: item.image.src ?? "",
       alt: { fr: item.image.alt?.fr ?? "", en: item.image.alt?.en ?? "" },
     } : null,
-    content: kind === "article" ? {
+    content: {
       fr: JSON.stringify(parseArticleDocument(content.fr)),
       en: JSON.stringify(parseArticleDocument(content.en)),
-    } : content,
-    ...(kind === "article" ? { files: item.files ?? [], resources: item.resources ?? [], author: item.author ?? "" } : {}),
+    },
+    files: item.files ?? [],
+    resources: item.resources ?? [],
+    author: item.author ?? "",
     seoTitle: item.seoTitle ?? { fr: "", en: "" },
     seoDescription: item.seoDescription ?? { fr: "", en: "" },
   };
@@ -70,9 +74,8 @@ export function EditorialRecordEditor({
   const newItemLabel = isArticle ? "Nouvel article" : "Nouvelle actualité";
   const subject = isArticle ? "article" : "actualité";
   const endpoint = isArticle ? "/api/admin/articles" : "/api/admin/actualites";
-  const [values, setValues] = useState(() => initialItem ? normalizeItem(initialItem, kind) : emptyItem(kind, categories));
-  const [language, setLanguage] = useState<"fr" | "en">("fr");
-  const [articleStep, setArticleStep] = useState<1 | 2 | 3>(1);
+  const [values, setValues] = useState(() => initialItem ? normalizeItem(initialItem) : emptyItem(categories));
+  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [pendingImage, setPendingImage] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
@@ -81,26 +84,18 @@ export function EditorialRecordEditor({
   const [error, setError] = useState("");
   const [saveStatus, setSaveStatus] = useState<"saving" | "success" | null>(null);
   const saveLock = useRef(false);
-  const previousArticleStep = useRef(articleStep);
+  const previousStep = useRef(step);
 
   useEffect(() => {
-    if (isArticle) {
-      if (previousArticleStep.current !== articleStep) document.getElementById("editorial-step-heading")?.focus();
-      previousArticleStep.current = articleStep;
-      return;
-    }
-    document.getElementById(`editorial-title-${language}`)?.focus();
-  }, [articleStep, isArticle, language]);
+    if (previousStep.current !== step) document.getElementById("editorial-step-heading")?.focus();
+    previousStep.current = step;
+  }, [step]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
-    if (isArticle && articleStep < 3) {
-      setArticleStep((current) => (current + 1) as 2 | 3);
-      return;
-    }
-    if (!isArticle && language === "fr") {
-      setLanguage("en");
+    if (step < 3) {
+      setStep((current) => (current + 1) as 2 | 3);
       return;
     }
     if (saveLock.current) return;
@@ -120,10 +115,10 @@ export function EditorialRecordEditor({
       }
 
       let files = [...(values.files ?? [])];
-      if (isArticle && pendingFiles.length) {
+      if (pendingFiles.length) {
         setFileBusy(true);
         for (const file of pendingFiles) {
-          const uploaded = await uploadArticleFileToCloudinary(file);
+          const uploaded = await uploadArticleFileToCloudinary(file, isArticle ? "articles" : "actualites");
           files = [...files, uploaded];
           setValues((current) => ({ ...current, files }));
           setPendingFiles((current) => current.filter((pending) => pending !== file));
@@ -139,13 +134,11 @@ export function EditorialRecordEditor({
         seoTitle: values.seoTitle,
         seoDescription: values.seoDescription,
         image,
-        date: isArticle ? values.date : values.date || new Date().toLocaleDateString("fr-FR"),
-        ...(isArticle ? {
-          author: values.author?.trim() ?? "",
-          files,
-          resources: values.resources ?? [],
-          ...(values.slug ? { slug: values.slug } : {}),
-        } : {}),
+        date: values.date,
+        author: values.author?.trim() ?? "",
+        files,
+        resources: values.resources ?? [],
+        ...(isArticle && values.slug ? { slug: values.slug } : {}),
       };
       await sendApiMutation<EditorialDraft>(
         isNew ? endpoint : `${endpoint}/${values.id}`,
@@ -160,8 +153,11 @@ export function EditorialRecordEditor({
       saveLock.current = false;
       setSaving(false);
       setImageBusy(false);
+      setFileBusy(false);
     }
   }
+
+  const labels = ["Informations", "Contenu", "Référencement"];
 
   return (
     <main className={styles.page}>
@@ -175,99 +171,59 @@ export function EditorialRecordEditor({
           <h1>{isNew ? newItemLabel : `Modifier l’${subject}`}</h1>
           <StatusBadge status={values.state} />
         </div>
-        <p className={styles.description}>
-          {isArticle
-            ? "Complétez les champs bilingues, avec le français avant l’anglais."
-            : "Rédigez d’abord la version française, puis passez à la version anglaise."}
-        </p>
+        <p className={styles.description}>Complétez les champs bilingues, avec le français au-dessus de l’anglais.</p>
       </header>
 
       <section className={styles.card} aria-label={`Fiche ${subject}`}>
         <div className={styles.progress}>
-          <p className={styles.progressLabel} aria-live="polite">
-            Étape {isArticle ? articleStep : language === "fr" ? "1" : "2"} sur {isArticle ? "3" : "2"}
-          </p>
-          <ol className={`${styles.steps} ${isArticle ? styles.stepsThree : ""}`} aria-label="Étapes de saisie">
-            {(isArticle ? ["Informations", "Contenu", "Référencement"] : ["Français", "Anglais"]).map((label, index) => {
-              const currentStep = isArticle ? articleStep : language === "fr" ? 1 : 2;
-              return (
-                <li className={styles.step} aria-current={currentStep === index + 1 ? "step" : undefined} key={label}>
-                  {isArticle && index + 1 < currentStep ? (
-                    <button
-                      className={styles.stepButton}
-                      onClick={() => {
-                        setError("");
-                        setArticleStep((index + 1) as 1 | 2);
-                      }}
-                      type="button"
-                    >
-                      <span className={styles.stepNumber}>{index + 1}</span> {label}
-                    </button>
-                  ) : <><span className={styles.stepNumber}>{index + 1}</span> {label}</>}
-                </li>
-              );
-            })}
+          <p className={styles.progressLabel} aria-live="polite">Étape {step} sur 3</p>
+          <ol className={`${styles.steps} ${styles.stepsThree}`} aria-label="Étapes de saisie">
+            {labels.map((label, index) => (
+              <li className={styles.step} aria-current={step === index + 1 ? "step" : undefined} key={label}>
+                {index + 1 < step ? (
+                  <button className={styles.stepButton} onClick={() => { setError(""); setStep((index + 1) as 1 | 2); }} type="button">
+                    <span className={styles.stepNumber}>{index + 1}</span> {label}
+                  </button>
+                ) : <><span className={styles.stepNumber}>{index + 1}</span> {label}</>}
+              </li>
+            ))}
           </ol>
         </div>
 
         <form className={styles.form} onSubmit={submit}>
           <div className={styles.fields}>
-            {isArticle ? (
-              <>
-                <div>
-                  <h2 className={styles.stepHeading} id="editorial-step-heading" tabIndex={-1}>
-                    {articleStep === 1 ? "Informations" : articleStep === 2 ? "Contenu" : "Référencement"}
-                  </h2>
-                  <p className={styles.stepDescription}>
-                    {articleStep === 1
-                      ? "Les champs bilingues suivent l’ordre français, puis anglais."
-                      : articleStep === 2
-                        ? "Rédigez les deux versions et choisissez les fichiers à joindre. Ils seront téléversés à l’enregistrement."
-                        : "Ajoutez les titres et descriptions SEO dans les deux langues."}
-                  </p>
-                </div>
-                <ArticleEditorFields
-                  values={values}
-                  onChange={setValues}
-                  step={articleStep}
-                  categories={categories}
-                  onImageSelected={setPendingImage}
-                  pendingFiles={pendingFiles}
-                  onPendingFilesChange={setPendingFiles}
-                />
-              </>
-            ) : (
-              <EditorialEditorFields
-                values={values}
-                onChange={setValues}
-                language={language}
-                categories={categories}
-                onImageSelected={setPendingImage}
-              />
-            )}
+            <div>
+              <h2 className={styles.stepHeading} id="editorial-step-heading" tabIndex={-1}>{labels[step - 1]}</h2>
+              <p className={styles.stepDescription}>
+                {step === 1
+                  ? "Les champs bilingues suivent l’ordre français, puis anglais. La date et le temps de lecture sont calculés automatiquement."
+                  : step === 2
+                    ? "Rédigez les deux versions et choisissez les fichiers à joindre. Les fichiers et images sont téléversés uniquement à l’enregistrement."
+                    : "Ajoutez les titres et descriptions SEO dans les deux langues."}
+              </p>
+            </div>
+            <ArticleEditorFields
+              values={values}
+              onChange={setValues}
+              step={step}
+              kind={kind}
+              categories={categories}
+              onImageSelected={setPendingImage}
+              pendingFiles={pendingFiles}
+              onPendingFilesChange={setPendingFiles}
+            />
           </div>
           {error && <p className={styles.error} role="alert">{error}</p>}
-          <footer className={`${styles.footer} ${isArticle ? styles.articleFooter : ""}`}>
+          <footer className={`${styles.footer} ${styles.articleFooter}`}>
             <Link className="admin-action" href={baseHref}>Annuler</Link>
             <div className={styles.actions}>
-              {isArticle && articleStep > 1 ? (
-                <button className="admin-action" type="button" onClick={() => {
-                  setError("");
-                  setArticleStep((current) => (current - 1) as 1 | 2);
-                }}>
+              {step > 1 ? (
+                <button className="admin-action" type="button" onClick={() => { setError(""); setStep((current) => (current - 1) as 1 | 2); }}>
                   Précédent
-                </button>
-              ) : !isArticle && language === "en" ? (
-                <button className="admin-action" type="button" onClick={() => { setError(""); setLanguage("fr"); }}>
-                  Retour au français
                 </button>
               ) : null}
               <button className="admin-action admin-action-primary" type="submit" disabled={saving}>
-                {saving
-                  ? imageBusy ? "Téléversement de l’image…" : fileBusy ? "Téléversement des fichiers…" : "Enregistrement…"
-                  : isArticle
-                    ? articleStep < 3 ? "Continuer" : "Enregistrer"
-                    : language === "fr" ? "Continuer vers l’anglais" : "Enregistrer"}
+                {saving ? imageBusy ? "Téléversement de l’image…" : fileBusy ? "Téléversement des fichiers…" : "Enregistrement…" : step < 3 ? "Continuer" : "Enregistrer"}
               </button>
             </div>
           </footer>
@@ -277,9 +233,7 @@ export function EditorialRecordEditor({
         status={saveStatus}
         savingTitle={`Enregistrement de ${isArticle ? "l’article" : "l’actualité"}…`}
         savingMessage={imageBusy ? "Téléversement de l’image…" : fileBusy ? "Téléversement des fichiers…" : "Enregistrement en cours. Veuillez patienter."}
-        successTitle={isNew
-          ? isArticle ? "Article ajouté" : "Actualité ajoutée"
-          : "Modifications enregistrées"}
+        successTitle={isNew ? isArticle ? "Article ajouté" : "Actualité ajoutée" : "Modifications enregistrées"}
         successMessage={isNew ? "La nouvelle fiche est enregistrée." : "La fiche est à jour."}
         redirectHref={baseHref}
         returnLabel={`Retourner aux ${isArticle ? "articles" : "actualités"}`}

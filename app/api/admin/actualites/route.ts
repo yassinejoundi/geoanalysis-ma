@@ -2,6 +2,8 @@ import { randomUUID } from "node:crypto";
 import { adminMutationAccess, logAdminMutation, mutationFailureResponse, mutationResponse, readMutationJson } from "@/lib/server/api";
 import { createAdminRecord, listAdminRecords } from "@/lib/server/data/admin";
 import { parseEditorialFields } from "@/lib/server/validation";
+import { projectSlug } from "@/lib/content/projects";
+import { currentPublicationDate } from "@/lib/server/publication-date";
 
 export async function POST(request: Request) {
   const access = await adminMutationAccess(request);
@@ -9,10 +11,17 @@ export async function POST(request: Request) {
   const body = await readMutationJson(request);
   if ("response" in body) return body.response;
   const fields = parseEditorialFields(body.value, "news");
-  if (!fields) return mutationFailureResponse(400, "Invalid request.");
+  if (!fields || (fields.state === "published" && !fields.author)) return mutationFailureResponse(400, "Invalid request.");
   try {
     const current = await listAdminRecords(access.actor, "news");
-    const record = { id: "news-" + randomUUID(), ...fields };
+    const id = "news-" + randomUUID();
+    const record = {
+      id,
+      ...fields,
+      date: fields.state === "published" ? currentPublicationDate() : "",
+      slug: projectSlug(fields.title.fr, id),
+      publishedAt: fields.state === "published" ? currentPublicationDate() : null,
+    };
     if (!await createAdminRecord(access.actor, "news", record.id, record, current.length)) return mutationFailureResponse(409, "A record with this value already exists.");
     logAdminMutation(request, access.actor, "news.create", "success");
     return mutationResponse({ data: record }, 201);
