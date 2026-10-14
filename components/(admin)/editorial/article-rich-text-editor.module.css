@@ -202,6 +202,15 @@
   overflow-wrap: anywhere;
 }
 
+.filePending {
+  display: grid;
+  min-width: 0;
+  flex: 1 1 200px;
+  gap: 3px;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
 .fileRow a:hover {
   color: var(--brand-hover);
   text-decoration: underline;

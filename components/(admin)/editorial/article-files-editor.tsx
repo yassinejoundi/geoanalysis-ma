@@ -2,7 +2,6 @@
 
 import { useState, type ChangeEvent } from "react";
 import { maxArticleFileBytes, maxArticleFiles, type ArticleFileAttachment } from "@/lib/content/article-document";
-import { uploadArticleFileToCloudinary } from "@/lib/upload-article-file";
 import styles from "./article-rich-text-editor.module.css";
 
 function formatSize(size: number) {
@@ -11,25 +10,26 @@ function formatSize(size: number) {
 
 export function ArticleFilesEditor({
   files,
-  onChange,
-  onBusyChange,
+  pendingFiles,
+  onFilesChange,
+  onPendingFilesChange,
 }: {
   files: ArticleFileAttachment[];
-  onChange: (files: ArticleFileAttachment[]) => void;
-  onBusyChange: (busy: boolean) => void;
+  pendingFiles: File[];
+  onFilesChange: (files: ArticleFileAttachment[]) => void;
+  onPendingFilesChange: (files: File[]) => void;
 }) {
-  const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("");
   const [error, setError] = useState("");
   const [inputKey, setInputKey] = useState(0);
 
-  async function uploadSelected(event: ChangeEvent<HTMLInputElement>) {
+  function stageSelected(event: ChangeEvent<HTMLInputElement>) {
     const selected = Array.from(event.currentTarget.files ?? []);
     setInputKey((current) => current + 1);
     setError("");
     setStatus("");
     if (!selected.length) return;
-    if (files.length + selected.length > maxArticleFiles) {
+    if (files.length + pendingFiles.length + selected.length > maxArticleFiles) {
       setError(`Joignez ${maxArticleFiles} fichiers au maximum.`);
       return;
     }
@@ -39,24 +39,8 @@ export function ArticleFilesEditor({
       return;
     }
 
-    setBusy(true);
-    onBusyChange(true);
-    let updated = [...files];
-    try {
-      for (const [index, file] of selected.entries()) {
-        setStatus(`Téléversement du fichier ${index + 1} sur ${selected.length}…`);
-        const uploaded = await uploadArticleFileToCloudinary(file);
-        updated = [...updated, uploaded];
-        onChange(updated);
-      }
-      setStatus(`${selected.length} fichier${selected.length > 1 ? "s" : ""} ajouté${selected.length > 1 ? "s" : ""}.`);
-    } catch (cause) {
-      setStatus("");
-      setError(cause instanceof Error ? cause.message : "Le fichier n’a pas pu être téléversé.");
-    } finally {
-      setBusy(false);
-      onBusyChange(false);
-    }
+    onPendingFilesChange([...pendingFiles, ...selected]);
+    setStatus(`${selected.length} fichier${selected.length > 1 ? "s" : ""} prêt${selected.length > 1 ? "s" : ""}. Le téléversement aura lieu lors de l’enregistrement.`);
   }
 
   return (
@@ -71,15 +55,15 @@ export function ArticleFilesEditor({
           key={inputKey}
           accept=".pdf,.docx,.xlsx,.csv"
           aria-describedby="article-files-help"
-          disabled={busy || files.length >= maxArticleFiles}
+          disabled={files.length + pendingFiles.length >= maxArticleFiles}
           multiple
-          onChange={uploadSelected}
+          onChange={stageSelected}
           type="file"
         />
       </label>
       {status ? <p className={styles.fileStatus} role="status">{status}</p> : null}
       {error ? <p className={styles.fileError} role="alert">{error}</p> : null}
-      {files.length ? (
+      {files.length || pendingFiles.length ? (
         <ul className={styles.fileList}>
           {files.map((file) => (
             <li key={file.id} className={styles.fileRow}>
@@ -90,8 +74,29 @@ export function ArticleFilesEditor({
               <button
                 aria-label={`Retirer ${file.name}`}
                 className={styles.removeFile}
-                disabled={busy}
-                onClick={() => onChange(files.filter((item) => item.id !== file.id))}
+                onClick={() => {
+                  setStatus("");
+                  onFilesChange(files.filter((item) => item.id !== file.id));
+                }}
+                type="button"
+              >
+                Retirer
+              </button>
+            </li>
+          ))}
+          {pendingFiles.map((file, index) => (
+            <li key={`${file.name}-${file.lastModified}-${index}`} className={styles.fileRow}>
+              <div className={styles.filePending}>
+                <span>{file.name}</span>
+                <small>{formatSize(file.size)} · En attente d’enregistrement</small>
+              </div>
+              <button
+                aria-label={`Retirer ${file.name}`}
+                className={styles.removeFile}
+                onClick={() => {
+                  setStatus("");
+                  onPendingFilesChange(pendingFiles.filter((_, itemIndex) => itemIndex !== index));
+                }}
                 type="button"
               >
                 Retirer

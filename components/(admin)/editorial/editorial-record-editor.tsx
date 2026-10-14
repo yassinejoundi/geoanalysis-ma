@@ -4,13 +4,14 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
-import { EditorialEditorFields, type EditorialDraft, type EditorialKind } from "@/components/(admin)/editorial/editorial-editor-fields";
+import { ArticleEditorFields, EditorialEditorFields, type EditorialDraft, type EditorialKind } from "@/components/(admin)/editorial/editorial-editor-fields";
 import styles from "@/components/(admin)/shared/admin-record-editor.module.css";
 import { SaveStatusDialog } from "@/components/(admin)/shared/save-status-dialog";
 import { StatusBadge } from "@/components/(admin)/shared/status-badge";
 import { sendApiMutation } from "@/lib/api-client";
 import type { LocalizedText } from "@/lib/i18n";
 import { uploadImageToCloudinary } from "@/lib/upload-image";
+import { uploadArticleFileToCloudinary } from "@/lib/upload-article-file";
 import { emptyArticleDocument, parseArticleDocument } from "@/lib/content/article-document";
 
 function emptyItem(kind: EditorialKind, categories: LocalizedText[]): EditorialDraft {
@@ -72,6 +73,8 @@ export function EditorialRecordEditor({
   const endpoint = isArticle ? "/api/admin/articles" : "/api/admin/actualites";
   const [values, setValues] = useState(() => initialItem ? normalizeItem(initialItem, kind) : emptyItem(kind, categories));
   const [language, setLanguage] = useState<"fr" | "en">("fr");
+  const [articleStep, setArticleStep] = useState<1 | 2 | 3>(1);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
   const [pendingImage, setPendingImage] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
   const [imageBusy, setImageBusy] = useState(false);
@@ -81,13 +84,21 @@ export function EditorialRecordEditor({
   const saveLock = useRef(false);
 
   useEffect(() => {
+    if (isArticle) {
+      if (articleStep > 1) document.getElementById("editorial-step-heading")?.focus();
+      return;
+    }
     document.getElementById(`editorial-title-${language}`)?.focus();
-  }, [language]);
+  }, [articleStep, isArticle, language]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
-    if (language === "fr") {
+    if (isArticle && articleStep < 3) {
+      setArticleStep((current) => (current + 1) as 2 | 3);
+      return;
+    }
+    if (!isArticle && language === "fr") {
       setLanguage("en");
       return;
     }
@@ -107,6 +118,17 @@ export function EditorialRecordEditor({
         setImageBusy(false);
       }
 
+      let files = [...(values.files ?? [])];
+      if (isArticle && pendingFiles.length) {
+        setFileBusy(true);
+        for (const file of pendingFiles) {
+          const uploaded = await uploadArticleFileToCloudinary(file);
+          files = [...files, uploaded];
+          setValues((current) => ({ ...current, files }));
+          setPendingFiles((current) => current.filter((pending) => pending !== file));
+        }
+      }
+
       const fields = {
         state: values.state,
         category: values.category,
@@ -119,7 +141,7 @@ export function EditorialRecordEditor({
         date: values.date || new Date().toLocaleDateString("fr-FR"),
         ...(isArticle ? {
           readingTime: values.readingTime?.trim() || "5 min",
-          files: values.files ?? [],
+          files,
           ...(values.slug ? { slug: values.slug } : {}),
         } : {}),
       };
@@ -152,46 +174,87 @@ export function EditorialRecordEditor({
           <StatusBadge status={values.state} />
         </div>
         <p className={styles.description}>
-          Rédigez d’abord la version française, puis passez à la version anglaise.
+          {isArticle
+            ? "Complétez les champs bilingues, avec le français avant l’anglais."
+            : "Rédigez d’abord la version française, puis passez à la version anglaise."}
         </p>
       </header>
 
       <section className={styles.card} aria-label={`Fiche ${subject}`}>
         <div className={styles.progress}>
-          <p className={styles.progressLabel}>Étape {language === "fr" ? "1" : "2"} sur 2</p>
-          <ol className={styles.steps} aria-label="Étapes de saisie">
-            <li className={styles.step} aria-current={language === "fr" ? "step" : undefined}>
-              <span className={styles.stepNumber}>1</span> Français
-            </li>
-            <li className={styles.step} aria-current={language === "en" ? "step" : undefined}>
-              <span className={styles.stepNumber}>2</span> Anglais
-            </li>
+          <p className={styles.progressLabel} aria-live="polite">
+            Étape {isArticle ? articleStep : language === "fr" ? "1" : "2"} sur {isArticle ? "3" : "2"}
+          </p>
+          <ol className={`${styles.steps} ${isArticle ? styles.stepsThree : ""}`} aria-label="Étapes de saisie">
+            {(isArticle ? ["Informations", "Contenu", "Référencement"] : ["Français", "Anglais"]).map((label, index) => {
+              const currentStep = isArticle ? articleStep : language === "fr" ? 1 : 2;
+              return (
+                <li className={styles.step} aria-current={currentStep === index + 1 ? "step" : undefined} key={label}>
+                  <span className={styles.stepNumber}>{index + 1}</span> {label}
+                </li>
+              );
+            })}
           </ol>
         </div>
 
         <form className={styles.form} onSubmit={submit}>
           <div className={styles.fields}>
-            <EditorialEditorFields
-              values={values}
-              onChange={setValues}
-              language={language}
-              categories={categories}
-              onImageSelected={setPendingImage}
-              onFilesBusyChange={setFileBusy}
-              kind={kind}
-            />
+            {isArticle ? (
+              <>
+                <div>
+                  <h2 className={styles.stepHeading} id="editorial-step-heading" tabIndex={-1}>
+                    {articleStep === 1 ? "Informations" : articleStep === 2 ? "Contenu" : "Référencement"}
+                  </h2>
+                  <p className={styles.stepDescription}>
+                    {articleStep === 1
+                      ? "Les champs bilingues suivent l’ordre français, puis anglais."
+                      : articleStep === 2
+                        ? "Rédigez les deux versions et choisissez les fichiers à joindre. Ils seront téléversés à l’enregistrement."
+                        : "Ajoutez les titres et descriptions SEO dans les deux langues."}
+                  </p>
+                </div>
+                <ArticleEditorFields
+                  values={values}
+                  onChange={setValues}
+                  step={articleStep}
+                  categories={categories}
+                  onImageSelected={setPendingImage}
+                  pendingFiles={pendingFiles}
+                  onPendingFilesChange={setPendingFiles}
+                />
+              </>
+            ) : (
+              <EditorialEditorFields
+                values={values}
+                onChange={setValues}
+                language={language}
+                categories={categories}
+                onImageSelected={setPendingImage}
+              />
+            )}
           </div>
           {error && <p className={styles.error} role="alert">{error}</p>}
-          <footer className={styles.footer}>
+          <footer className={`${styles.footer} ${isArticle ? styles.articleFooter : ""}`}>
             <Link className="admin-action" href={baseHref}>Annuler</Link>
             <div className={styles.actions}>
-              {language === "en" && (
+              {isArticle && articleStep > 1 ? (
+                <button className="admin-action" type="button" onClick={() => {
+                  setError("");
+                  setArticleStep((current) => (current - 1) as 1 | 2);
+                }}>
+                  Précédent
+                </button>
+              ) : !isArticle && language === "en" ? (
                 <button className="admin-action" type="button" onClick={() => { setError(""); setLanguage("fr"); }}>
                   Retour au français
                 </button>
-              )}
-              <button className="admin-action admin-action-primary" type="submit" disabled={saving || fileBusy}>
-                {saving ? imageBusy ? "Envoi de l’image…" : "Enregistrement…" : fileBusy ? "Envoi du fichier…" : language === "fr" ? "Continuer vers l’anglais" : "Enregistrer"}
+              ) : null}
+              <button className="admin-action admin-action-primary" type="submit" disabled={saving}>
+                {saving
+                  ? imageBusy ? "Téléversement de l’image…" : fileBusy ? "Téléversement des fichiers…" : "Enregistrement…"
+                  : isArticle
+                    ? articleStep < 3 ? "Continuer" : "Enregistrer"
+                    : language === "fr" ? "Continuer vers l’anglais" : "Enregistrer"}
               </button>
             </div>
           </footer>
@@ -200,7 +263,7 @@ export function EditorialRecordEditor({
       <SaveStatusDialog
         status={saveStatus}
         savingTitle={`Enregistrement de ${isArticle ? "l’article" : "l’actualité"}…`}
-        savingMessage={imageBusy ? "Envoi de l’image…" : fileBusy ? "Envoi du fichier…" : "Enregistrement en cours. Veuillez patienter."}
+        savingMessage={imageBusy ? "Téléversement de l’image…" : fileBusy ? "Téléversement des fichiers…" : "Enregistrement en cours. Veuillez patienter."}
         successTitle={isNew
           ? isArticle ? "Article ajouté" : "Actualité ajoutée"
           : "Modifications enregistrées"}

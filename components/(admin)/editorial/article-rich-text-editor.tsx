@@ -67,10 +67,12 @@ export function ArticleRichTextEditor({
   value,
   onChange,
   labelId,
+  helpId,
 }: {
   value: string;
   onChange: (value: string) => void;
   labelId: string;
+  helpId: string;
 }) {
   const editorRef = useRef<HTMLDivElement>(null);
   const savedRange = useRef<Range | null>(null);
@@ -159,7 +161,7 @@ export function ArticleRichTextEditor({
       <div
         ref={editorRef}
         aria-labelledby={labelId}
-        aria-describedby="editorial-content-help"
+        aria-describedby={helpId}
         aria-multiline="true"
         className={styles.editable}
         contentEditable

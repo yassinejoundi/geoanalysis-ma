@@ -85,6 +85,10 @@
   list-style: none;
 }
 
+.stepsThree {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .step {
   display: flex;
   min-width: 0;
@@ -136,6 +140,42 @@
   gap: 20px;
 }
 
+.stepHeading {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.stepHeading:focus-visible {
+  outline: 3px solid var(--brand-bright);
+  outline-offset: 4px;
+}
+
+.stepDescription {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.localizedPair {
+  display: grid;
+  min-inline-size: 0;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.localizedLegend {
+  margin-block-end: 2px;
+  padding: 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .error {
   margin: 0;
   color: var(--danger);
@@ -154,6 +194,10 @@
   padding: 14px 22px;
   border-top: 1px solid var(--border);
   background: var(--surface);
+}
+
+.articleFooter {
+  flex-wrap: wrap;
 }
 
 .actions {
@@ -187,6 +231,10 @@
   .footer {
     margin: 0 -16px -16px;
     padding: 12px 16px;
+  }
+
+  .articleFooter .actions {
+    margin-inline-start: auto;
   }
 
   .step {
