@@ -238,14 +238,23 @@ export function TeamManager({ initialMembers, embedded = false }: { initialMembe
               return (
                 <li className="directory-record team-record" key={member.id}>
                   <span className="directory-position">{String(member.order).padStart(2, "0")}</span>
-                  <div className={styles.memberProfile}>
+                  <div className={`${styles.memberProfile}${embedded ? ` ${styles.memberProfileBureau}` : ""}`}>
                     <span className="directory-avatar" aria-hidden="true">
                       {member.image ? (
                         <Image src={member.image} alt="" width={48} height={48} sizes="48px" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", borderRadius: embedded ? "2px" : "50%" }} />
                       ) : initials(member.name)}
                     </span>
-                    <h2 className={styles.memberName}>{member.name}</h2>
-                    <span className={`directory-role ${styles.memberRole}`}>{member.role.fr}</span>
+                    {embedded ? (
+                      <div className={styles.memberDetails}>
+                        <h2 className={styles.memberName}>{member.name}</h2>
+                        <span className={`directory-role ${styles.memberRole}`}>{member.role.fr}</span>
+                      </div>
+                    ) : (
+                      <>
+                        <h2 className={styles.memberName}>{member.name}</h2>
+                        <span className={`directory-role ${styles.memberRole}`}>{member.role.fr}</span>
+                      </>
+                    )}
                     <p className={`directory-description ${styles.memberBio}`}>{member.bio.fr || "Biographie non renseignée."}</p>
                   </div>
                   <div className="directory-actions">

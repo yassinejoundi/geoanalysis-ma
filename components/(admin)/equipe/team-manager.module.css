@@ -10,19 +10,29 @@
   gap: 5px 12px;
 }
 
-:global(.bureau-content-manager) .memberProfile {
+:global(.bureau-directory-embed) .memberProfileBureau {
   grid-template-columns: 48px minmax(0, 1fr);
-  grid-template-rows: minmax(48px, auto) auto auto;
+  grid-template-rows: minmax(48px, auto) auto;
 }
 
-:global(.bureau-content-manager) .memberRole {
+.memberDetails {
   grid-column: 2;
-  grid-row: 2;
+  grid-row: 1;
+  display: grid;
+  align-content: center;
+  gap: 5px;
+  min-width: 0;
 }
 
-:global(.bureau-content-manager) .memberBio {
+.memberDetails .memberName,
+.memberDetails .memberRole {
+  grid-column: 1;
+  grid-row: auto;
+}
+
+.memberProfileBureau .memberBio {
   grid-column: 1 / -1;
-  grid-row: 3;
+  grid-row: 2;
 }
 
 .memberProfile > :global(.directory-avatar) {
