@@ -13,6 +13,16 @@
 :global(.bureau-directory-embed) .memberProfileBureau {
   grid-template-columns: 48px minmax(0, 1fr);
   grid-template-rows: minmax(48px, auto) auto;
+  row-gap: 10px;
+}
+
+.memberAvatarImageBureau {
+  display: block;
+  width: 48px;
+  height: 48px;
+  max-width: none;
+  object-fit: cover;
+  object-position: center;
 }
 
 .memberDetails {
@@ -33,6 +43,7 @@
 .memberProfileBureau .memberBio {
   grid-column: 1 / -1;
   grid-row: 2;
+  margin: 0;
 }
 
 .memberProfile > :global(.directory-avatar) {

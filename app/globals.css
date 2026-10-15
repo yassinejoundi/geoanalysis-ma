@@ -7505,6 +7505,7 @@ a.partner-card-link:hover {
 .bureau-content-manager .bureau-directory-embed .directory-avatar {
   width: 48px;
   height: 48px;
+  overflow: hidden;
   border-radius: 2px;
 }
 
