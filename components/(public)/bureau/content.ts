@@ -21,7 +21,6 @@ export type BureauContent = {
   aboutEyebrow: string;
   aboutTitle: string;
   aboutLead: string;
-  aboutDetail: string;
   aboutLocation: string;
   aboutGalleryLabel: string;
   gallery: BureauPhoto[];
@@ -54,8 +53,7 @@ const copy = {
     secondaryAction: "Notre méthode",
     aboutEyebrow: "À propos",
     aboutTitle: "Un bureau d’études entre terrain et décision",
-    aboutLead: "Basé à Marrakech, GEOANALYSIS accompagne les projets en géologie, géophysique, hydrogéologie et environnement.",
-    aboutDetail: "Les missions associent travail de terrain, études techniques et cartographie pour produire des livrables adaptés à chaque besoin.",
+    aboutLead: "Basé à Marrakech, GEOANALYSIS accompagne les projets en géologie, géophysique, hydrogéologie et environnement.\n\nLes missions associent travail de terrain, études techniques et cartographie pour produire des livrables adaptés à chaque besoin.",
     aboutLocation: "Marrakech · Maroc",
     aboutGalleryLabel: "L’équipe sur le terrain",
     teamEyebrow: "Les personnes derrière les études",
@@ -81,8 +79,7 @@ const copy = {
     secondaryAction: "How we work",
     aboutEyebrow: "About us",
     aboutTitle: "Grounded in the field. Focused on clear decisions.",
-    aboutLead: "Based in Marrakech, GEOANALYSIS supports projects in geology, geophysics, hydrogeology and environmental studies.",
-    aboutDetail: "Assignments bring together fieldwork, technical studies and mapping to deliver work suited to each project’s needs.",
+    aboutLead: "Based in Marrakech, GEOANALYSIS supports projects in geology, geophysics, hydrogeology and environmental studies.\n\nAssignments bring together fieldwork, technical studies and mapping to deliver work suited to each project’s needs.",
     aboutLocation: "Marrakech · Morocco",
     aboutGalleryLabel: "The team in the field",
     teamEyebrow: "The people behind the studies",

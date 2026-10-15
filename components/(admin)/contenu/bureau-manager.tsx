@@ -17,7 +17,7 @@ import { locales, type Locale } from "@/lib/i18n";
 type Section = "seo" | "hero" | "about" | "directory" | "method" | "values";
 type ListKey = "domains" | "stages" | "values";
 type TextKey = Exclude<keyof BureauContent, ListKey | "gallery">;
-const richTextFields = ["heroLead", "aboutLead", "aboutDetail", "methodLead"] as const satisfies readonly TextKey[];
+const richTextFields = ["heroLead", "aboutLead", "methodLead"] as const satisfies readonly TextKey[];
 
 const sections: { id: Section; label: string }[] = [
   { id: "seo", label: "Référencement" },
@@ -209,16 +209,16 @@ export function BureauManager({
     event.preventDefault();
     if (!draft || !editing || saveLock.current || uploading) return;
     const richText = [
-      ...richTextFields.map((field) => draft[field]),
-      ...draft.stages.map((row) => row.description),
-      ...draft.values.map((row) => row.description),
-    ].map((value) => articleDocumentToText(parseArticleDocument(value)));
-    if (richText.some((value) => !value.trim())) {
+      ...richTextFields.map((field) => ({ value: draft[field], maxLength: field === "aboutLead" ? 5000 : 2000 })),
+      ...draft.stages.map((row) => ({ value: row.description, maxLength: 2000 })),
+      ...draft.values.map((row) => ({ value: row.description, maxLength: 2000 })),
+    ].map(({ value, maxLength }) => ({ text: articleDocumentToText(parseArticleDocument(value)), maxLength }));
+    if (richText.some(({ text }) => !text.trim())) {
       setError("Chaque zone de texte doit contenir du contenu.");
       return;
     }
-    if (richText.some((value) => value.length > 2000)) {
-      setError("Chaque zone de texte est limitée à 2 000 caractères.");
+    if (richText.some(({ text, maxLength }) => text.length > maxLength)) {
+      setError("Le texte de présentation est limité à 5 000 caractères, les autres zones à 2 000.");
       return;
     }
     saveLock.current = true;
@@ -264,7 +264,6 @@ export function BureauManager({
             <p className="home-content-kicker">{content.aboutEyebrow}</p>
             <h3>{content.aboutTitle}</h3>
             <RichTextPreview value={content.aboutLead} />
-            <RichTextPreview value={content.aboutDetail} />
             <PreviewLine label="Lieu" value={content.aboutLocation} />
             <div className="bureau-gallery-preview" aria-label={content.aboutGalleryLabel}>
               {content.gallery.map((photo, index) => <Image key={`${photo.src}-${index}`} src={photo.src} alt={photo.alt} width={220} height={150} unoptimized />)}
@@ -307,7 +306,7 @@ export function BureauManager({
         </>;
       case "about":
         return <>
-          <div className="home-content-fields-grid">{field("aboutEyebrow", "Accroche")}{field("aboutTitle", "Titre", 300)}<RichTextField id={`bureau-${section}-aboutLead`} label="Texte principal" value={draft.aboutLead} onChange={(value) => updateText("aboutLead", value)} /><RichTextField id={`bureau-${section}-aboutDetail`} label="Texte complémentaire" value={draft.aboutDetail} onChange={(value) => updateText("aboutDetail", value)} />{field("aboutLocation", "Lieu")}{field("aboutGalleryLabel", "Description de la galerie")}</div>
+          <div className="home-content-fields-grid">{field("aboutEyebrow", "Accroche")}{field("aboutTitle", "Titre", 300)}<RichTextField id={`bureau-${section}-aboutLead`} label="Texte de présentation" value={draft.aboutLead} onChange={(value) => updateText("aboutLead", value)} />{field("aboutLocation", "Lieu")}{field("aboutGalleryLabel", "Description de la galerie")}</div>
           <div className="home-content-list-editor">
             <div className="home-content-editor-heading"><h3>Galerie photo</h3></div>
             {draft.gallery.map((photo, index) => (

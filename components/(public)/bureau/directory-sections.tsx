@@ -35,7 +35,6 @@ export function BureauDirectorySections({
             </header>
             <div className={styles.aboutCopy}>
               <div className="firm-rich-content"><ArticleRichText document={parseArticleDocument(content.aboutLead)} /></div>
-              <div className="firm-rich-content"><ArticleRichText document={parseArticleDocument(content.aboutDetail)} /></div>
               <p className={styles.location}>{content.aboutLocation}</p>
             </div>
           </div>
