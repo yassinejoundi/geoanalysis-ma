@@ -4,6 +4,7 @@ import { expertises } from "@/lib/content/site";
 import type { Locale } from "@/lib/i18n";
 import type { HomeContent } from "./content";
 import { SectionHeading } from "./section-heading";
+import { SiteRichText } from "@/components/site/site-rich-text";
 
 export function ExpertiseSection({
   locale,
@@ -16,7 +17,7 @@ export function ExpertiseSection({
     <section className="home-band">
       <div className="home-section-inner">
         <SectionHeading kicker={content.expertise} title={content.expTitle} />
-        <p className="home-section-lead">{content.expDesc}</p>
+        <SiteRichText className="home-section-lead" value={content.expDesc} />
         <div className="home-expertise-grid">
           {content.expertiseCards.map((item, index) => {
             const expertise = expertises.find(({ id }) => id === item.id)!;
@@ -36,7 +37,7 @@ export function ExpertiseSection({
                 </span>
                 <span className="home-card-number">{String(index + 1).padStart(2, "0")}</span>
                 <h3>{item.name}</h3>
-                <p>{item.summary}</p>
+                <SiteRichText className="home-expertise-summary" value={item.summary} />
                 <span className="home-tags">
                   {item.tags.map((tag, tagIndex) => (
                     <span key={tagIndex}>{tag}</span>

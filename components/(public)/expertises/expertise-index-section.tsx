@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ExpertisePageContent } from "@/components/(public)/expertises/content";
 import type { Locale } from "@/lib/i18n";
+import { SiteRichText } from "@/components/site/site-rich-text";
 
 export function ExpertiseIndexSection({
   locale,
@@ -37,7 +38,7 @@ export function ExpertiseIndexSection({
             <p className="home-kicker">{content.indexSectionKicker}</p>
             <h2>{content.indexSectionTitle}</h2>
           </div>
-          <p className="services-catalog-lead">{content.indexSectionLead}</p>
+          <SiteRichText className="services-catalog-lead" value={content.indexSectionLead} />
 
           <ol className="services-area-list">
             {areas.map((area) => (
@@ -49,7 +50,7 @@ export function ExpertiseIndexSection({
                 <span className="services-area-number">{area.number}</span>
                 <div className="services-area-content">
                   <h3>{area.title}</h3>
-                  <p>{area.summary}</p>
+                  <SiteRichText className="services-area-summary" value={area.summary} />
                   <ul>
                     {area.services.map((service) => (
                       <li key={service}>{service}</li>

@@ -1,5 +1,6 @@
 import type { HomeContent } from "./content";
 import { SectionHeading } from "./section-heading";
+import { SiteRichText } from "@/components/site/site-rich-text";
 
 export function ProcessSection({ content }: { content: HomeContent }) {
   return (
@@ -13,7 +14,7 @@ export function ProcessSection({ content }: { content: HomeContent }) {
           <li key={index}>
             <span>{number}</span>
             <h3>{title}</h3>
-            <p>{body}</p>
+            <SiteRichText className="home-step-description" value={body} />
           </li>
         ))}
       </ol>

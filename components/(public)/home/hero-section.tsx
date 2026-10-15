@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Locale } from "@/lib/i18n";
 import type { HomeContent } from "./content";
 import { HeroRocks } from "./hero-rocks";
+import { SiteRichText } from "@/components/site/site-rich-text";
 
 export function HeroSection({
   locale,
@@ -17,7 +18,7 @@ export function HeroSection({
           <p className="home-kicker">{content.kicker}</p>
           <h1>{content.hero}</h1>
           <p className="home-hero-subtitle">{content.sub}</p>
-          <p className="home-lead">{content.intro}</p>
+          <SiteRichText className="home-lead" value={content.intro} />
           <div className="home-actions">
             <Link
               className="home-primary-action"

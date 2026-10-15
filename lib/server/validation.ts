@@ -343,19 +343,28 @@ export function parseHomeContentFields(
     "projectsLink", "news", "articles", "editorialKicker", "editorialTitle", "allNews", "allArticles",
     "newsKicker", "articlesKicker", "editorialLocation", "read", "projectImage",
   ] as const;
-  if (!isRecord(value) || !hasOnlyKeys(value, keys) || keys.some((key) => key !== "expertiseCards" && !(key in value))) return null;
+  if (!isRecord(value) || !hasOnlyKeys(value, keys) || keys.some((key) => key !== "expertiseCards" && key !== "about2" && !(key in value))) return null;
 
-  type TextKey = Exclude<(typeof keys)[number], "aboutImage" | "pillars" | "steps" | "methodItems" | "expertiseCards">;
+  type TextKey = Exclude<(typeof keys)[number], "about2" | "aboutImage" | "pillars" | "steps" | "methodItems" | "expertiseCards">;
   const text = (key: TextKey, max = 2000) =>
     textField(value[key], max, false);
   const aboutImage = textField(value.aboutImage, 2048);
   const methodItems = parseHomeRows(value.methodItems, 2, 12) as HomeContent["methodItems"] | null;
-  const textKeys = keys.filter((key) => key !== "aboutImage" && key !== "pillars" && key !== "steps" && key !== "methodItems" && key !== "expertiseCards") as TextKey[];
+  const textKeys = keys.filter((key) => key !== "about2" && key !== "aboutImage" && key !== "pillars" && key !== "steps" && key !== "methodItems" && key !== "expertiseCards") as TextKey[];
+  const richTextKeys = new Set<TextKey>(["intro", "about", "expDesc"]);
   const fields = Object.fromEntries(
-    textKeys.map((key) => [key, text(key, key === "title" ? 160 : key === "description" ? 320 : key === "aboutImageAlt" ? 250 : 2000)]),
+    textKeys.map((key) => {
+      const maxLength = key === "title" ? 160 : key === "description" ? 320 : key === "aboutImageAlt" ? 250 : key === "about" ? 5000 : 2000;
+      return [key, richTextKeys.has(key) ? parseRichTextField(value[key], maxLength, false) : text(key, maxLength)];
+    }),
   );
+  const legacyAbout2 = value.about2 === undefined ? "" : parseRichTextField(value.about2, 2000, false);
+  const about = fields.about !== null && legacyAbout2 !== null
+    ? mergeRichTextDocuments(fields.about, legacyAbout2, 5000, false)
+    : null;
+  fields.about = about;
   const pillars = parseHomeRows(value.pillars, 2, 8) as HomeContent["pillars"] | null;
-  const steps = parseHomeRows(value.steps, 3, 12) as HomeContent["steps"] | null;
+  const steps = parseHomeRows(value.steps, 3, 12, [2]) as HomeContent["steps"] | null;
   const expertiseCards = value.expertiseCards === undefined
     ? fallbackExpertiseCards
     : parseHomeExpertiseCards(value.expertiseCards);
@@ -373,7 +382,7 @@ function parseHomeExpertiseCards(value: unknown): HomeContent["expertiseCards"] 
     if (!isRecord(card) || !hasOnlyKeys(card, ["id", "name", "summary", "image", "imageAlt", "tags"])) return null;
     const id = card.id;
     const name = textField(card.name, 160);
-    const summary = textField(card.summary, 700);
+    const summary = parseRichTextField(card.summary, 700);
     const image = textField(card.image, 2048);
     const imageAlt = textField(card.imageAlt, 250);
     if (typeof id !== "string" || !ids.includes(id as (typeof ids)[number]) ||
@@ -408,14 +417,14 @@ export function parseBureauContentFields(value: unknown): BureauContent | null {
       : key === "aboutLead" ? 5000
       : key.endsWith("Title") ? 300
       : 2000;
-    return [key, richTextKeys.has(key) ? parseBureauRichText(value[key], maxLength) : textField(value[key], maxLength)];
+    return [key, richTextKeys.has(key) ? parseRichTextField(value[key], maxLength) : textField(value[key], maxLength)];
   }));
   const heroImage = fields.heroImage;
   const legacyAboutDetail = value.aboutDetail === undefined
     ? ""
-    : parseBureauRichText(value.aboutDetail, 2000, false);
+    : parseRichTextField(value.aboutDetail, 2000, false);
   const aboutLead = fields.aboutLead && legacyAboutDetail !== null
-    ? mergeBureauRichText(fields.aboutLead, legacyAboutDetail)
+    ? mergeRichTextDocuments(fields.aboutLead, legacyAboutDetail, 5000)
     : null;
   if (!heroImage || !isAllowedImageSource(heroImage) || Object.values(fields).some((field) => field === null) || !aboutLead) return null;
 
@@ -438,6 +447,7 @@ export function parseExpertisePageContentFields(value: unknown): ExpertisePageCo
   const keys = [...stringKeys, "areas", "approachSteps"];
   if (!isRecord(value) || !hasOnlyKeys(value, keys) || keys.some((key) => !(key in value))) return null;
 
+  const richTextKeys = new Set(["heroLead", "indexSectionLead", "approachLead"]);
   const fields = Object.fromEntries(stringKeys.map((key) => {
     const maxLength = key === "seoTitle" ? 160
       : key === "seoDescription" ? 320
@@ -445,7 +455,7 @@ export function parseExpertisePageContentFields(value: unknown): ExpertisePageCo
       : key === "photoAlt" ? 250
       : key === "heroTitle" || key === "indexSectionTitle" || key === "approachTitle" ? 300
       : 2000;
-    return [key, textField(value[key], maxLength)];
+    return [key, richTextKeys.has(key) ? parseRichTextField(value[key], maxLength) : textField(value[key], maxLength)];
   }));
   const heroImage = fields.heroImage;
   const areas = parseExpertiseAreas(value.areas);
@@ -465,7 +475,7 @@ function parseExpertiseAreas(value: unknown): ExpertisePageContent["areas"] | nu
     const id = textField(area.id, 80);
     const number = textField(area.number, 12);
     const title = textField(area.title, 200);
-    const summary = textField(area.summary, 1200);
+    const summary = parseRichTextField(area.summary, 1200);
     const services = parseExpertiseServices(area.services);
     if (!id || !isIdentifier(id) || ids.has(id) || !number || !title || !summary || !services) return null;
     ids.add(id);
@@ -487,7 +497,7 @@ function parseExpertiseApproachSteps(value: unknown): ExpertisePageContent["appr
     if (!isRecord(step) || !hasOnlyKeys(step, ["label", "title", "description"])) return null;
     const label = textField(step.label, 200);
     const title = textField(step.title, 300);
-    const description = textField(step.description, 2000);
+    const description = parseRichTextField(step.description, 2000);
     if (!label || !title || !description) return null;
     steps.push({ label, title, description });
   }
@@ -506,29 +516,31 @@ function parseBureauTextRows(value: unknown, maxRows: number) {
   for (const row of value) {
     if (!isRecord(row) || !hasOnlyKeys(row, ["title", "description"])) return null;
     const title = textField(row.title, 300);
-    const description = parseBureauRichText(row.description, 2000);
+    const description = parseRichTextField(row.description, 2000);
     if (!title || !description) return null;
     rows.push({ title, description });
   }
   return rows;
 }
 
-function parseBureauRichText(value: unknown, maxLength: number, required = true) {
+function parseRichTextField(value: unknown, maxLength: number, required = true) {
   const serialized = textField(value, 24_000, required);
   if (serialized === null) return null;
   if (!serialized) return required ? null : "";
   const document = parseArticleDocument(serialized);
   const plainText = articleDocumentToText(document);
-  return plainText.trim().length > 0 && plainText.length <= maxLength ? JSON.stringify(document) : null;
+  if (!plainText.trim()) return required ? null : "";
+  return plainText.length <= maxLength ? JSON.stringify(document) : null;
 }
 
-function mergeBureauRichText(first: string, second: string) {
+function mergeRichTextDocuments(first: string, second: string, maxLength: number, required = true) {
   const document = {
     type: "doc" as const,
     content: [...parseArticleDocument(first).content, ...parseArticleDocument(second).content],
   };
   const plainText = articleDocumentToText(document);
-  return plainText.trim().length > 0 && plainText.length <= 5000 ? JSON.stringify(document) : null;
+  if (!plainText.trim()) return required ? null : "";
+  return plainText.length <= maxLength ? JSON.stringify(document) : null;
 }
 
 function parseBureauGallery(value: unknown) {
@@ -544,12 +556,14 @@ function parseBureauGallery(value: unknown) {
   return gallery;
 }
 
-function parseHomeRows(value: unknown, columns: 2 | 3, maxRows: number) {
+function parseHomeRows(value: unknown, columns: 2 | 3, maxRows: number, richTextColumns: number[] = []) {
   if (!Array.isArray(value) || value.length < 1 || value.length > maxRows) return null;
   const rows: string[][] = [];
   for (const row of value) {
     if (!Array.isArray(row) || row.length !== columns) return null;
-    const cells = row.map((cell) => textField(cell, 2000, true));
+    const cells = row.map((cell, index) => richTextColumns.includes(index)
+      ? parseRichTextField(cell, 2000)
+      : textField(cell, 2000, true));
     if (cells.some((cell) => cell === null)) return null;
     rows.push(cells as string[]);
   }

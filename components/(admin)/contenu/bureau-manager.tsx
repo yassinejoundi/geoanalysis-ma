@@ -5,8 +5,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ImageUploadField, type UploadedImage } from "@/components/(admin)/shared/image-upload-field";
 import { TeamManager } from "@/components/(admin)/equipe/team-manager";
 import { PartnersManager } from "@/components/(admin)/partenaires/partners-manager";
-import { ArticleRichTextEditor } from "@/components/(admin)/editorial/article-rich-text-editor";
-import { ArticleRichText } from "@/components/site/article-rich-text";
+import { AdminRichTextField, AdminRichTextPreview } from "@/components/(admin)/shared/admin-rich-text";
 import type { TeamDraft } from "@/components/(admin)/equipe/team-editor-fields";
 import type { PartnerDraft } from "@/components/(admin)/partenaires/partner-editor-fields";
 import type { BureauContent, BureauPhoto, BureauTextRow } from "@/components/(public)/bureau/content";
@@ -61,28 +60,8 @@ function TextField({
   );
 }
 
-function RichTextField({ id, label, value, onChange }: { id: string; label: string; value: string; onChange: (value: string) => void }) {
-  return (
-    <div className="admin-field bureau-rich-field">
-      <span id={`${id}-label`}>{label}</span>
-      <ArticleRichTextEditor
-        value={value}
-        onChange={onChange}
-        labelId={`${id}-label`}
-        helpId={`${id}-help`}
-      />
-      <span id={`${id}-help`} className="visually-hidden">Texte avec mise en forme, titres, citations et listes.</span>
-    </div>
-  );
-}
-
-function RichTextPreview({ value, compact = false }: { value: string; compact?: boolean }) {
-  return (
-    <div className={`bureau-rich-preview${compact ? " bureau-rich-preview-compact" : ""}`}>
-      <ArticleRichText document={parseArticleDocument(value)} />
-    </div>
-  );
-}
+const RichTextField = AdminRichTextField;
+const RichTextPreview = AdminRichTextPreview;
 
 function PreviewLine({ label, value }: { label: string; value: string }) {
   return <p className="home-content-preview-line"><span>{label}</span>{value || <em>Non renseigné</em>}</p>;

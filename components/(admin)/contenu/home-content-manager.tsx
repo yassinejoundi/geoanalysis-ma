@@ -3,8 +3,10 @@
 import Image from "next/image";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ImageUploadField, type UploadedImage } from "@/components/(admin)/shared/image-upload-field";
+import { AdminRichTextField, AdminRichTextPreview } from "@/components/(admin)/shared/admin-rich-text";
 import type { HomeContent, HomeExpertiseCard } from "@/components/(public)/home/content";
 import { sendApiMutation } from "@/lib/api-client";
+import { articleDocumentToText, parseArticleDocument } from "@/lib/content/article-document";
 import { locales, type Locale } from "@/lib/i18n";
 
 type Section = "hero" | "expertise" | "about" | "process" | "methods" | "projects" | "editorial";
@@ -37,24 +39,18 @@ function TextField({
   label,
   value,
   onChange,
-  multiline = false,
   maxLength = 2000,
 }: {
   id: string;
   label: string;
   value: string;
   onChange: (value: string) => void;
-  multiline?: boolean;
   maxLength?: number;
 }) {
   return (
     <label className="admin-field" htmlFor={id}>
       <span>{label}</span>
-      {multiline ? (
-        <textarea id={id} value={value} maxLength={maxLength} rows={3} onChange={(event) => onChange(event.currentTarget.value)} />
-      ) : (
-        <input id={id} type="text" value={value} maxLength={maxLength} onChange={(event) => onChange(event.currentTarget.value)} />
-      )}
+      <input id={id} type="text" value={value} maxLength={maxLength} onChange={(event) => onChange(event.currentTarget.value)} />
     </label>
   );
 }
@@ -67,6 +63,7 @@ function EditableRow({
   onChange,
   onRemove,
   canRemove = true,
+  richTextIndex,
 }: {
   id: string;
   title: string;
@@ -75,6 +72,7 @@ function EditableRow({
   onChange: (field: number, value: string) => void;
   onRemove: () => void;
   canRemove?: boolean;
+  richTextIndex?: number;
 }) {
   return (
     <fieldset className="home-content-row">
@@ -83,14 +81,11 @@ function EditableRow({
         {values.map((value, field) => {
           const fieldId = `${id}-${field}`;
           return (
-            <TextField
-              key={fieldId}
-              id={fieldId}
-              label={labels[field]}
-              value={value}
-              multiline={field === labels.length - 1 && labels.length > 2}
-              onChange={(nextValue) => onChange(field, nextValue)}
-            />
+            richTextIndex === field ? (
+              <AdminRichTextField key={fieldId} id={fieldId} label={labels[field]} value={value} onChange={(nextValue) => onChange(field, nextValue)} />
+            ) : (
+              <TextField key={fieldId} id={fieldId} label={labels[field]} value={value} onChange={(nextValue) => onChange(field, nextValue)} />
+            )
           );
         })}
       </div>
@@ -216,6 +211,21 @@ export function HomeContentManager({ initialContent }: { initialContent: Record<
   function saveEditor(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!draft || !editing || saveLock.current || uploading) return;
+    const richText = [
+      { value: draft.intro, maxLength: 2000, required: false },
+      { value: draft.about, maxLength: 5000, required: false },
+      { value: draft.expDesc, maxLength: 2000, required: false },
+      ...draft.expertiseCards.map((card) => ({ value: card.summary, maxLength: 700, required: true })),
+      ...draft.steps.map(([, , description]) => ({ value: description, maxLength: 2000, required: true })),
+    ].map(({ value, maxLength, required }) => ({ text: articleDocumentToText(parseArticleDocument(value)), maxLength, required }));
+    if (richText.some(({ text, required }) => required && !text.trim())) {
+      setError("Chaque description doit contenir du contenu.");
+      return;
+    }
+    if (richText.some(({ text, maxLength }) => text.length > maxLength)) {
+      setError("Les descriptions sont limitées à 2 000 caractères, sauf le texte de présentation (5 000) et les cartes (700).");
+      return;
+    }
     saveLock.current = true;
     setSaving(true);
     setError("");
@@ -247,7 +257,7 @@ export function HomeContentManager({ initialContent }: { initialContent: Record<
             <p className="home-content-kicker">{content.kicker}</p>
             <h3>{content.hero}</h3>
             <p className="home-content-subtitle">{content.sub}</p>
-            <p>{content.intro}</p>
+            <AdminRichTextPreview value={content.intro} />
             <div className="home-content-preview-actions"><span>{content.expertiseCta}</span><span>{content.talk}</span></div>
             <ul className="home-content-preview-list">
               {content.pillars.map(([title, description], index) => <li key={index}><strong>{title}</strong><span>{description}</span></li>)}
@@ -260,7 +270,7 @@ export function HomeContentManager({ initialContent }: { initialContent: Record<
         return <>
           <p className="home-content-kicker">{content.expertise}</p>
           <h3>{content.expTitle}</h3>
-          <p>{content.expDesc}</p>
+          <AdminRichTextPreview value={content.expDesc} />
           <div className="home-content-expertise-preview">
             {content.expertiseCards.map((card, index) => (
               <article className="home-content-expertise-preview-card" key={card.id}>
@@ -268,7 +278,7 @@ export function HomeContentManager({ initialContent }: { initialContent: Record<
                 <div>
                   <span>{String(index + 1).padStart(2, "0")}</span>
                   <strong>{card.name}</strong>
-                  <p>{card.summary}</p>
+                  <AdminRichTextPreview value={card.summary} compact />
                   <small>{card.tags.join(" · ")}</small>
                 </div>
               </article>
@@ -282,8 +292,7 @@ export function HomeContentManager({ initialContent }: { initialContent: Record<
             <div>
               <p className="home-content-kicker">{content.aboutKicker}</p>
               <h3>{content.aboutTitle}</h3>
-              <p>{content.about}</p>
-              <p>{content.about2}</p>
+              <AdminRichTextPreview value={content.about} />
               <PreviewLine label="Lien" value={content.discover} />
               <PreviewLine label="Texte alternatif" value={content.aboutImageAlt} />
               <PreviewLine label="Légende" value={content.aboutImageCaption} />
@@ -292,7 +301,7 @@ export function HomeContentManager({ initialContent }: { initialContent: Record<
           </div>
         );
       case "process":
-        return <><p className="home-content-kicker">{content.methodKicker}</p><h3>{content.methodTitle}</h3><ol className="home-content-preview-list">{content.steps.map(([number, title, description], index) => <li key={index}><strong>{number} · {title}</strong><span>{description}</span></li>)}</ol></>;
+        return <><p className="home-content-kicker">{content.methodKicker}</p><h3>{content.methodTitle}</h3><ol className="home-content-preview-list">{content.steps.map(([number, title, description], index) => <li key={index}><strong>{number} · {title}</strong><AdminRichTextPreview value={description} compact /></li>)}</ol></>;
       case "methods":
         return <><p className="home-content-kicker">{content.methods}</p><h3>{content.methodsTitle}</h3><ol className="home-content-preview-list">{content.methodItems.map(([name, category], index) => <li key={index}><strong>{name}</strong><span>{category}</span></li>)}</ol><PreviewLine label="Lien" value={content.methodsLink} /></>;
       case "projects":
@@ -304,13 +313,12 @@ export function HomeContentManager({ initialContent }: { initialContent: Record<
 
   function renderEditor(section: Section) {
     if (!draft) return null;
-    const field = (key: TextKey, label: string, multiline = false) => (
+    const field = (key: TextKey, label: string) => (
       <TextField
         key={key}
         id={`home-${section}-${key}`}
         label={label}
         value={draft[key]}
-        multiline={multiline}
         maxLength={key === "title" ? 160 : key === "description" ? 320 : key === "aboutImageAlt" ? 250 : 2000}
         onChange={(value) => updateText(key, value)}
       />
@@ -326,8 +334,8 @@ export function HomeContentManager({ initialContent }: { initialContent: Record<
             {field("sub", "Sous-titre")}
             {field("expertiseCta", "Lien vers les expertises")}
             {field("talk", "Lien vers le contact")}
-            {field("description", "Description SEO", true)}
-            {field("intro", "Texte d’introduction", true)}
+            {field("description", "Description SEO")}
+            <AdminRichTextField id={`home-${section}-intro`} label="Texte d’introduction" value={draft.intro} onChange={(value) => updateText("intro", value)} />
           </div>
           <div className="home-content-list-editor">
             <div className="home-content-editor-heading"><h3>Domaines d’intervention</h3><p>Affichés sous le titre principal.</p></div>
@@ -353,7 +361,7 @@ export function HomeContentManager({ initialContent }: { initialContent: Record<
         </>;
       case "expertise":
         return <>
-          <div className="home-content-fields-grid">{field("expertise", "Titre de section")}{field("expTitle", "Titre", true)}{field("expDesc", "Description", true)}</div>
+          <div className="home-content-fields-grid">{field("expertise", "Titre de section")}{field("expTitle", "Titre")}<AdminRichTextField id={`home-${section}-expDesc`} label="Description" value={draft.expDesc} onChange={(value) => updateText("expDesc", value)} /></div>
           <div className="home-content-list-editor">
             <div className="home-content-editor-heading"><h3>Cartes « Nos expertises »</h3><p>Modifiez les textes, les visuels et les prestations affichés sur la page d’accueil.</p></div>
             {draft.expertiseCards.map((card, index) => (
@@ -361,7 +369,7 @@ export function HomeContentManager({ initialContent }: { initialContent: Record<
                 <legend>{`Carte ${index + 1} · ${card.name}`}</legend>
                 <div className="home-content-fields-grid">
                   <TextField id={`home-expertise-${card.id}-name`} label="Titre de la carte" value={card.name} maxLength={160} onChange={(value) => updateExpertiseCard(index, "name", value)} />
-                  <TextField id={`home-expertise-${card.id}-summary`} label="Description courte" value={card.summary} multiline maxLength={700} onChange={(value) => updateExpertiseCard(index, "summary", value)} />
+                  <AdminRichTextField id={`home-expertise-${card.id}-summary`} label="Description courte" value={card.summary} onChange={(value) => updateExpertiseCard(index, "summary", value)} />
                 </div>
                 <ImageUploadField
                   id={`home-expertise-${card.id}-image`}
@@ -383,7 +391,7 @@ export function HomeContentManager({ initialContent }: { initialContent: Record<
         </>;
       case "about":
         return <>
-          <div className="home-content-fields-grid">{field("aboutKicker", "Accroche")}{field("aboutTitle", "Titre", true)}{field("about", "Texte principal", true)}{field("about2", "Texte complémentaire", true)}{field("discover", "Lien vers le bureau")}</div>
+          <div className="home-content-fields-grid">{field("aboutKicker", "Accroche")}{field("aboutTitle", "Titre")}<AdminRichTextField id={`home-${section}-about`} label="Texte de présentation" value={draft.about} onChange={(value) => updateText("about", value)} />{field("discover", "Lien vers le bureau")}</div>
           <ImageUploadField
             id={`home-about-image-${locale}`}
             label="Image de la section"
@@ -392,11 +400,11 @@ export function HomeContentManager({ initialContent }: { initialContent: Record<
             onUploaded={imageUploaded}
             onBusyChange={setUploading}
           />
-          <div className="home-content-fields-grid">{field("aboutImageAlt", "Texte alternatif", true)}{field("aboutImageCaption", "Légende de l’image")}{field("aboutImageLocation", "Lieu affiché")}</div>
+          <div className="home-content-fields-grid">{field("aboutImageAlt", "Texte alternatif")}{field("aboutImageCaption", "Légende de l’image")}{field("aboutImageLocation", "Lieu affiché")}</div>
         </>;
       case "process":
         return <>
-          <div className="home-content-fields-grid">{field("methodKicker", "Accroche")}{field("methodTitle", "Titre", true)}</div>
+          <div className="home-content-fields-grid">{field("methodKicker", "Accroche")}{field("methodTitle", "Titre")}</div>
           <div className="home-content-list-editor">
             <div className="home-content-editor-heading"><h3>Étapes</h3><p>Le numéro et les deux textes apparaissent dans la page.</p></div>
             {draft.steps.map((row, index) => (
@@ -406,6 +414,7 @@ export function HomeContentManager({ initialContent }: { initialContent: Record<
                 title={`Étape ${index + 1}`}
                 labels={["Numéro", "Titre", "Description"]}
                 values={row}
+                richTextIndex={2}
                 canRemove={draft.steps.length > 1}
                 onChange={(fieldIndex, value) => updateStep(index, fieldIndex, value)}
                 onRemove={() => {
@@ -421,7 +430,7 @@ export function HomeContentManager({ initialContent }: { initialContent: Record<
         </>;
       case "methods":
         return <>
-          <div className="home-content-fields-grid">{field("methods", "Titre de section")}{field("methodsTitle", "Titre", true)}{field("methodsLink", "Lien vers les prestations")}</div>
+          <div className="home-content-fields-grid">{field("methods", "Titre de section")}{field("methodsTitle", "Titre")}{field("methodsLink", "Lien vers les prestations")}</div>
           <div className="home-content-list-editor">
             <div className="home-content-editor-heading"><h3>Prestations mises en avant</h3><p>Ces lignes apparaissent dans la grille de la page d’accueil.</p></div>
             {draft.methodItems.map((row, index) => (
@@ -445,9 +454,9 @@ export function HomeContentManager({ initialContent }: { initialContent: Record<
           </div>
         </>;
       case "projects":
-        return <div className="home-content-fields-grid">{field("projects", "Titre de section")}{field("projectsTitle", "Titre", true)}{field("projectsLink", "Lien vers les réalisations")}{field("projectImage", "Légende des visuels")}</div>;
+        return <div className="home-content-fields-grid">{field("projects", "Titre de section")}{field("projectsTitle", "Titre")}{field("projectsLink", "Lien vers les réalisations")}{field("projectImage", "Légende des visuels")}</div>;
       case "editorial":
-        return <div className="home-content-fields-grid">{field("editorialKicker", "Accroche")}{field("editorialTitle", "Titre", true)}{field("newsKicker", "Accroche actualités")}{field("articlesKicker", "Accroche articles")}{field("news", "Titre actualités")}{field("articles", "Titre articles")}{field("allNews", "Lien vers les actualités")}{field("allArticles", "Lien vers les articles")}{field("read", "Libellé du temps de lecture")}{field("editorialLocation", "Lieu affiché")}</div>;
+        return <div className="home-content-fields-grid">{field("editorialKicker", "Accroche")}{field("editorialTitle", "Titre")}{field("newsKicker", "Accroche actualités")}{field("articlesKicker", "Accroche articles")}{field("news", "Titre actualités")}{field("articles", "Titre articles")}{field("allNews", "Lien vers les actualités")}{field("allArticles", "Lien vers les articles")}{field("read", "Libellé du temps de lecture")}{field("editorialLocation", "Lieu affiché")}</div>;
     }
   }
 

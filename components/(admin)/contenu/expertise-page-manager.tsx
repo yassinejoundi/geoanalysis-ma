@@ -3,8 +3,10 @@
 import Image from "next/image";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ImageUploadField } from "@/components/(admin)/shared/image-upload-field";
+import { AdminRichTextField, AdminRichTextPreview } from "@/components/(admin)/shared/admin-rich-text";
 import type { ExpertiseApproachStep, ExpertisePageContent, ExpertiseServiceArea } from "@/components/(public)/expertises/content";
 import { sendApiMutation } from "@/lib/api-client";
+import { articleDocumentToText, parseArticleDocument } from "@/lib/content/article-document";
 import { locales, type Locale } from "@/lib/i18n";
 
 type Section = "seo" | "hero" | "domains" | "approach";
@@ -26,17 +28,15 @@ function cloneContent(content: ExpertisePageContent): ExpertisePageContent {
 }
 
 function TextField({
-  id, label, value, onChange, multiline = false, maxLength = 2000,
+  id, label, value, onChange, maxLength = 2000,
 }: {
   id: string; label: string; value: string; onChange: (value: string) => void;
-  multiline?: boolean; maxLength?: number;
+  maxLength?: number;
 }) {
   return (
     <label className="admin-field" htmlFor={id}>
       <span>{label} <span aria-hidden="true">*</span></span>
-      {multiline
-        ? <textarea id={id} value={value} maxLength={maxLength} rows={3} required onChange={(event) => onChange(event.currentTarget.value)} />
-        : <input id={id} type="text" value={value} maxLength={maxLength} required onChange={(event) => onChange(event.currentTarget.value)} />}
+      <input id={id} type="text" value={value} maxLength={maxLength} required onChange={(event) => onChange(event.currentTarget.value)} />
     </label>
   );
 }
@@ -164,6 +164,21 @@ export function ExpertisePageManager({ initialContent }: { initialContent: Recor
   function saveEditor(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!draft || !editing || saveLock.current || uploading) return;
+    const richText = [
+      { value: draft.heroLead, maxLength: 2000 },
+      { value: draft.indexSectionLead, maxLength: 2000 },
+      { value: draft.approachLead, maxLength: 2000 },
+      ...draft.areas.map((area) => ({ value: area.summary, maxLength: 1200 })),
+      ...draft.approachSteps.map((step) => ({ value: step.description, maxLength: 2000 })),
+    ].map(({ value, maxLength }) => ({ text: articleDocumentToText(parseArticleDocument(value)), maxLength }));
+    if (richText.some(({ text }) => !text.trim())) {
+      setError("Chaque texte de présentation doit contenir du contenu.");
+      return;
+    }
+    if (richText.some(({ text, maxLength }) => text.length > maxLength)) {
+      setError("Vérifiez la longueur des textes : 1 200 caractères par domaine et 2 000 pour les autres zones.");
+      return;
+    }
     saveLock.current = true;
     setSaving(true);
     setError("");
@@ -188,7 +203,7 @@ export function ExpertisePageManager({ initialContent }: { initialContent: Recor
           <div className="home-content-about-preview">
             <Image className="home-content-preview-image" src={content.heroImage} alt={content.photoAlt} width={360} height={220} unoptimized />
             <div>
-              <p className="home-content-kicker">{content.heroKicker}</p><h3>{content.heroTitle}</h3><p>{content.heroLead}</p>
+              <p className="home-content-kicker">{content.heroKicker}</p><h3>{content.heroTitle}</h3><AdminRichTextPreview value={content.heroLead} />
               <div className="home-content-preview-actions"><span>{content.contactAction}</span><span>{content.exploreDomains}</span></div>
               <PreviewLine label="Texte alternatif" value={content.photoAlt} /><PreviewLine label="Légende" value={content.photoCaption} />
             </div>
@@ -197,19 +212,19 @@ export function ExpertisePageManager({ initialContent }: { initialContent: Recor
       case "domains":
         return (
           <>
-            <p className="home-content-kicker">{content.indexSectionKicker}</p><h3>{content.indexSectionTitle}</h3><p>{content.indexSectionLead}</p>
+            <p className="home-content-kicker">{content.indexSectionKicker}</p><h3>{content.indexSectionTitle}</h3><AdminRichTextPreview value={content.indexSectionLead} />
             <PreviewLine label="Navigation" value={content.indexNavLabel} />
             <ul className="home-content-preview-list">
-              {content.areas.map((area) => <li key={area.id}><strong>{area.number} · {area.title}</strong><span>{area.summary}</span><span>{area.services.join(" · ")}</span></li>)}
+              {content.areas.map((area) => <li key={area.id}><strong>{area.number} · {area.title}</strong><AdminRichTextPreview value={area.summary} compact /><span>{area.services.join(" · ")}</span></li>)}
             </ul>
           </>
         );
       case "approach":
         return (
           <>
-            <p className="home-content-kicker">{content.approachKicker}</p><h3>{content.approachTitle}</h3><p>{content.approachLead}</p>
+            <p className="home-content-kicker">{content.approachKicker}</p><h3>{content.approachTitle}</h3><AdminRichTextPreview value={content.approachLead} />
             <ol className="home-content-preview-list">
-              {content.approachSteps.map((step, index) => <li key={index}><strong>{step.label} · {step.title}</strong><span>{step.description}</span></li>)}
+              {content.approachSteps.map((step, index) => <li key={index}><strong>{step.label} · {step.title}</strong><AdminRichTextPreview value={step.description} compact /></li>)}
             </ol>
           </>
         );
@@ -218,18 +233,18 @@ export function ExpertisePageManager({ initialContent }: { initialContent: Recor
 
   function renderEditor(section: Section) {
     if (!draft) return null;
-    const field = (key: TextKey, label: string, multiline = false) => {
+    const field = (key: TextKey, label: string) => {
       const maxLength = key === "seoTitle" ? 160 : key === "seoDescription" ? 320 : key === "photoAlt" ? 250
         : key === "heroTitle" || key === "indexSectionTitle" || key === "approachTitle" ? 300 : 2000;
-      return <TextField key={key} id={"expertise-" + section + "-" + key} label={label} value={draft[key]} maxLength={maxLength} multiline={multiline} onChange={(value) => updateText(key, value)} />;
+      return <TextField key={key} id={"expertise-" + section + "-" + key} label={label} value={draft[key]} maxLength={maxLength} onChange={(value) => updateText(key, value)} />;
     };
     switch (section) {
       case "seo":
-        return <div className="home-content-fields-grid">{field("seoTitle", "Titre de référencement")}{field("seoDescription", "Description de référencement", true)}</div>;
+        return <div className="home-content-fields-grid">{field("seoTitle", "Titre de référencement")}{field("seoDescription", "Description de référencement")}</div>;
       case "hero":
         return (
           <>
-            <div className="home-content-fields-grid">{field("heroKicker", "Accroche courte")}{field("heroTitle", "Titre principal", true)}{field("heroLead", "Texte d’introduction", true)}{field("contactAction", "Lien vers le contact")}{field("exploreDomains", "Lien vers les domaines")}</div>
+            <div className="home-content-fields-grid">{field("heroKicker", "Accroche courte")}{field("heroTitle", "Titre principal")}<AdminRichTextField id={`expertise-${section}-heroLead`} label="Texte d’introduction" value={draft.heroLead} onChange={(value) => updateText("heroLead", value)} />{field("contactAction", "Lien vers le contact")}{field("exploreDomains", "Lien vers les domaines")}</div>
             <ImageUploadField id={"expertise-hero-image-" + locale} label="Image d’en-tête" value={draft.heroImage} uploadFolder="expertises" onUploaded={(image) => updateText("heroImage", image.url)} onBusyChange={setUploading} />
             <div className="home-content-fields-grid">{field("photoAlt", "Texte alternatif")}{field("photoCaption", "Légende de l’image")}</div>
           </>
@@ -237,7 +252,7 @@ export function ExpertisePageManager({ initialContent }: { initialContent: Recor
       case "domains":
         return (
           <>
-            <div className="home-content-fields-grid">{field("indexNavLabel", "Libellé de la navigation")}{field("indexSectionKicker", "Accroche de section")}{field("indexSectionTitle", "Titre", true)}{field("indexSectionLead", "Introduction", true)}</div>
+            <div className="home-content-fields-grid">{field("indexNavLabel", "Libellé de la navigation")}{field("indexSectionKicker", "Accroche de section")}{field("indexSectionTitle", "Titre")}<AdminRichTextField id={`expertise-${section}-indexSectionLead`} label="Introduction" value={draft.indexSectionLead} onChange={(value) => updateText("indexSectionLead", value)} /></div>
             <div className="home-content-list-editor">
               <div className="home-content-editor-heading"><h3>Domaines d’intervention</h3><p>Modifiez les titres, les descriptions et les prestations affichées.</p></div>
               {draft.areas.map((area, index) => (
@@ -246,7 +261,7 @@ export function ExpertisePageManager({ initialContent }: { initialContent: Recor
                   <div className="home-content-row-fields">
                     <TextField id={"expertise-area-" + area.id + "-number"} label="Numéro" value={area.number} maxLength={12} onChange={(value) => updateArea(index, "number", value)} />
                     <TextField id={"expertise-area-" + area.id + "-title"} label="Titre" value={area.title} maxLength={200} onChange={(value) => updateArea(index, "title", value)} />
-                    <TextField id={"expertise-area-" + area.id + "-summary"} label="Description" value={area.summary} maxLength={1200} multiline onChange={(value) => updateArea(index, "summary", value)} />
+                    <AdminRichTextField id={"expertise-area-" + area.id + "-summary"} label="Description" value={area.summary} onChange={(value) => updateArea(index, "summary", value)} />
                   </div>
                   <div className="home-content-list-editor expertise-page-area-services">
                     <div className="home-content-editor-heading"><h4>Prestations</h4></div>
@@ -268,7 +283,7 @@ export function ExpertisePageManager({ initialContent }: { initialContent: Recor
       case "approach":
         return (
           <>
-            <div className="home-content-fields-grid">{field("approachKicker", "Accroche")}{field("approachTitle", "Titre", true)}{field("approachLead", "Introduction", true)}</div>
+            <div className="home-content-fields-grid">{field("approachKicker", "Accroche")}{field("approachTitle", "Titre")}<AdminRichTextField id={`expertise-${section}-approachLead`} label="Introduction" value={draft.approachLead} onChange={(value) => updateText("approachLead", value)} /></div>
             <div className="home-content-list-editor">
               <div className="home-content-editor-heading"><h3>Étapes</h3><p>Chaque étape comprend un libellé, un titre et une description.</p></div>
               {draft.approachSteps.map((step, index) => (
@@ -277,7 +292,7 @@ export function ExpertisePageManager({ initialContent }: { initialContent: Recor
                   <div className="home-content-row-fields">
                     <TextField id={"expertise-step-" + index + "-label"} label="Libellé" value={step.label} maxLength={200} onChange={(value) => updateStep(index, "label", value)} />
                     <TextField id={"expertise-step-" + index + "-title"} label="Titre" value={step.title} maxLength={300} onChange={(value) => updateStep(index, "title", value)} />
-                    <TextField id={"expertise-step-" + index + "-description"} label="Description" value={step.description} multiline onChange={(value) => updateStep(index, "description", value)} />
+                    <AdminRichTextField id={"expertise-step-" + index + "-description"} label="Description" value={step.description} onChange={(value) => updateStep(index, "description", value)} />
                   </div>
                   <button className="admin-action admin-action-danger" type="button" aria-label={"Retirer cette étape " + (index + 1)} disabled={draft.approachSteps.length <= 1} onClick={() => removeStep(index)}>Retirer cette étape</button>
                 </fieldset>

@@ -35,7 +35,6 @@ export type HomeContent = {
   aboutKicker: string;
   aboutTitle: string;
   about: string;
-  about2: string;
   discover: string;
   aboutImage: string;
   aboutImageAlt: string;
@@ -84,9 +83,7 @@ export const homeContent: Record<Locale, HomeContent> = {
     aboutKicker: "Notre approche",
     aboutTitle: "Des études ancrées dans le terrain",
     about:
-      "Depuis Marrakech, GEOANALYSIS accompagne les projets en géologie, géophysique, mines et environnement.",
-    about2:
-      "Reconnaissances, analyses et cartographie transforment les données terrain en livrables utiles à la décision.",
+      "Depuis Marrakech, GEOANALYSIS accompagne les projets en géologie, géophysique, mines et environnement.\n\nReconnaissances, analyses et cartographie transforment les données terrain en livrables utiles à la décision.",
     discover: "Découvrir le bureau",
     aboutImage: "/approach-field-survey.jpg",
     aboutImageAlt: "Équipe GEOANALYSIS en reconnaissance sur un versant aride",
@@ -150,9 +147,7 @@ export const homeContent: Record<Locale, HomeContent> = {
     aboutKicker: "Our approach",
     aboutTitle: "Grounded in fieldwork",
     about:
-      "From Marrakech, GEOANALYSIS supports projects in geology, geophysics, mining and environment.",
-    about2:
-      "Field surveys, analysis and mapping turn field data into useful decision-making reports.",
+      "From Marrakech, GEOANALYSIS supports projects in geology, geophysics, mining and environment.\n\nField surveys, analysis and mapping turn field data into useful decision-making reports.",
     discover: "Discover the firm",
     aboutImage: "/approach-field-survey.jpg",
     aboutImageAlt: "GEOANALYSIS team surveying an arid hillside",

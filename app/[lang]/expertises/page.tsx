@@ -8,6 +8,7 @@ import { expertisePageContent } from "@/components/(public)/expertises/content";
 import { isLocale, localizedHref, type Locale } from "@/lib/i18n";
 import { getPublicExpertisePageContent } from "@/lib/server/data/admin";
 import { notFound } from "next/navigation";
+import { SiteRichText } from "@/components/site/site-rich-text";
 
 const getPageContent = cache(async (locale: Locale) =>
   await getPublicExpertisePageContent(locale) ?? expertisePageContent[locale],
@@ -40,7 +41,7 @@ export default async function ExpertiseIndex({
           <div className="services-hero-copy">
             <p className="services-hero-kicker">{content.heroKicker}</p>
             <h1 id="expertise-page-title">{content.heroTitle}</h1>
-            <p className="services-hero-lead">{content.heroLead}</p>
+            <SiteRichText className="services-hero-lead" value={content.heroLead} />
             <div className="services-hero-actions">
               <Link className="services-primary-action" href={localizedHref(lang, "/contact")}>
                 {content.contactAction}<span aria-hidden="true">↗</span>

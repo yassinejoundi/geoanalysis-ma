@@ -3,6 +3,7 @@ import Image from "next/image";
 import type { Locale } from "@/lib/i18n";
 import type { HomeContent } from "./content";
 import { SectionHeading } from "./section-heading";
+import { SiteRichText } from "@/components/site/site-rich-text";
 
 export function AboutSection({
   locale,
@@ -18,8 +19,7 @@ export function AboutSection({
           kicker={content.aboutKicker}
           title={content.aboutTitle}
         />
-        <p className="home-about-lead">{content.about}</p>
-        <p className="home-body-copy">{content.about2}</p>
+        <SiteRichText className="home-about-rich-content" value={content.about} />
         <Link className="home-text-link" href={`/${locale}/bureau`}>
           {content.discover} <span aria-hidden="true">→</span>
         </Link>
