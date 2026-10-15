@@ -7502,6 +7502,8 @@ a.partner-card-link:hover {
   font: 500 12px/1 var(--font-data);
 }
 
+.bureau-content-manager .bureau-directory-embed .directory-avatar { border-radius: 2px; }
+
 .directory-partner-avatar {
   border-radius: 3px;
   background: var(--surface-soft);
