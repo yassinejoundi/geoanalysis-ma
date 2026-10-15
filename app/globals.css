@@ -7502,7 +7502,11 @@ a.partner-card-link:hover {
   font: 500 12px/1 var(--font-data);
 }
 
-.bureau-content-manager .bureau-directory-embed .directory-avatar { border-radius: 2px; }
+.bureau-content-manager .bureau-directory-embed .directory-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 2px;
+}
 
 .directory-partner-avatar {
   border-radius: 3px;

@@ -10,6 +10,10 @@
   gap: 5px 12px;
 }
 
+:global(.bureau-content-manager) .memberProfile {
+  grid-template-columns: 48px minmax(0, 1fr);
+}
+
 .memberProfile > :global(.directory-avatar) {
   grid-column: 1;
   grid-row: 1;

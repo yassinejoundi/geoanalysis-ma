@@ -241,7 +241,7 @@ export function TeamManager({ initialMembers, embedded = false }: { initialMembe
                   <div className={styles.memberProfile}>
                     <span className="directory-avatar" aria-hidden="true">
                       {member.image ? (
-                        <Image src={member.image} alt="" width={48} height={48} sizes="48px" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: embedded ? "2px" : "50%" }} />
+                        <Image src={member.image} alt="" width={48} height={48} sizes="48px" style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", borderRadius: embedded ? "2px" : "50%" }} />
                       ) : initials(member.name)}
                     </span>
                     <h2 className={styles.memberName}>{member.name}</h2>
