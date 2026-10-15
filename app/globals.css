@@ -499,7 +499,7 @@ button:focus-visible {
   .home-primary-action:hover { background: var(--foreground); border-color: var(--foreground); color: var(--surface); }
   .home-secondary-action:hover { border-color: var(--brand-hover); color: var(--brand-hover); }
   .home-text-link:hover { text-decoration: underline; }
-  .home-expertise-card:hover, .home-project-card:hover, .home-article-card:hover, .firm-values li:hover { border-color: var(--brand); box-shadow: 0 8px 28px rgba(28, 38, 34, .07); }
+  .home-expertise-card:hover, .home-project-card:hover, .home-article-card:hover, .firm-values-inner > ul > li:hover { border-color: var(--brand); box-shadow: 0 8px 28px rgba(28, 38, 34, .07); }
 }
 @media (prefers-reduced-motion: no-preference) {
   .home-expertise-card, .home-project-card, .home-article-card { transition: border-color 180ms ease, box-shadow 180ms ease; }
@@ -736,6 +736,15 @@ button:focus-visible {
 .firm-hero-kicker, .firm-story-eyebrow { margin: 0; color: var(--brand-hover); font-family: var(--font-data); font-size: 10.5px; font-weight: 500; letter-spacing: .13em; line-height: 1.5; text-transform: uppercase; }
 .firm-hero h1 { max-width: 14ch; margin: 20px 0 0; color: var(--foreground); font-size: clamp(42px, 5.25vw, 70px); font-weight: 300; letter-spacing: -.045em; line-height: 1.02; text-wrap: balance; }
 .firm-hero-lead { max-width: 48ch; margin: 20px 0 0; color: var(--muted); font-size: clamp(16px, 1.35vw, 18px); line-height: 1.7; }
+.firm-rich-content { min-width: 0; }
+.firm-rich-content p { margin: 0; }
+.firm-rich-content p + p { margin-block-start: 10px; }
+.firm-rich-content h2, .firm-rich-content h3 { margin: 16px 0 8px; line-height: 1.25; }
+.firm-rich-content blockquote { margin: 12px 0; padding-inline-start: 14px; border-inline-start: 2px solid var(--brand); color: var(--muted); }
+.firm-rich-content ul, .firm-rich-content ol { margin: 10px 0; padding-inline-start: 22px; }
+.firm-rich-content ul { list-style: disc; }
+.firm-rich-content ol { list-style: decimal; }
+.firm-rich-content li { margin-block: 4px; }
 .firm-hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; margin-top: 28px; }
 .firm-primary-action, .firm-secondary-action { display: inline-flex; min-height: 48px; align-items: center; justify-content: center; gap: 10px; padding: 11px 17px; border: 1px solid var(--brand-hover); border-radius: 2px; font-size: 13px; font-weight: 600; }
 .firm-primary-action { background: var(--brand-hover); color: var(--surface); }
@@ -750,23 +759,23 @@ button:focus-visible {
 .firm-values { border-top: 1px solid var(--border); background: var(--surface-soft); }
 .firm-values-inner { width: min(100%, 1360px); margin-inline: auto; padding: clamp(52px, 7vh, 88px) clamp(20px, 4vw, 48px); }
 .firm-values h2 { max-width: 28ch; margin: 0; font-size: clamp(26px, 3.2vw, 40px); font-weight: 300; letter-spacing: -.03em; line-height: 1.15; text-wrap: balance; }
-.firm-values ul { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin: 32px 0 0; padding: 0; list-style: none; }
-.firm-values li { min-width: 0; padding: 22px; border: 1px solid var(--border); border-radius: 2px; background: var(--background); }
+.firm-values-inner > ul { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin: 32px 0 0; padding: 0; list-style: none; }
+.firm-values-inner > ul > li { min-width: 0; padding: 22px; border: 1px solid var(--border); border-radius: 2px; background: var(--background); }
 .firm-value-number { color: var(--brand-hover); font-family: var(--font-data); font-size: 11px; }
-.firm-values h3 { margin: 16px 0 0; font-size: 15.5px; font-weight: 500; line-height: 1.35; }
-.firm-values li p { margin: 9px 0 0; color: var(--muted); font-size: 14px; line-height: 1.6; }
+.firm-values-inner > ul > li > h3 { margin: 16px 0 0; font-size: 15.5px; font-weight: 500; line-height: 1.35; }
+.firm-value-description { margin-top: 9px; color: var(--muted); font-size: 14px; line-height: 1.6; }
 .firm-domains-section { border-top: 1px solid var(--border); }
 .firm-stages-section { border-top: 1px solid var(--border); background: var(--surface); }
 .firm-story-inner { width: min(100%, 1360px); margin-inline: auto; padding: clamp(52px, 7vh, 88px) clamp(20px, 4vw, 48px); }
 .firm-story-heading { max-width: 780px; }
 .firm-story-eyebrow { margin-bottom: 14px; }
 .firm-story-heading h2 { max-width: 25ch; margin: 0; font-size: clamp(28px, 3.6vw, 46px); font-weight: 300; letter-spacing: -.035em; line-height: 1.12; text-wrap: balance; }
-.firm-story-heading > p:last-child { max-width: 66ch; margin: 16px 0 0; color: var(--muted); font-size: 15px; line-height: 1.7; }
+.firm-story-lead { max-width: 66ch; margin: 16px 0 0; color: var(--muted); font-size: 15px; line-height: 1.7; }
 .firm-domain-list, .firm-stage-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 36px 0 0; padding: 0; list-style: none; }
 .firm-domain-list li, .firm-stage-list li { min-width: 0; min-height: 190px; padding: 22px; border: 1px solid var(--border); border-radius: 2px; background: var(--surface); }
 .firm-story-number { color: var(--brand-hover); font-family: var(--font-data); font-size: 11px; letter-spacing: .06em; }
 .firm-domain-list h3, .firm-stage-list h3 { margin: 16px 0 0; font-size: 18px; font-weight: 500; line-height: 1.35; }
-.firm-domain-list li p, .firm-stage-list li p { margin: 10px 0 0; color: var(--muted); font-size: 14px; line-height: 1.65; }
+.firm-domain-list li p, .firm-stage-list li p, .firm-stage-description { margin: 10px 0 0; color: var(--muted); font-size: 14px; line-height: 1.65; }
 @media (prefers-reduced-motion: no-preference) {
   .home-method-grid > div {
     transition: border-color 160ms ease, box-shadow 160ms ease;
@@ -1003,7 +1012,7 @@ button:focus-visible {
   .firm-hero-inner { grid-template-columns: minmax(0, 1fr); gap: 32px; }
   .firm-hero-copy { max-width: 700px; }
   .firm-hero-media { min-height: 0; aspect-ratio: 16 / 10; }
-  .firm-values ul, .firm-domain-list, .firm-stage-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .firm-values-inner > ul, .firm-domain-list, .firm-stage-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 479px) {
   .firm-hero-inner { padding-block: 42px; }
@@ -1011,7 +1020,7 @@ button:focus-visible {
   .firm-hero-actions { align-items: stretch; flex-direction: column; }
   .firm-hero-media { aspect-ratio: 4 / 3; }
   .firm-hero-media figcaption { align-items: flex-start; flex-direction: column; gap: 4px; padding: 12px; }
-  .firm-values ul, .firm-domain-list, .firm-stage-list { grid-template-columns: minmax(0, 1fr); }
+  .firm-values-inner > ul, .firm-domain-list, .firm-stage-list { grid-template-columns: minmax(0, 1fr); }
 }
 
 .services-catalog-inner,
@@ -7998,6 +8007,23 @@ a.partner-card-link:hover {
   line-height: 1.55;
 }
 
+.home-content-preview .bureau-rich-preview {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.home-content-preview .bureau-rich-preview p { margin: 0; }
+.home-content-preview .bureau-rich-preview p + p { margin-top: 8px; }
+.home-content-preview .bureau-rich-preview h2,
+.home-content-preview .bureau-rich-preview h3 { margin: 8px 0 4px; font-size: 14px; }
+.home-content-preview .bureau-rich-preview ul,
+.home-content-preview .bureau-rich-preview ol { margin: 6px 0; padding-inline-start: 20px; }
+.home-content-preview .bureau-rich-preview ul { list-style: disc; }
+.home-content-preview .bureau-rich-preview ol { list-style: decimal; }
+.home-content-preview-list li .bureau-rich-preview { margin-top: 0; font-size: 13px; line-height: 1.55; }
+
 .home-content-expertise-preview {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
@@ -8120,7 +8146,7 @@ a.partner-card-link:hover {
   gap: 16px;
 }
 
-.home-content-fields-grid .admin-field:has(textarea) {
+.home-content-fields-grid > .bureau-rich-field {
   grid-column: 1 / -1;
 }
 
@@ -8154,7 +8180,7 @@ a.partner-card-link:hover {
   gap: 12px;
 }
 
-.home-content-row-fields .admin-field:has(textarea) {
+.home-content-row-fields > .bureau-rich-field {
   grid-column: 1 / -1;
 }
 
@@ -8221,18 +8247,11 @@ a.partner-card-link:hover {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .home-content-fields-grid .admin-field:has(textarea) {
-    grid-column: auto;
-  }
 }
 
 @media (max-width: 420px) {
   .home-content-row-fields {
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  .home-content-row-fields .admin-field:has(textarea) {
-    grid-column: auto;
   }
 
   .home-content-card-header {

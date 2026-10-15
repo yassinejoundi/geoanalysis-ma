@@ -1,4 +1,6 @@
 import type { BureauContent } from "./content";
+import { ArticleRichText } from "@/components/site/article-rich-text";
+import { parseArticleDocument } from "@/lib/content/article-document";
 
 export function ValuesSection({
   content,
@@ -16,7 +18,7 @@ export function ValuesSection({
             <li key={index}>
               <span className="firm-value-number">{String(index + 1).padStart(2, "0")}</span>
               <h3>{value.title}</h3>
-              <p>{value.description}</p>
+              <div className="firm-value-description firm-rich-content"><ArticleRichText document={parseArticleDocument(value.description)} /></div>
             </li>
           ))}
         </ul>

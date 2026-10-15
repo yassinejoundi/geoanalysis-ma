@@ -5,15 +5,19 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { ImageUploadField, type UploadedImage } from "@/components/(admin)/shared/image-upload-field";
 import { TeamManager } from "@/components/(admin)/equipe/team-manager";
 import { PartnersManager } from "@/components/(admin)/partenaires/partners-manager";
+import { ArticleRichTextEditor } from "@/components/(admin)/editorial/article-rich-text-editor";
+import { ArticleRichText } from "@/components/site/article-rich-text";
 import type { TeamDraft } from "@/components/(admin)/equipe/team-editor-fields";
 import type { PartnerDraft } from "@/components/(admin)/partenaires/partner-editor-fields";
 import type { BureauContent, BureauPhoto, BureauTextRow } from "@/components/(public)/bureau/content";
 import { sendApiMutation } from "@/lib/api-client";
+import { articleDocumentToText, parseArticleDocument } from "@/lib/content/article-document";
 import { locales, type Locale } from "@/lib/i18n";
 
 type Section = "seo" | "hero" | "about" | "directory" | "method" | "values";
 type ListKey = "domains" | "stages" | "values";
 type TextKey = Exclude<keyof BureauContent, ListKey | "gallery">;
+const richTextFields = ["heroLead", "aboutLead", "aboutDetail", "methodLead"] as const satisfies readonly TextKey[];
 
 const sections: { id: Section; label: string }[] = [
   { id: "seo", label: "Référencement" },
@@ -41,25 +45,42 @@ function TextField({
   label,
   value,
   onChange,
-  multiline = false,
   maxLength = 2000,
 }: {
   id: string;
   label: string;
   value: string;
   onChange: (value: string) => void;
-  multiline?: boolean;
   maxLength?: number;
 }) {
   return (
     <label className="admin-field" htmlFor={id}>
       <span>{label}</span>
-      {multiline ? (
-        <textarea id={id} value={value} maxLength={maxLength} rows={3} required onChange={(event) => onChange(event.currentTarget.value)} />
-      ) : (
-        <input id={id} type="text" value={value} maxLength={maxLength} required onChange={(event) => onChange(event.currentTarget.value)} />
-      )}
+      <input id={id} type="text" value={value} maxLength={maxLength} required onChange={(event) => onChange(event.currentTarget.value)} />
     </label>
+  );
+}
+
+function RichTextField({ id, label, value, onChange }: { id: string; label: string; value: string; onChange: (value: string) => void }) {
+  return (
+    <div className="admin-field bureau-rich-field">
+      <span id={`${id}-label`}>{label}</span>
+      <ArticleRichTextEditor
+        value={value}
+        onChange={onChange}
+        labelId={`${id}-label`}
+        helpId={`${id}-help`}
+      />
+      <span id={`${id}-help`} className="visually-hidden">Texte avec mise en forme, titres, citations et listes.</span>
+    </div>
+  );
+}
+
+function RichTextPreview({ value, compact = false }: { value: string; compact?: boolean }) {
+  return (
+    <div className={`bureau-rich-preview${compact ? " bureau-rich-preview-compact" : ""}`}>
+      <ArticleRichText document={parseArticleDocument(value)} />
+    </div>
   );
 }
 
@@ -94,7 +115,7 @@ function TextRowsEditor({
           <legend>{title} {index + 1}</legend>
           <div className="home-content-row-fields">
             <TextField id={`${id}-${index}-title`} label={labels[0]} value={row.title} maxLength={300} onChange={(value) => onChange(index, "title", value)} />
-            <TextField id={`${id}-${index}-description`} label={labels[1]} value={row.description} multiline onChange={(value) => onChange(index, "description", value)} />
+            <RichTextField id={`${id}-${index}-description`} label={labels[1]} value={row.description} onChange={(value) => onChange(index, "description", value)} />
           </div>
           <button className="admin-action admin-action-danger" type="button" aria-label={`Retirer ${title.toLocaleLowerCase("fr")} ${index + 1}`} disabled={rows.length <= 1} onClick={() => onRemove(index)}>Retirer</button>
         </fieldset>
@@ -187,6 +208,19 @@ export function BureauManager({
   function saveEditor(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!draft || !editing || saveLock.current || uploading) return;
+    const richText = [
+      ...richTextFields.map((field) => draft[field]),
+      ...draft.stages.map((row) => row.description),
+      ...draft.values.map((row) => row.description),
+    ].map((value) => articleDocumentToText(parseArticleDocument(value)));
+    if (richText.some((value) => !value.trim())) {
+      setError("Chaque zone de texte doit contenir du contenu.");
+      return;
+    }
+    if (richText.some((value) => value.length > 2000)) {
+      setError("Chaque zone de texte est limitée à 2 000 caractères.");
+      return;
+    }
     saveLock.current = true;
     setSaving(true);
     setError("");
@@ -216,7 +250,7 @@ export function BureauManager({
             <div>
               <p className="home-content-kicker">{content.heroKicker}</p>
               <h3>{content.heroTitle}</h3>
-              <p>{content.heroLead}</p>
+              <RichTextPreview value={content.heroLead} />
               <div className="home-content-preview-actions"><span>{content.primaryAction}</span><span>{content.secondaryAction}</span></div>
               <PreviewLine label="Texte alternatif" value={content.heroImageAlt} />
               <PreviewLine label="Légende" value={content.heroImageCaption} />
@@ -229,7 +263,8 @@ export function BureauManager({
           <>
             <p className="home-content-kicker">{content.aboutEyebrow}</p>
             <h3>{content.aboutTitle}</h3>
-            <p>{content.aboutLead}</p><p>{content.aboutDetail}</p>
+            <RichTextPreview value={content.aboutLead} />
+            <RichTextPreview value={content.aboutDetail} />
             <PreviewLine label="Lieu" value={content.aboutLocation} />
             <div className="bureau-gallery-preview" aria-label={content.aboutGalleryLabel}>
               {content.gallery.map((photo, index) => <Image key={`${photo.src}-${index}`} src={photo.src} alt={photo.alt} width={220} height={150} unoptimized />)}
@@ -239,24 +274,24 @@ export function BureauManager({
       case "directory":
         return <div className="home-content-preview-actions"><span>{content.teamEyebrow} · {content.teamTitle}</span><span>{content.partnersEyebrow} · {content.partnersTitle}</span></div>;
       case "method":
-        return <><p className="home-content-kicker">{content.methodEyebrow}</p><h3>{content.methodTitle}</h3><p>{content.methodLead}</p><ol className="home-content-preview-list">{content.stages.map((row, index) => <li key={index}><strong>{String(index + 1).padStart(2, "0")} · {row.title}</strong><span>{row.description}</span></li>)}</ol></>;
+        return <><p className="home-content-kicker">{content.methodEyebrow}</p><h3>{content.methodTitle}</h3><RichTextPreview value={content.methodLead} /><ol className="home-content-preview-list">{content.stages.map((row, index) => <li key={index}><strong>{String(index + 1).padStart(2, "0")} · {row.title}</strong><RichTextPreview value={row.description} compact /></li>)}</ol></>;
       case "values":
-        return <><h3>{content.valuesTitle}</h3><ol className="home-content-preview-list">{content.values.map((row, index) => <li key={index}><strong>{String(index + 1).padStart(2, "0")} · {row.title}</strong><span>{row.description}</span></li>)}</ol></>;
+        return <><h3>{content.valuesTitle}</h3><ol className="home-content-preview-list">{content.values.map((row, index) => <li key={index}><strong>{String(index + 1).padStart(2, "0")} · {row.title}</strong><RichTextPreview value={row.description} compact /></li>)}</ol></>;
     }
   }
 
   function renderEditor(section: Section) {
     if (!draft) return null;
-    const field = (key: TextKey, label: string, multiline = false, maxLength = 2000) => (
-      <TextField key={key} id={`bureau-${section}-${key}`} label={label} value={draft[key]} multiline={multiline} maxLength={maxLength} onChange={(value) => updateText(key, value)} />
+    const field = (key: TextKey, label: string, maxLength = 2000) => (
+      <TextField key={key} id={`bureau-${section}-${key}`} label={label} value={draft[key]} maxLength={maxLength} onChange={(value) => updateText(key, value)} />
     );
 
     switch (section) {
       case "seo":
-        return <div className="home-content-fields-grid">{field("seoTitle", "Titre SEO", false, 160)}{field("seoDescription", "Description SEO", true, 320)}</div>;
+        return <div className="home-content-fields-grid">{field("seoTitle", "Titre SEO", 160)}{field("seoDescription", "Description SEO", 320)}</div>;
       case "hero":
         return <>
-          <div className="home-content-fields-grid">{field("heroKicker", "Accroche")}{field("heroTitle", "Titre principal", true, 300)}{field("heroLead", "Présentation", true)}{field("heroImageAlt", "Texte alternatif", true, 250)}{field("heroImageLabel", "Libellé de l’image")}{field("heroImageCaption", "Légende de l’image")}{field("fieldsLabel", "Libellé des domaines")}{field("primaryAction", "Lien de contact")}{field("secondaryAction", "Lien vers la méthode")}</div>
+          <div className="home-content-fields-grid">{field("heroKicker", "Accroche")}{field("heroTitle", "Titre principal", 300)}<RichTextField id={`bureau-${section}-heroLead`} label="Présentation" value={draft.heroLead} onChange={(value) => updateText("heroLead", value)} />{field("heroImageAlt", "Texte alternatif", 250)}{field("heroImageLabel", "Libellé de l’image")}{field("heroImageCaption", "Légende de l’image")}{field("fieldsLabel", "Libellé des domaines")}{field("primaryAction", "Lien de contact")}{field("secondaryAction", "Lien vers la méthode")}</div>
           <ImageUploadField id={`bureau-${locale}-hero-image`} label="Image d’en-tête" value={draft.heroImage} uploadFolder="bureau" disabled={uploading} onUploaded={(image) => updateImage(image, "heroImage")} onBusyChange={setUploading} />
           <div className="home-content-list-editor">
             <div className="home-content-editor-heading"><h3>Domaines affichés</h3></div>
@@ -272,7 +307,7 @@ export function BureauManager({
         </>;
       case "about":
         return <>
-          <div className="home-content-fields-grid">{field("aboutEyebrow", "Accroche")}{field("aboutTitle", "Titre", true, 300)}{field("aboutLead", "Texte principal", true)}{field("aboutDetail", "Texte complémentaire", true)}{field("aboutLocation", "Lieu")}{field("aboutGalleryLabel", "Description de la galerie")}</div>
+          <div className="home-content-fields-grid">{field("aboutEyebrow", "Accroche")}{field("aboutTitle", "Titre", 300)}<RichTextField id={`bureau-${section}-aboutLead`} label="Texte principal" value={draft.aboutLead} onChange={(value) => updateText("aboutLead", value)} /><RichTextField id={`bureau-${section}-aboutDetail`} label="Texte complémentaire" value={draft.aboutDetail} onChange={(value) => updateText("aboutDetail", value)} />{field("aboutLocation", "Lieu")}{field("aboutGalleryLabel", "Description de la galerie")}</div>
           <div className="home-content-list-editor">
             <div className="home-content-editor-heading"><h3>Galerie photo</h3></div>
             {draft.gallery.map((photo, index) => (
@@ -290,7 +325,7 @@ export function BureauManager({
         return <div className="home-content-fields-grid">{field("teamEyebrow", "Accroche de l’équipe")}{field("teamTitle", "Titre de l’équipe")}{field("partnersEyebrow", "Accroche des partenaires")}{field("partnersTitle", "Titre des partenaires")}</div>;
       case "method":
         return <>
-          <div className="home-content-fields-grid">{field("methodEyebrow", "Accroche")}{field("methodTitle", "Titre")}{field("methodLead", "Présentation", true)}</div>
+          <div className="home-content-fields-grid">{field("methodEyebrow", "Accroche")}{field("methodTitle", "Titre")}<RichTextField id={`bureau-${section}-methodLead`} label="Présentation" value={draft.methodLead} onChange={(value) => updateText("methodLead", value)} /></div>
           <TextRowsEditor id="bureau-stage" title="Étapes" rows={draft.stages} labels={["Titre", "Description"]} maxRows={12} onChange={(row, key, value) => updateRows("stages", row, key, value)} onAdd={() => setDraft((current) => current ? { ...current, stages: [...current.stages, { title: "", description: "" }] } : current)} onRemove={(row) => setDraft((current) => current ? { ...current, stages: current.stages.filter((_, index) => index !== row) } : current)} />
         </>;
       case "values":

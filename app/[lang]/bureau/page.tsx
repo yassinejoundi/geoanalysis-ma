@@ -5,6 +5,8 @@ import { BureauDirectorySections } from "@/components/(public)/bureau/directory-
 import { FirmStorySections } from "@/components/(public)/bureau/firm-story-sections";
 import { ValuesSection } from "@/components/(public)/bureau/values-section";
 import { bureauContent } from "@/components/(public)/bureau/content";
+import { ArticleRichText } from "@/components/site/article-rich-text";
+import { parseArticleDocument } from "@/lib/content/article-document";
 import { isLocale, localizedHref } from "@/lib/i18n";
 import { getPublicBureauContent, getPublicFirmDirectory } from "@/lib/server/data/admin";
 import { notFound } from "next/navigation";
@@ -40,7 +42,7 @@ export default async function FirmPage({
           <div className="firm-hero-copy">
             <p className="firm-hero-kicker">{pageContent.heroKicker}</p>
             <h1 id="firm-page-title">{pageContent.heroTitle}</h1>
-            <p className="firm-hero-lead">{pageContent.heroLead}</p>
+            <div className="firm-hero-lead firm-rich-content"><ArticleRichText document={parseArticleDocument(pageContent.heroLead)} /></div>
             <div className="firm-hero-actions">
               <Link
                 className="firm-primary-action"

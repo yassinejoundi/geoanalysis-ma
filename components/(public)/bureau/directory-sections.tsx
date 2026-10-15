@@ -1,6 +1,8 @@
 import type { Locale } from "@/lib/i18n";
 import Image from "next/image";
 import type { BureauContent } from "./content";
+import { ArticleRichText } from "@/components/site/article-rich-text";
+import { parseArticleDocument } from "@/lib/content/article-document";
 import type {
   PublicPartner,
   PublicTeamMember,
@@ -32,8 +34,8 @@ export function BureauDirectorySections({
               <h2 id="firm-about-title">{content.aboutTitle}</h2>
             </header>
             <div className={styles.aboutCopy}>
-              <p>{content.aboutLead}</p>
-              <p>{content.aboutDetail}</p>
+              <div className="firm-rich-content"><ArticleRichText document={parseArticleDocument(content.aboutLead)} /></div>
+              <div className="firm-rich-content"><ArticleRichText document={parseArticleDocument(content.aboutDetail)} /></div>
               <p className={styles.location}>{content.aboutLocation}</p>
             </div>
           </div>

@@ -398,6 +398,7 @@ export function parseBureauContentFields(value: unknown): BureauContent | null {
   const keys = [...stringKeys, "domains", "gallery", "stages", "values"];
   if (!isRecord(value) || !hasOnlyKeys(value, keys) || keys.some((key) => !(key in value))) return null;
 
+  const richTextKeys = new Set(["heroLead", "aboutLead", "aboutDetail", "methodLead"]);
   const fields = Object.fromEntries(stringKeys.map((key) => {
     const maxLength = key === "seoTitle" ? 160
       : key === "seoDescription" ? 320
@@ -405,7 +406,7 @@ export function parseBureauContentFields(value: unknown): BureauContent | null {
       : key.endsWith("Image") ? 2048
       : key.endsWith("Title") ? 300
       : 2000;
-    return [key, textField(value[key], maxLength)];
+    return [key, richTextKeys.has(key) ? parseBureauRichText(value[key], maxLength) : textField(value[key], maxLength)];
   }));
   const heroImage = fields.heroImage;
   if (!heroImage || !isAllowedImageSource(heroImage) || Object.values(fields).some((field) => field === null)) return null;
@@ -497,11 +498,19 @@ function parseBureauTextRows(value: unknown, maxRows: number) {
   for (const row of value) {
     if (!isRecord(row) || !hasOnlyKeys(row, ["title", "description"])) return null;
     const title = textField(row.title, 300);
-    const description = textField(row.description, 2000);
+    const description = parseBureauRichText(row.description, 2000);
     if (!title || !description) return null;
     rows.push({ title, description });
   }
   return rows;
+}
+
+function parseBureauRichText(value: unknown, maxLength: number) {
+  const serialized = textField(value, 24_000, false);
+  if (serialized === null) return null;
+  const document = parseArticleDocument(serialized);
+  const plainText = articleDocumentToText(document);
+  return plainText.trim().length > 0 && plainText.length <= maxLength ? JSON.stringify(document) : null;
 }
 
 function parseBureauGallery(value: unknown) {

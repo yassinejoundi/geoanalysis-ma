@@ -27,6 +27,34 @@
   margin-block-start: 12px;
 }
 
+.aboutCopy .firm-rich-content {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.aboutCopy > .firm-rich-content + .firm-rich-content {
+  margin-block-start: 12px;
+}
+
+.aboutCopy .firm-rich-content ul,
+.aboutCopy .firm-rich-content ol {
+  margin-block: 12px;
+  padding-inline-start: 22px;
+}
+
+.aboutCopy .firm-rich-content ul {
+  list-style: disc;
+}
+
+.aboutCopy .firm-rich-content ol {
+  list-style: decimal;
+}
+
+.aboutCopy .firm-rich-content li + li {
+  margin-block-start: 6px;
+}
+
 .aboutCopy .location {
   margin-block-start: 22px;
   color: var(--brand-hover);

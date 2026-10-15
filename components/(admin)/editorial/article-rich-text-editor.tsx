@@ -165,7 +165,7 @@ export function ArticleRichTextEditor({
         aria-multiline="true"
         className={styles.editable}
         contentEditable
-        data-placeholder="Rédigez le contenu de l’article…"
+        data-placeholder="Rédigez votre texte…"
         onInput={updateContent}
         onKeyUp={refreshActive}
         onMouseUp={refreshActive}
