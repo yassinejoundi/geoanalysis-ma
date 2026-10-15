@@ -12,6 +12,17 @@
 
 :global(.bureau-content-manager) .memberProfile {
   grid-template-columns: 48px minmax(0, 1fr);
+  grid-template-rows: minmax(48px, auto) auto auto;
+}
+
+:global(.bureau-content-manager) .memberRole {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+:global(.bureau-content-manager) .memberBio {
+  grid-column: 1 / -1;
+  grid-row: 3;
 }
 
 .memberProfile > :global(.directory-avatar) {
