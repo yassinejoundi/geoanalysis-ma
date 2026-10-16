@@ -4,8 +4,12 @@ import { neon } from "@neondatabase/serverless";
 import { connection } from "next/server";
 import { cache } from "react";
 import { adminSettings } from "@/lib/content/admin";
-import type { ProjectDraft, PublicProject } from "@/lib/content/projects";
-import { projectSlug } from "@/lib/content/projects";
+import {
+  getFallbackPublicProjectBySlug,
+  projectSlug,
+  type ProjectDraft,
+  type PublicProject,
+} from "@/lib/content/projects";
 import { getAdminAccess, isAllowedAdminEmail, type AdminActor } from "@/lib/server/auth";
 import {
   isRecord,
@@ -207,7 +211,8 @@ export const getPublicProjects = cache(async (): Promise<PublicProject[]> => {
 });
 
 export async function getPublicProjectBySlug(slug: string) {
-  return (await getPublicProjects()).find((project) => project.slug === slug) ?? null;
+  return (await getPublicProjects()).find((project) => project.slug === slug)
+    ?? getFallbackPublicProjectBySlug(slug);
 }
 
 export const getPublicArticles = cache(async (): Promise<EditorialDetailEntry[]> => {

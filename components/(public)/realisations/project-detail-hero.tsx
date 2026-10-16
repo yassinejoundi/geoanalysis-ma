@@ -12,6 +12,9 @@ export function ProjectDetailHero({
   locale: Locale;
   backLabel: string;
 }) {
+  const kicker = [localize(project.domain, locale), project.location]
+    .filter(Boolean)
+    .join(" / ");
   return (
     <>
       <div className="project-detail-back">
@@ -24,7 +27,7 @@ export function ProjectDetailHero({
         </div>
       </div>
       <PageHero
-        kicker={`${localize(project.domain, locale)} / ${project.location}${project.date ? ` · ${project.date}` : ""}${project.readingTime ? ` · ${project.readingTime} ${locale === "fr" ? "de lecture" : "read"}` : ""}`}
+        kicker={`${kicker}${project.date ? ` · ${project.date}` : ""}${project.readingTime ? ` · ${project.readingTime} ${locale === "fr" ? "de lecture" : "read"}` : ""}`}
         title={localize(project.title, locale)}
         lead={localize(project.teaser, locale)}
         byline={project.author ? `${locale === "fr" ? "Par" : "By"} ${project.author}` : undefined}
