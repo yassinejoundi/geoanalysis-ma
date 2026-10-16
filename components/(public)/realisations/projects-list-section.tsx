@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { realisationMissions, realisationsPageCopy } from "./content";
 import { localize, type Locale } from "@/lib/i18n";
+import { projectSlug } from "@/lib/content/projects";
 import { getPublicProjects } from "@/lib/server/data/admin";
 
 export async function RealisationsArchiveSection({ locale }: { locale: Locale }) {
@@ -50,22 +51,26 @@ export async function RealisationsArchiveSection({ locale }: { locale: Locale })
           )) : realisationMissions.map((mission) => (
             <li key={mission.id}>
               <article className="realisation-card">
-                <figure className="realisation-card-image">
-                  <Image
-                    src={mission.image}
-                    alt={localize(mission.alt, locale)}
-                    fill
-                    sizes="(max-width: 700px) 100vw, (max-width: 980px) 50vw, 45vw"
-                  />
-                  <figcaption>
-                    <span>{localize(mission.domain, locale)}</span>
-                    <span aria-hidden="true">{mission.number}</span>
-                  </figcaption>
-                </figure>
-                <div className="realisation-card-copy">
-                  <h3>{localize(mission.title, locale)}</h3>
-                  <p>{localize(mission.description, locale)}</p>
-                </div>
+                <Link
+                  className="realisation-card-link"
+                  href={`/${locale}/realisations/${projectSlug(mission.title.fr, mission.id)}`}>
+                  <figure className="realisation-card-image">
+                    <Image
+                      src={mission.image}
+                      alt={localize(mission.alt, locale)}
+                      fill
+                      sizes="(max-width: 700px) 100vw, (max-width: 980px) 50vw, 45vw"
+                    />
+                    <figcaption>
+                      <span>{localize(mission.domain, locale)}</span>
+                      <span aria-hidden="true">{mission.number}</span>
+                    </figcaption>
+                  </figure>
+                  <div className="realisation-card-copy">
+                    <h3>{localize(mission.title, locale)}</h3>
+                    <p>{localize(mission.description, locale)}</p>
+                  </div>
+                </Link>
               </article>
             </li>
           ))}
