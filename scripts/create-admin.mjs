@@ -8,7 +8,7 @@ try {
   // A deployment or CI environment may provide the auth URL directly.
 }
 
-const email = "abdelouahed@geoanalysis.ma";
+const email = process.env.ADMIN_EMAIL?.trim() || "abdelouahed@geoanalysis-expertise.com";
 const credentialPath = ".env.admin-credentials";
 
 if (!process.env.NEON_AUTH_BASE_URL) {
@@ -21,11 +21,16 @@ if (existsSync(credentialPath)) {
   process.exit(1);
 }
 
-const password = randomBytes(36).toString("base64url");
+const password = process.env.ADMIN_PASSWORD || randomBytes(36).toString("base64url");
 const auth = createAuthClient(process.env.NEON_AUTH_BASE_URL);
 
 try {
-  const { data, error } = await auth.signUp.email({ email, password, name: "Abdelouahed" });
+  const { data, error } = await auth.signUp.email({
+    email,
+    password,
+    name: "Abdelouahed",
+    callbackURL: "https://geoanalysis-expertise.com/admin",
+  });
   if (error) {
     const code = typeof error.code === "string" && /^[A-Z0-9_-]{1,60}$/i.test(error.code) ? error.code : "provider-rejected";
     const status = Number.isInteger(error.status) ? error.status : 0;
