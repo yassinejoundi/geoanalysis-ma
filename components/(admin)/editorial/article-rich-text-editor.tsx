@@ -140,7 +140,7 @@ export function ArticleRichTextEditor({
     const selection = window.getSelection();
     const editor = editorRef.current;
     if (!selection?.anchorNode || !editor?.contains(selection.anchorNode)) return;
-    let inline = selection.anchorNode instanceof Element ? selection.anchorNode : selection.anchorNode.parentElement;
+    let inline = selection.anchorNode instanceof HTMLElement ? selection.anchorNode : selection.anchorNode.parentElement;
     const highlightPalette = readHighlightPalette();
     let highlighted: ArticleHighlightColor | null = null;
     let foundHighlightState = false;
@@ -153,7 +153,7 @@ export function ArticleRichTextEditor({
       }
       inline = inline.parentElement;
     }
-    let block = selection.anchorNode instanceof Element ? selection.anchorNode : selection.anchorNode.parentElement;
+    let block = selection.anchorNode instanceof HTMLElement ? selection.anchorNode : selection.anchorNode.parentElement;
     while (block && block.parentElement !== editor) block = block.parentElement;
     const hasBlockChildren = [...editor.children].some((child) => ["P", "DIV", "H2", "H3", "BLOCKQUOTE", "UL", "OL"].includes(child.tagName));
     const paragraph = block && ["P", "DIV"].includes(block.tagName) ? block : !hasBlockChildren && editor.textContent ? editor : null;
