@@ -99,6 +99,12 @@
   outline-offset: -3px;
 }
 
+.editable mark,
+.editable strong,
+.editable b {
+  color: var(--foreground);
+}
+
 .editable p,
 .editable h2,
 .editable h3,

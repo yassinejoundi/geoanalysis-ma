@@ -11,9 +11,9 @@ function renderText(nodes: ArticleTextNode[]) {
     let content: ReactNode = lines;
     if (node.marks?.includes("highlight")) {
       const token = articleHighlightColorTokens[node.highlightColor ?? "green"];
-      content = <mark style={{ backgroundColor: `var(${token})`, color: "inherit" }}>{content}</mark>;
+      content = <mark style={{ backgroundColor: `var(${token})`, color: "var(--foreground)" }}>{content}</mark>;
     }
-    if (node.marks?.includes("bold")) content = <strong>{content}</strong>;
+    if (node.marks?.includes("bold")) content = <strong style={{ color: "var(--foreground)" }}>{content}</strong>;
     if (node.marks?.includes("italic")) content = <em>{content}</em>;
     if (node.marks?.includes("underline")) content = <u>{content}</u>;
     if (node.marks?.includes("link") && node.href) content = <a href={node.href}>{content}</a>;

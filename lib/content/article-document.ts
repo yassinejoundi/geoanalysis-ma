@@ -149,7 +149,7 @@ function renderText(nodes: ArticleTextNode[]) {
     let content = escapeHtml(node.text).replace(/\n/g, "<br>");
     if (node.marks?.includes("highlight")) {
       const token = articleHighlightColorTokens[node.highlightColor ?? "green"];
-      content = `<mark style="background-color:var(${token});color:inherit">${content}</mark>`;
+      content = `<mark style="background-color:var(${token})">${content}</mark>`;
     }
     if (node.marks?.includes("bold")) content = `<strong>${content}</strong>`;
     if (node.marks?.includes("italic")) content = `<em>${content}</em>`;
