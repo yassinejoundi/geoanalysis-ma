@@ -9,10 +9,12 @@
 .controls {
   display: flex;
   min-height: 52px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 6px;
   padding: 6px 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
   border-bottom: 1px solid var(--border);
   background: var(--surface-soft);
 }
@@ -20,6 +22,7 @@
 .toolButton,
 .clearButton {
   display: inline-flex;
+  flex: 0 0 auto;
   min-width: 44px;
   min-height: 44px;
   align-items: center;
@@ -31,6 +34,7 @@
   color: var(--foreground);
   cursor: pointer;
   font: 600 12px/1 var(--font-body);
+  white-space: nowrap;
 }
 
 .toolButton:hover,
@@ -40,6 +44,7 @@
 }
 
 .colorInput {
+  flex: 0 0 auto;
   width: 44px;
   height: 44px;
   padding: 4px;
@@ -75,6 +80,7 @@
 }
 
 .separator {
+  flex: 0 0 auto;
   width: 1px;
   height: 24px;
   margin-inline: 2px;

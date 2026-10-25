@@ -16,7 +16,7 @@ import {
 } from "@/lib/content/article-document";
 import styles from "./article-rich-text-editor.module.css";
 
-type EditorCommand = "bold" | "italic" | "underline" | "foreColor" | "hiliteColor" | "justifyFull" | "insertUnorderedList" | "insertOrderedList" | "formatBlock" | "removeFormat";
+type EditorCommand = "bold" | "italic" | "underline" | "foreColor" | "hiliteColor" | "insertUnorderedList" | "insertOrderedList" | "formatBlock" | "removeFormat";
 
 function readInline(node: Node, marks: ArticleMark[] = [], href?: string, color?: string, highlightColor?: string): ArticleTextNode[] {
   if (node.nodeType === Node.TEXT_NODE) {
@@ -101,11 +101,12 @@ export function ArticleRichTextEditor({
 
   const refreshActive = useCallback(() => {
     const selection = window.getSelection();
-    if (!selection?.anchorNode || !editorRef.current?.contains(selection.anchorNode)) return;
+    const editor = editorRef.current;
+    if (!selection?.anchorNode || !editor?.contains(selection.anchorNode)) return;
     let inline = selection.anchorNode instanceof Element ? selection.anchorNode : selection.anchorNode.parentElement;
-    const highlightColor = normalizeArticleColor(getComputedStyle(editorRef.current).getPropertyValue("--brand-pale"));
+    const highlightColor = normalizeArticleColor(getComputedStyle(editor).getPropertyValue("--brand-pale"));
     let highlighted: boolean | undefined;
-    while (inline && editorRef.current.contains(inline)) {
+    while (inline && editor.contains(inline)) {
       const background = inline.style.backgroundColor;
       if (background) {
         highlighted = (Boolean(highlightColor) && normalizeArticleColor(background) === highlightColor) ||
@@ -119,14 +120,16 @@ export function ArticleRichTextEditor({
       inline = inline.parentElement;
     }
     let block = selection.anchorNode instanceof Element ? selection.anchorNode : selection.anchorNode.parentElement;
-    while (block && block.parentElement !== editorRef.current) block = block.parentElement;
+    while (block && block.parentElement !== editor) block = block.parentElement;
+    const hasBlockChildren = [...editor.children].some((child) => ["P", "DIV", "H2", "H3", "BLOCKQUOTE", "UL", "OL"].includes(child.tagName));
+    const paragraph = block && ["P", "DIV"].includes(block.tagName) ? block : !hasBlockChildren && editor.textContent ? editor : null;
     setActive({
       bold: document.queryCommandState("bold"),
       italic: document.queryCommandState("italic"),
       underline: document.queryCommandState("underline"),
       highlight: highlighted ?? document.queryCommandState("hiliteColor"),
-      justify: document.queryCommandState("justifyFull"),
-      paragraph: Boolean(block && block !== editorRef.current && ["P", "DIV"].includes(block.tagName)),
+      justify: paragraph?.style.textAlign === "justify" || paragraph?.getAttribute("align") === "justify",
+      paragraph: Boolean(paragraph),
       bullet: document.queryCommandState("insertUnorderedList"),
       ordered: document.queryCommandState("insertOrderedList"),
     });
@@ -159,6 +162,37 @@ export function ArticleRichTextEditor({
     refreshActive();
   }
 
+  function toggleJustification() {
+    const editor = editorRef.current;
+    if (!editor) return;
+    editor.focus();
+    const selection = window.getSelection();
+    if (!selection) return;
+    if (savedRange.current) {
+      selection.removeAllRanges();
+      selection.addRange(savedRange.current);
+    }
+    if (!selection.rangeCount) return;
+    const range = selection.getRangeAt(0);
+    const hasBlockChildren = [...editor.children].some((child) => ["P", "DIV", "H2", "H3", "BLOCKQUOTE", "UL", "OL"].includes(child.tagName));
+    let paragraphs = [...editor.children].filter((child): child is HTMLElement =>
+      child instanceof HTMLElement && ["P", "DIV"].includes(child.tagName) && range.intersectsNode(child));
+    if (!paragraphs.length && !hasBlockChildren && editor.textContent) {
+      const paragraph = document.createElement("p");
+      paragraph.append(...Array.from(editor.childNodes));
+      editor.append(paragraph);
+      paragraphs = [paragraph];
+    }
+    if (!paragraphs.length) return;
+    const removeJustification = paragraphs.every((paragraph) => paragraph.style.textAlign === "justify" || paragraph.getAttribute("align") === "justify");
+    for (const paragraph of paragraphs) {
+      if (removeJustification) paragraph.style.removeProperty("text-align");
+      else paragraph.style.textAlign = "justify";
+      paragraph.removeAttribute("align");
+    }
+    updateContent();
+  }
+
   return (
     <div className={styles.editorFrame}>
       <div className={styles.controls} aria-label="Mise en forme du texte" role="group">
@@ -174,7 +208,7 @@ export function ArticleRichTextEditor({
         <button aria-label="Surligner en vert" aria-pressed={active.highlight} className={styles.toolButton} onMouseDown={rememberSelection} onClick={() => apply("hiliteColor", active.highlight ? "transparent" : getComputedStyle(document.documentElement).getPropertyValue("--brand-pale").trim())} type="button" title="Surligner en vert">
           <FontAwesomeIcon icon={faHighlighter} aria-hidden="true" />
         </button>
-        <button aria-label="Justifier le paragraphe" aria-pressed={active.justify} className={styles.toolButton} disabled={!active.paragraph} onMouseDown={rememberSelection} onClick={() => apply("justifyFull")} type="button" title="Justifier le paragraphe">
+        <button aria-label="Justifier le paragraphe" aria-pressed={active.justify} className={styles.toolButton} disabled={!active.paragraph} onMouseDown={rememberSelection} onClick={toggleJustification} type="button" title="Justifier le paragraphe">
           <FontAwesomeIcon icon={faAlignJustify} aria-hidden="true" />
         </button>
         <input aria-label="Couleur du texte" className={styles.colorInput} onMouseDown={rememberSelection} onChange={(event) => {
