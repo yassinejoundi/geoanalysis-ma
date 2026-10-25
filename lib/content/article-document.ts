@@ -5,6 +5,7 @@ export type ArticleTextNode = {
   text: string;
   marks?: ArticleMark[];
   href?: string;
+  color?: string;
 };
 
 export type ArticleBlock =
@@ -27,6 +28,21 @@ export const maxArticleFiles = 20;
 export const maxArticleFileBytes = 15 * 1024 * 1024;
 export const emptyArticleDocument: ArticleDocument = { type: "doc", content: [] };
 
+export function normalizeArticleColor(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const color = value.trim();
+  const hex = color.match(/^#([\da-f]{3}|[\da-f]{6})$/i)?.[1];
+  if (hex) {
+    const digits = hex.length === 3 ? [...hex].map((digit) => digit.repeat(2)).join("") : hex;
+    return `#${digits.toLowerCase()}`;
+  }
+  const rgb = color.match(/^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/i);
+  if (!rgb) return undefined;
+  const channels = rgb.slice(1).map(Number);
+  if (channels.some((channel) => channel > 255)) return undefined;
+  return `#${channels.map((channel) => channel.toString(16).padStart(2, "0")).join("")}`;
+}
+
 export function isSafeArticleHref(value: string) {
   try {
     const url = new URL(value);
@@ -47,7 +63,8 @@ function hasOnlyKeys(value: Record<string, unknown>, keys: readonly string[]) {
 function validTextNodes(value: unknown, state: { length: number }): value is ArticleTextNode[] {
   if (!Array.isArray(value) || value.length > 1000) return false;
   for (const node of value) {
-    if (!isRecord(node) || node.type !== "text" || !hasOnlyKeys(node, ["type", "text", "marks", "href"]) || typeof node.text !== "string") return false;
+    if (!isRecord(node) || node.type !== "text" || !hasOnlyKeys(node, ["type", "text", "marks", "href", "color"]) || typeof node.text !== "string" ||
+      (node.color !== undefined && !normalizeArticleColor(node.color))) return false;
     state.length += node.text.length;
     if (state.length > 20_000) return false;
     if (node.marks !== undefined && (!Array.isArray(node.marks) || node.marks.length > 4 ||
@@ -122,6 +139,8 @@ function renderText(nodes: ArticleTextNode[]) {
     if (node.marks?.includes("link") && node.href && isSafeArticleHref(node.href)) {
       content = `<a href="${escapeHtml(node.href)}">${content}</a>`;
     }
+    const color = normalizeArticleColor(node.color);
+    if (color) content = `<span style="color:${color}">${content}</span>`;
     return content;
   }).join("");
 }

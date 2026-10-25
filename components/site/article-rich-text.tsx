@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { ArticleBlock, ArticleDocument, ArticleTextNode } from "@/lib/content/article-document";
+import { normalizeArticleColor, type ArticleBlock, type ArticleDocument, type ArticleTextNode } from "@/lib/content/article-document";
 
 function renderText(nodes: ArticleTextNode[]) {
   return nodes.map((node, nodeIndex) => {
@@ -13,7 +13,7 @@ function renderText(nodes: ArticleTextNode[]) {
     if (node.marks?.includes("italic")) content = <em>{content}</em>;
     if (node.marks?.includes("underline")) content = <u>{content}</u>;
     if (node.marks?.includes("link") && node.href) content = <a href={node.href}>{content}</a>;
-    return <span key={nodeIndex}>{content}</span>;
+    return <span key={nodeIndex} style={{ color: normalizeArticleColor(node.color) }}>{content}</span>;
   });
 }
 

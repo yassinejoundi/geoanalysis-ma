@@ -7,6 +7,7 @@ import {
   articleDocumentToHtml,
   emptyArticleDocument,
   isSafeArticleHref,
+  normalizeArticleColor,
   parseArticleDocument,
   type ArticleBlock,
   type ArticleDocument,
@@ -15,15 +16,16 @@ import {
 } from "@/lib/content/article-document";
 import styles from "./article-rich-text-editor.module.css";
 
-type EditorCommand = "bold" | "italic" | "underline" | "insertUnorderedList" | "insertOrderedList" | "formatBlock" | "removeFormat";
+type EditorCommand = "bold" | "italic" | "underline" | "foreColor" | "insertUnorderedList" | "insertOrderedList" | "formatBlock" | "removeFormat";
 
-function readInline(node: Node, marks: ArticleMark[] = [], href?: string): ArticleTextNode[] {
+function readInline(node: Node, marks: ArticleMark[] = [], href?: string, color?: string): ArticleTextNode[] {
   if (node.nodeType === Node.TEXT_NODE) {
-    return node.textContent ? [{ type: "text", text: node.textContent, ...(marks.length ? { marks } : {}), ...(href ? { href } : {}) }] : [];
+    return node.textContent ? [{ type: "text", text: node.textContent, ...(marks.length ? { marks } : {}), ...(href ? { href } : {}), ...(color ? { color } : {}) }] : [];
   }
   if (!(node instanceof HTMLElement)) return [];
   const nextMarks = [...marks];
   let nextHref = href;
+  const nextColor = normalizeArticleColor(node.getAttribute("color") ?? node.style.color) ?? color;
   if (["B", "STRONG"].includes(node.tagName) && !nextMarks.includes("bold")) nextMarks.push("bold");
   if (["I", "EM"].includes(node.tagName) && !nextMarks.includes("italic")) nextMarks.push("italic");
   if (node.tagName === "U" && !nextMarks.includes("underline")) nextMarks.push("underline");
@@ -31,8 +33,8 @@ function readInline(node: Node, marks: ArticleMark[] = [], href?: string): Artic
     nextHref = node.getAttribute("href")!;
     if (!nextMarks.includes("link")) nextMarks.push("link");
   }
-  if (node.tagName === "BR") return [{ type: "text", text: "\n", ...(marks.length ? { marks } : {}), ...(href ? { href } : {}) }];
-  return [...node.childNodes].flatMap((child) => readInline(child, nextMarks, nextHref));
+  if (node.tagName === "BR") return [{ type: "text", text: "\n", ...(marks.length ? { marks } : {}), ...(href ? { href } : {}), ...(nextColor ? { color: nextColor } : {}) }];
+  return [...node.childNodes].flatMap((child) => readInline(child, nextMarks, nextHref, nextColor));
 }
 
 function readArticleHtml(html: string): ArticleDocument {
@@ -77,6 +79,7 @@ export function ArticleRichTextEditor({
   const editorRef = useRef<HTMLDivElement>(null);
   const savedRange = useRef<Range | null>(null);
   const [initialHtml] = useState(() => articleDocumentToHtml(parseArticleDocument(value)));
+  const [textColor, setTextColor] = useState("#0e8c3f");
   const [active, setActive] = useState({ bold: false, italic: false, underline: false, bullet: false, ordered: false });
 
   const rememberSelection = useCallback(() => {
@@ -137,6 +140,10 @@ export function ArticleRichTextEditor({
         <button aria-label="Souligné" aria-pressed={active.underline} className={styles.toolButton} onMouseDown={rememberSelection} onClick={() => apply("underline")} type="button" title="Souligné">
           <FontAwesomeIcon icon={faUnderline} aria-hidden="true" />
         </button>
+        <input aria-label="Couleur du texte" className={styles.colorInput} onMouseDown={rememberSelection} onChange={(event) => {
+          setTextColor(event.currentTarget.value);
+          apply("foreColor", event.currentTarget.value);
+        }} title="Couleur du texte" type="color" value={textColor} />
         <span className={styles.separator} aria-hidden="true" />
         <button aria-label="Titre de niveau 2" className={styles.toolButton} onMouseDown={rememberSelection} onClick={() => apply("formatBlock", "<h2>")} type="button" title="Titre">
           H2
