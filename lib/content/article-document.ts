@@ -1,4 +1,4 @@
-export type ArticleMark = "bold" | "italic" | "underline" | "link";
+export type ArticleMark = "bold" | "italic" | "underline" | "link" | "highlight";
 
 export type ArticleTextNode = {
   type: "text";
@@ -68,8 +68,8 @@ function validTextNodes(value: unknown, state: { length: number }): value is Art
       (node.color !== undefined && !normalizeArticleColor(node.color))) return false;
     state.length += node.text.length;
     if (state.length > 20_000) return false;
-    if (node.marks !== undefined && (!Array.isArray(node.marks) || node.marks.length > 4 ||
-      node.marks.some((mark) => !["bold", "italic", "underline", "link"].includes(String(mark))) ||
+    if (node.marks !== undefined && (!Array.isArray(node.marks) || node.marks.length > 5 ||
+      node.marks.some((mark) => !["bold", "italic", "underline", "link", "highlight"].includes(String(mark))) ||
       new Set(node.marks).size !== node.marks.length)) return false;
     const hasLink = Array.isArray(node.marks) && node.marks.includes("link");
     const href = node.href;
@@ -137,6 +137,7 @@ function escapeHtml(value: string) {
 function renderText(nodes: ArticleTextNode[]) {
   return nodes.map((node) => {
     let content = escapeHtml(node.text).replace(/\n/g, "<br>");
+    if (node.marks?.includes("highlight")) content = `<mark style="background-color:var(--brand-pale);color:inherit">${content}</mark>`;
     if (node.marks?.includes("bold")) content = `<strong>${content}</strong>`;
     if (node.marks?.includes("italic")) content = `<em>${content}</em>`;
     if (node.marks?.includes("underline")) content = `<u>${content}</u>`;

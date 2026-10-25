@@ -9,6 +9,7 @@ function renderText(nodes: ArticleTextNode[]) {
       lines.push(line);
     });
     let content: ReactNode = lines;
+    if (node.marks?.includes("highlight")) content = <mark style={{ backgroundColor: "var(--brand-pale)", color: "inherit" }}>{content}</mark>;
     if (node.marks?.includes("bold")) content = <strong>{content}</strong>;
     if (node.marks?.includes("italic")) content = <em>{content}</em>;
     if (node.marks?.includes("underline")) content = <u>{content}</u>;
