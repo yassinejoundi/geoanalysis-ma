@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBold, faItalic, faListOl, faListUl, faQuoteLeft, faUnderline } from "@fortawesome/free-solid-svg-icons";
+import { faAlignJustify, faBold, faItalic, faListOl, faListUl, faQuoteLeft, faUnderline } from "@fortawesome/free-solid-svg-icons";
 import {
   articleDocumentToHtml,
   emptyArticleDocument,
@@ -16,7 +16,7 @@ import {
 } from "@/lib/content/article-document";
 import styles from "./article-rich-text-editor.module.css";
 
-type EditorCommand = "bold" | "italic" | "underline" | "foreColor" | "insertUnorderedList" | "insertOrderedList" | "formatBlock" | "removeFormat";
+type EditorCommand = "bold" | "italic" | "underline" | "foreColor" | "justifyFull" | "insertUnorderedList" | "insertOrderedList" | "formatBlock" | "removeFormat";
 
 function readInline(node: Node, marks: ArticleMark[] = [], href?: string, color?: string): ArticleTextNode[] {
   if (node.nodeType === Node.TEXT_NODE) {
@@ -54,12 +54,13 @@ function readArticleHtml(html: string): ArticleDocument {
       continue;
     }
     const inline = readInline(node);
+    const alignment = node.style.textAlign === "justify" || node.getAttribute("align") === "justify" ? { align: "justify" as const } : {};
     if (node.tagName === "H2" || node.tagName === "H3") {
       content.push({ type: "heading", level: node.tagName === "H2" ? 2 : 3, content: inline });
     } else if (node.tagName === "BLOCKQUOTE") {
       content.push({ type: "quote", content: inline });
     } else if (inline.length) {
-      content.push({ type: "paragraph", content: inline });
+      content.push({ type: "paragraph", content: inline, ...alignment });
     }
   }
   return { type: "doc", content };
@@ -80,7 +81,7 @@ export function ArticleRichTextEditor({
   const savedRange = useRef<Range | null>(null);
   const [initialHtml] = useState(() => articleDocumentToHtml(parseArticleDocument(value)));
   const [textColor, setTextColor] = useState("#0e8c3f");
-  const [active, setActive] = useState({ bold: false, italic: false, underline: false, bullet: false, ordered: false });
+  const [active, setActive] = useState({ bold: false, italic: false, underline: false, justify: false, paragraph: false, bullet: false, ordered: false });
 
   const rememberSelection = useCallback(() => {
     const selection = window.getSelection();
@@ -92,10 +93,14 @@ export function ArticleRichTextEditor({
   const refreshActive = useCallback(() => {
     const selection = window.getSelection();
     if (!selection?.anchorNode || !editorRef.current?.contains(selection.anchorNode)) return;
+    let block = selection.anchorNode instanceof Element ? selection.anchorNode : selection.anchorNode.parentElement;
+    while (block && block.parentElement !== editorRef.current) block = block.parentElement;
     setActive({
       bold: document.queryCommandState("bold"),
       italic: document.queryCommandState("italic"),
       underline: document.queryCommandState("underline"),
+      justify: document.queryCommandState("justifyFull"),
+      paragraph: Boolean(block && block !== editorRef.current && ["P", "DIV"].includes(block.tagName)),
       bullet: document.queryCommandState("insertUnorderedList"),
       ordered: document.queryCommandState("insertOrderedList"),
     });
@@ -139,6 +144,9 @@ export function ArticleRichTextEditor({
         </button>
         <button aria-label="Souligné" aria-pressed={active.underline} className={styles.toolButton} onMouseDown={rememberSelection} onClick={() => apply("underline")} type="button" title="Souligné">
           <FontAwesomeIcon icon={faUnderline} aria-hidden="true" />
+        </button>
+        <button aria-label="Justifier le paragraphe" aria-pressed={active.justify} className={styles.toolButton} disabled={!active.paragraph} onMouseDown={rememberSelection} onClick={() => apply("justifyFull")} type="button" title="Justifier le paragraphe">
+          <FontAwesomeIcon icon={faAlignJustify} aria-hidden="true" />
         </button>
         <input aria-label="Couleur du texte" className={styles.colorInput} onMouseDown={rememberSelection} onChange={(event) => {
           setTextColor(event.currentTarget.value);

@@ -28,7 +28,7 @@ function renderBlock(block: ArticleBlock, index: number) {
     const List = block.ordered ? "ol" : "ul";
     return <List key={index}>{block.items.map((item, itemIndex) => <li key={itemIndex}>{renderText(item)}</li>)}</List>;
   }
-  return <p key={index}>{renderText(block.content)}</p>;
+  return <p key={index} style={{ textAlign: block.align === "justify" ? "justify" : undefined }}>{renderText(block.content)}</p>;
 }
 
 export function ArticleRichText({ document }: { document: ArticleDocument }) {

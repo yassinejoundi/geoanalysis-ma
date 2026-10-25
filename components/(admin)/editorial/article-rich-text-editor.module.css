@@ -55,6 +55,11 @@
   color: var(--brand-hover);
 }
 
+.toolButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .toolButton:focus-visible,
 .clearButton:focus-visible,
 .colorInput:focus-visible {

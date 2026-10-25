@@ -9,7 +9,8 @@ export type ArticleTextNode = {
 };
 
 export type ArticleBlock =
-  | { type: "paragraph" | "quote"; content: ArticleTextNode[] }
+  | { type: "paragraph"; content: ArticleTextNode[]; align?: "justify" }
+  | { type: "quote"; content: ArticleTextNode[] }
   | { type: "heading"; level: 2 | 3; content: ArticleTextNode[] }
   | { type: "list"; ordered: boolean; items: ArticleTextNode[][] };
 
@@ -84,7 +85,10 @@ export function isArticleDocument(value: unknown): value is ArticleDocument {
   const state = { length: 0 };
   for (const block of value.content) {
     if (!isRecord(block)) return false;
-    if (block.type === "paragraph" || block.type === "quote") {
+    if (block.type === "paragraph") {
+      if (!hasOnlyKeys(block, ["type", "content", "align"]) ||
+        (block.align !== undefined && block.align !== "justify") || !validTextNodes(block.content, state)) return false;
+    } else if (block.type === "quote") {
       if (!hasOnlyKeys(block, ["type", "content"]) || !validTextNodes(block.content, state)) return false;
     } else if (block.type === "heading") {
       if (!hasOnlyKeys(block, ["type", "level", "content"]) ||
@@ -153,6 +157,6 @@ export function articleDocumentToHtml(document: ArticleDocument) {
       const tag = block.ordered ? "ol" : "ul";
       return `<${tag}>${block.items.map((item) => `<li>${renderText(item)}</li>`).join("")}</${tag}>`;
     }
-    return `<p>${renderText(block.content)}</p>`;
+    return `<p${block.align === "justify" ? ' style="text-align:justify"' : ""}>${renderText(block.content)}</p>`;
   }).join("");
 }
