@@ -1,4 +1,11 @@
 export type ArticleMark = "bold" | "italic" | "underline" | "link" | "highlight";
+export const articleHighlightColorTokens = {
+  green: "--brand-pale",
+  yellow: "--highlight-yellow",
+  blue: "--highlight-blue",
+  pink: "--highlight-pink",
+} as const;
+export type ArticleHighlightColor = keyof typeof articleHighlightColorTokens;
 
 export type ArticleTextNode = {
   type: "text";
@@ -6,6 +13,7 @@ export type ArticleTextNode = {
   marks?: ArticleMark[];
   href?: string;
   color?: string;
+  highlightColor?: ArticleHighlightColor;
 };
 
 export type ArticleBlock =
@@ -64,13 +72,15 @@ function hasOnlyKeys(value: Record<string, unknown>, keys: readonly string[]) {
 function validTextNodes(value: unknown, state: { length: number }): value is ArticleTextNode[] {
   if (!Array.isArray(value) || value.length > 1000) return false;
   for (const node of value) {
-    if (!isRecord(node) || node.type !== "text" || !hasOnlyKeys(node, ["type", "text", "marks", "href", "color"]) || typeof node.text !== "string" ||
+    if (!isRecord(node) || node.type !== "text" || !hasOnlyKeys(node, ["type", "text", "marks", "href", "color", "highlightColor"]) || typeof node.text !== "string" ||
       (node.color !== undefined && !normalizeArticleColor(node.color))) return false;
     state.length += node.text.length;
     if (state.length > 20_000) return false;
     if (node.marks !== undefined && (!Array.isArray(node.marks) || node.marks.length > 5 ||
       node.marks.some((mark) => !["bold", "italic", "underline", "link", "highlight"].includes(String(mark))) ||
       new Set(node.marks).size !== node.marks.length)) return false;
+    if (node.highlightColor !== undefined && (!Array.isArray(node.marks) || !node.marks.includes("highlight") ||
+      !["green", "yellow", "blue", "pink"].includes(String(node.highlightColor)))) return false;
     const hasLink = Array.isArray(node.marks) && node.marks.includes("link");
     const href = node.href;
     if (hasLink !== (typeof href === "string") || (href !== undefined && typeof href !== "string") ||
@@ -137,7 +147,10 @@ function escapeHtml(value: string) {
 function renderText(nodes: ArticleTextNode[]) {
   return nodes.map((node) => {
     let content = escapeHtml(node.text).replace(/\n/g, "<br>");
-    if (node.marks?.includes("highlight")) content = `<mark style="background-color:var(--brand-pale);color:inherit">${content}</mark>`;
+    if (node.marks?.includes("highlight")) {
+      const token = articleHighlightColorTokens[node.highlightColor ?? "green"];
+      content = `<mark style="background-color:var(${token});color:inherit">${content}</mark>`;
+    }
     if (node.marks?.includes("bold")) content = `<strong>${content}</strong>`;
     if (node.marks?.includes("italic")) content = `<em>${content}</em>`;
     if (node.marks?.includes("underline")) content = `<u>${content}</u>`;

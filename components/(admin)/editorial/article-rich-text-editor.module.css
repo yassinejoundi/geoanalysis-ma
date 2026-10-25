@@ -43,15 +43,8 @@
   background: var(--surface-green);
 }
 
-.colorInput {
-  flex: 0 0 auto;
-  width: 44px;
-  height: 44px;
-  padding: 4px;
-  border: 1px solid var(--border-strong);
-  border-radius: 2px;
-  background: var(--surface);
-  cursor: pointer;
+.highlightButton {
+  border-color: var(--border-strong);
 }
 
 .toolButton[aria-pressed="true"] {
@@ -66,8 +59,7 @@
 }
 
 .toolButton:focus-visible,
-.clearButton:focus-visible,
-.colorInput:focus-visible {
+.clearButton:focus-visible {
   outline: 3px solid var(--brand-bright);
   outline-offset: 2px;
 }

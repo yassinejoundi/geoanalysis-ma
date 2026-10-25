@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faAlignJustify, faBold, faHighlighter, faItalic, faListOl, faListUl, faQuoteLeft, faUnderline } from "@fortawesome/free-solid-svg-icons";
 import {
+  articleHighlightColorTokens,
   articleDocumentToHtml,
   emptyArticleDocument,
   isSafeArticleHref,
@@ -11,26 +12,63 @@ import {
   parseArticleDocument,
   type ArticleBlock,
   type ArticleDocument,
+  type ArticleHighlightColor,
   type ArticleMark,
   type ArticleTextNode,
 } from "@/lib/content/article-document";
 import styles from "./article-rich-text-editor.module.css";
 
-type EditorCommand = "bold" | "italic" | "underline" | "foreColor" | "hiliteColor" | "insertUnorderedList" | "insertOrderedList" | "formatBlock" | "removeFormat";
+type EditorCommand = "bold" | "italic" | "underline" | "hiliteColor" | "insertUnorderedList" | "insertOrderedList" | "formatBlock" | "removeFormat";
+type HighlightPalette = Record<ArticleHighlightColor, string | undefined>;
 
-function readInline(node: Node, marks: ArticleMark[] = [], href?: string, color?: string, highlightColor?: string): ArticleTextNode[] {
+const highlightOptions: [ArticleHighlightColor, string][] = [
+  ["green", "Surligner en vert"],
+  ["yellow", "Surligner en jaune"],
+  ["blue", "Surligner en bleu"],
+  ["pink", "Surligner en rose"],
+];
+
+function readHighlightPalette(): HighlightPalette {
+  const styles = getComputedStyle(document.documentElement);
+  return Object.fromEntries(highlightOptions.map(([color]) => [
+    color,
+    normalizeArticleColor(styles.getPropertyValue(articleHighlightColorTokens[color])),
+  ])) as HighlightPalette;
+}
+
+function readHighlightColor(
+  node: HTMLElement,
+  inherited: ArticleHighlightColor | undefined,
+  palette: HighlightPalette,
+): ArticleHighlightColor | undefined {
+  const background = node.style.backgroundColor;
+  const value = normalizeArticleColor(background);
+  const paletteColor = highlightOptions.find(([color]) => value && palette[color] === value)?.[0];
+  if (paletteColor) return paletteColor;
+  const tokenColor = highlightOptions.find(([color]) => background === `var(${articleHighlightColorTokens[color]})`)?.[0];
+  if (tokenColor) return tokenColor;
+  if (node.tagName === "MARK" && background !== "transparent") return "green";
+  return background ? undefined : inherited;
+}
+
+function readInline(
+  node: Node,
+  marks: ArticleMark[] = [],
+  href?: string,
+  color?: string,
+  highlightColor?: ArticleHighlightColor,
+  palette: HighlightPalette = readHighlightPalette(),
+): ArticleTextNode[] {
   if (node.nodeType === Node.TEXT_NODE) {
-    return node.textContent ? [{ type: "text", text: node.textContent, ...(marks.length ? { marks } : {}), ...(href ? { href } : {}), ...(color ? { color } : {}) }] : [];
+    return node.textContent ? [{ type: "text", text: node.textContent, ...(marks.length ? { marks } : {}), ...(href ? { href } : {}), ...(color ? { color } : {}), ...(marks.includes("highlight") ? { highlightColor: highlightColor ?? "green" } : {}) }] : [];
   }
   if (!(node instanceof HTMLElement)) return [];
   const nextMarks = [...marks];
   let nextHref = href;
   const nextColor = normalizeArticleColor(node.getAttribute("color") ?? node.style.color) ?? color;
-  const background = node.style.backgroundColor;
-  const isHighlight = (Boolean(highlightColor) && normalizeArticleColor(background) === highlightColor) || (node.tagName === "MARK" && background !== "transparent");
-  if (isHighlight && !nextMarks.includes("highlight")) {
-    nextMarks.push("highlight");
-  } else if (background && !isHighlight) {
+  const nextHighlight = readHighlightColor(node, highlightColor, palette);
+  if (nextHighlight && !nextMarks.includes("highlight")) nextMarks.push("highlight");
+  else if (!nextHighlight) {
     const index = nextMarks.indexOf("highlight");
     if (index !== -1) nextMarks.splice(index, 1);
   }
@@ -41,13 +79,13 @@ function readInline(node: Node, marks: ArticleMark[] = [], href?: string, color?
     nextHref = node.getAttribute("href")!;
     if (!nextMarks.includes("link")) nextMarks.push("link");
   }
-  if (node.tagName === "BR") return [{ type: "text", text: "\n", ...(marks.length ? { marks } : {}), ...(href ? { href } : {}), ...(nextColor ? { color: nextColor } : {}) }];
-  return [...node.childNodes].flatMap((child) => readInline(child, nextMarks, nextHref, nextColor, highlightColor));
+  if (node.tagName === "BR") return [{ type: "text", text: "\n", ...(nextMarks.length ? { marks: nextMarks } : {}), ...(nextHref ? { href: nextHref } : {}), ...(nextColor ? { color: nextColor } : {}), ...(nextHighlight ? { highlightColor: nextHighlight } : {}) }];
+  return [...node.childNodes].flatMap((child) => readInline(child, nextMarks, nextHref, nextColor, nextHighlight, palette));
 }
 
 function readArticleHtml(html: string): ArticleDocument {
   const parsed = new DOMParser().parseFromString(html, "text/html");
-  const highlightColor = normalizeArticleColor(getComputedStyle(document.documentElement).getPropertyValue("--brand-pale"));
+  const highlightPalette = readHighlightPalette();
   const content: ArticleBlock[] = [];
   for (const node of [...parsed.body.childNodes]) {
     if (node.nodeType === Node.TEXT_NODE) {
@@ -58,11 +96,11 @@ function readArticleHtml(html: string): ArticleDocument {
     if (!(node instanceof HTMLElement)) continue;
     if (node.tagName === "UL" || node.tagName === "OL") {
       const items = [...node.children].filter((child) => child.tagName === "LI")
-        .map((item) => readInline(item, [], undefined, undefined, highlightColor));
+        .map((item) => readInline(item, [], undefined, undefined, undefined, highlightPalette));
       content.push({ type: "list", ordered: node.tagName === "OL", items });
       continue;
     }
-    const inline = readInline(node, [], undefined, undefined, highlightColor);
+    const inline = readInline(node, [], undefined, undefined, undefined, highlightPalette);
     const alignment = node.style.textAlign === "justify" || node.getAttribute("align") === "justify" ? { align: "justify" as const } : {};
     if (node.tagName === "H2" || node.tagName === "H3") {
       content.push({ type: "heading", level: node.tagName === "H2" ? 2 : 3, content: inline });
@@ -89,8 +127,7 @@ export function ArticleRichTextEditor({
   const editorRef = useRef<HTMLDivElement>(null);
   const savedRange = useRef<Range | null>(null);
   const [initialHtml] = useState(() => articleDocumentToHtml(parseArticleDocument(value)));
-  const [textColor, setTextColor] = useState("#0e8c3f");
-  const [active, setActive] = useState({ bold: false, italic: false, underline: false, highlight: false, justify: false, paragraph: false, bullet: false, ordered: false });
+  const [active, setActive] = useState({ bold: false, italic: false, underline: false, highlight: null as ArticleHighlightColor | null, justify: false, paragraph: false, bullet: false, ordered: false });
 
   const rememberSelection = useCallback(() => {
     const selection = window.getSelection();
@@ -104,17 +141,14 @@ export function ArticleRichTextEditor({
     const editor = editorRef.current;
     if (!selection?.anchorNode || !editor?.contains(selection.anchorNode)) return;
     let inline = selection.anchorNode instanceof Element ? selection.anchorNode : selection.anchorNode.parentElement;
-    const highlightColor = normalizeArticleColor(getComputedStyle(editor).getPropertyValue("--brand-pale"));
-    let highlighted: boolean | undefined;
+    const highlightPalette = readHighlightPalette();
+    let highlighted: ArticleHighlightColor | null = null;
+    let foundHighlightState = false;
     while (inline && editor.contains(inline)) {
       const background = inline.style.backgroundColor;
-      if (background) {
-        highlighted = (Boolean(highlightColor) && normalizeArticleColor(background) === highlightColor) ||
-          (inline.tagName === "MARK" && background === "var(--brand-pale)");
-        break;
-      }
-      if (inline.tagName === "MARK") {
-        highlighted = true;
+      if (background || inline.tagName === "MARK") {
+        highlighted = readHighlightColor(inline, undefined, highlightPalette) ?? null;
+        foundHighlightState = true;
         break;
       }
       inline = inline.parentElement;
@@ -127,7 +161,7 @@ export function ArticleRichTextEditor({
       bold: document.queryCommandState("bold"),
       italic: document.queryCommandState("italic"),
       underline: document.queryCommandState("underline"),
-      highlight: highlighted ?? document.queryCommandState("hiliteColor"),
+      highlight: foundHighlightState ? highlighted : document.queryCommandState("hiliteColor") ? "green" : null,
       justify: paragraph?.style.textAlign === "justify" || paragraph?.getAttribute("align") === "justify",
       paragraph: Boolean(paragraph),
       bullet: document.queryCommandState("insertUnorderedList"),
@@ -205,16 +239,16 @@ export function ArticleRichTextEditor({
         <button aria-label="Souligné" aria-pressed={active.underline} className={styles.toolButton} onMouseDown={rememberSelection} onClick={() => apply("underline")} type="button" title="Souligné">
           <FontAwesomeIcon icon={faUnderline} aria-hidden="true" />
         </button>
-        <button aria-label="Surligner en vert" aria-pressed={active.highlight} className={styles.toolButton} onMouseDown={rememberSelection} onClick={() => apply("hiliteColor", active.highlight ? "transparent" : getComputedStyle(document.documentElement).getPropertyValue("--brand-pale").trim())} type="button" title="Surligner en vert">
-          <FontAwesomeIcon icon={faHighlighter} aria-hidden="true" />
-        </button>
+        {highlightOptions.map(([color, label]) => (
+          <button aria-label={label} aria-pressed={active.highlight === color} className={`${styles.toolButton} ${styles.highlightButton}`} key={color} onMouseDown={rememberSelection}
+            onClick={() => apply("hiliteColor", active.highlight === color ? "transparent" : getComputedStyle(document.documentElement).getPropertyValue(articleHighlightColorTokens[color]).trim())}
+            style={{ backgroundColor: `var(${articleHighlightColorTokens[color]})` }} type="button" title={label}>
+            <FontAwesomeIcon icon={faHighlighter} aria-hidden="true" />
+          </button>
+        ))}
         <button aria-label="Justifier le paragraphe" aria-pressed={active.justify} className={styles.toolButton} disabled={!active.paragraph} onMouseDown={rememberSelection} onClick={toggleJustification} type="button" title="Justifier le paragraphe">
           <FontAwesomeIcon icon={faAlignJustify} aria-hidden="true" />
         </button>
-        <input aria-label="Couleur du texte" className={styles.colorInput} onMouseDown={rememberSelection} onChange={(event) => {
-          setTextColor(event.currentTarget.value);
-          apply("foreColor", event.currentTarget.value);
-        }} title="Couleur du texte" type="color" value={textColor} />
         <span className={styles.separator} aria-hidden="true" />
         <button aria-label="Titre de niveau 2" className={styles.toolButton} onMouseDown={rememberSelection} onClick={() => apply("formatBlock", "<h2>")} type="button" title="Titre">
           H2

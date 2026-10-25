@@ -23,6 +23,9 @@ This guide records the visual system in `.project/Design système couleurs et na
 | `--brand-hover` | `#0A6E31` | Hover and pressed action state |
 | `--brand-bright` | `#3FB37B` | Sidebar accent and small highlights |
 | `--brand-pale` | `#CDEBD8` | Selection and pale emphasis |
+| `--highlight-yellow` | `#FFF0B3` | Text highlighting |
+| `--highlight-blue` | `#DCEEFF` | Text highlighting |
+| `--highlight-pink` | `#F8D7E8` | Text highlighting |
 | `--sidebar-muted` | `#B5BEB9` | Secondary labels on the dark sidebar |
 | `--border` | `rgba(28, 38, 34, 0.12)` | Card and section boundaries |
 

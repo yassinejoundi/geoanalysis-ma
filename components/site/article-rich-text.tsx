@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { normalizeArticleColor, type ArticleBlock, type ArticleDocument, type ArticleTextNode } from "@/lib/content/article-document";
+import { articleHighlightColorTokens, normalizeArticleColor, type ArticleBlock, type ArticleDocument, type ArticleTextNode } from "@/lib/content/article-document";
 
 function renderText(nodes: ArticleTextNode[]) {
   return nodes.map((node, nodeIndex) => {
@@ -9,7 +9,10 @@ function renderText(nodes: ArticleTextNode[]) {
       lines.push(line);
     });
     let content: ReactNode = lines;
-    if (node.marks?.includes("highlight")) content = <mark style={{ backgroundColor: "var(--brand-pale)", color: "inherit" }}>{content}</mark>;
+    if (node.marks?.includes("highlight")) {
+      const token = articleHighlightColorTokens[node.highlightColor ?? "green"];
+      content = <mark style={{ backgroundColor: `var(${token})`, color: "inherit" }}>{content}</mark>;
+    }
     if (node.marks?.includes("bold")) content = <strong>{content}</strong>;
     if (node.marks?.includes("italic")) content = <em>{content}</em>;
     if (node.marks?.includes("underline")) content = <u>{content}</u>;
